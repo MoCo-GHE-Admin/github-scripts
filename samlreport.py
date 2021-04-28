@@ -1,9 +1,13 @@
+"""
+Script to get the mapping of SAML source name to GH login name
+Used in part for ID, also auditing who's clicked the auth button.
+"""
 #!/usr/bin/env python
 
 import argparse
 from getpass import getpass
-import requests
 import sys
+import requests
 from github3 import login
 
 def parse_arguments():
