@@ -81,7 +81,6 @@ def run_query(org, headers, url):
         query = make_query(org, cursor)
         # print(f'Query: {query}\n\n\n')
         request = requests.post(url=url, json={'query': query}, headers=headers)
-        print(f'Data: {request.json()}')
         jsonified = request.json()
         if request.status_code == 200:
             results.update(jsonified)
@@ -108,7 +107,6 @@ def main():
 
 
     saml_dict = run_query(args.org, headers, args.url)
-    print(f'SAML_DICT: {saml_dict}')
     #Get rid of the overarching structures we don't care about in the results
     saml_dict = saml_dict['data']['organization']\
                     ['samlIdentityProvider']['externalIdentities']['edges']
