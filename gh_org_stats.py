@@ -7,7 +7,9 @@ import argparse
 import time
 import sys
 from datetime import datetime
+from datetime import timedelta
 from getpass import getpass
+import pytz
 from github3 import login
 
 def _create_char_spinner():
@@ -37,7 +39,7 @@ def parse_arguments():
     parser = argparse.ArgumentParser(description="Get stats out of github about repos\n"\
         "Note that the dates are 'end of week' and "\
         "the latest you should see for commits is last Saturday")
-    parser.add_argument('operation', choices=['repoactive', 'orgactive'],
+    parser.add_argument('operation', choices=['repoactive', 'orgactive', 'orguseractive'],
                         action='store')
     parser.add_argument('org', help="owner or org of the repo",
                         action='store', type=str)
@@ -142,6 +144,40 @@ def repo_activity(gh_sess, org, repo, printout=True):
     return commitlist
 
 
+def org_user_activity(gh_sess, org, printout=True):
+    """
+    Go through the list of contributors in the org, and get their last activity.
+    This happens by way of looking in every repo and getting the user's last commit
+
+    :param gh_sess: an initialized github session
+    :param org: the organization name
+    :param printout: should I print, or just return?
+    :return: the user and latest commit, or a printout of same
+    """
+    user_dict = {}
+    yearago = datetime.now()-timedelta(days=365)
+    day_zero = pytz.utc.localize(datetime.fromisoformat("0001-01-01"))
+    repolist = gh_sess.repositories_by(org)
+    for short_repo in repolist:
+        contribs = short_repo.contributors()
+        print(short_repo.name)
+        for user in contribs:
+            if user.login not in user_dict:
+                user_dict[user.login] = day_zero
+            commits = short_repo.commits(author=user.login, since=yearago)
+            # print(user.login)
+            for commit in commits:
+                combo = commit.status()
+                # print(f'total_count: {combo.total_count}')
+                if combo.total_count > 0:
+                    # print(combo.statuses[0].created_at)
+                    commit_date = combo.statuses[0].created_at
+                    if user_dict[user.login] < commit_date:
+                        user_dict[user.login] = commit_date
+                    print(f'Current user: {user.login}, current date: {user_dict[user.login]}, proposed date: {commit_date}')
+                # for status in commit.statuses():
+                #     print(user.login)
+                #     print(status.creator, status.created_at, status.description)
 
 def main():
     """
@@ -154,8 +190,9 @@ def main():
     if args.operation == 'orgactive':
         activity(gh_session, args.org, delay=args.delay)
     elif args.operation == 'repoactive':
-        print(f'sess: {gh_session}, org: {args.org}, repo: {args.repo}')
         repo_activity(gh_session, args.org, args.repo)
+    elif args.operation == 'orguseractive':
+        org_user_activity(gh_session, args.org)
 
 
 
