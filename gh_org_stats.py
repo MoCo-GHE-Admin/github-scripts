@@ -158,26 +158,59 @@ def org_user_activity(gh_sess, org, printout=True):
     yearago = datetime.now()-timedelta(days=365)
     day_zero = pytz.utc.localize(datetime.fromisoformat("0001-01-01"))
     repolist = gh_sess.repositories_by(org)
-    for short_repo in repolist:
-        contribs = short_repo.contributors()
-        print(short_repo.name)
-        for user in contribs:
-            if user.login not in user_dict:
-                user_dict[user.login] = day_zero
-            commits = short_repo.commits(author=user.login, since=yearago)
-            # print(user.login)
-            for commit in commits:
-                combo = commit.status()
-                # print(f'total_count: {combo.total_count}')
-                if combo.total_count > 0:
-                    # print(combo.statuses[0].created_at)
-                    commit_date = combo.statuses[0].created_at
-                    if user_dict[user.login] < commit_date:
-                        user_dict[user.login] = commit_date
-                    print(f'Current user: {user.login}, current date: {user_dict[user.login]}, proposed date: {commit_date}')
-                # for status in commit.statuses():
-                #     print(user.login)
-                #     print(status.creator, status.created_at, status.description)
+    # Get admins --- they're in the list, but likely don't commit
+    members = gh_sess.organization(org).members(role="admin")
+    for user in members:
+        if user.login not in user_dict:
+            user_dict[user.login] = {'lastcommit': 0, 'role': 'admin'}
+    # Get members
+    members = gh_sess.organization(org).members(role="member")
+    for user in members:
+        if user.login not in user_dict:
+            user_dict[user.login] = {'lastcommit': 0, 'role': 'member'}
+    print(user_dict)
+
+    try:
+        for short_repo in repolist:
+            print(f'repo: {short_repo.name}')
+            contrib_stats = short_repo.contributor_statistics()
+            print(f'Last status: {contrib_stats.last_status}')
+            print(f'count: {contrib_stats.count}, ratelimit: {contrib_stats.ratelimit_remaining}')
+            if contrib_stats.last_status == 202:
+                # got limited.  Wait a bit and try again.
+                time.sleep(5)
+                contrib_stats = short_repo.contributor_statistics()
+                if contrib_stats.last_status == 202:
+                    # failed a second time - Drop out!
+                    raise Exception('Repeatedly limited by 202 response to stat '
+                            'query - increase delay and try again')
+            elif contrib_stats.last_status != 204:
+            #204 is Empty Repo
+
+                for statpack in contrib_stats:
+                    name = statpack.author.login
+                    print(f'Name: {name}')
+                    if name in user_dict:
+                        topdate = 0
+                        for week in statpack.weeks:
+                            # a = additions, c = commits, d = deletions, w = week
+                            if week['c'] != 0:
+                                if week['w'] > topdate:
+                                    topdate = week['w']
+                        print(f'Name: {name}, topdate: {topdate}')
+                        user_dict[name]['lastcommit'] = topdate
+    finally:
+        print ("Results:")
+        if printout:
+            print()
+            print("User, Role, Week of latest commit")
+            for user, data in user_dict.items():
+                if data['lastcommit'] == 0:
+                    date = "No commits found"
+                else:
+                    date = datetime.fromtimestamp(data['lastcommit'])
+                print(f'{user},{data["role"]},{date}')
+    return user_dict
 
 def main():
     """
