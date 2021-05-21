@@ -23,7 +23,9 @@ def parse_args():
     parser.add_argument('--token', help='github token with perms to examine your repo',
                         action='store')
     parser.add_argument('--without-org', help="Include the org in the name, 'org/repo-name'",
-                        action="store_false", default=True, dest="with_org")
+                        action='store_false', default=True, dest='with_org')
+    parser.add_argument('--archived', help="Include archived repos.  Default is unarchived.",
+                        action='store_true', default=False)
     args = parser.parse_args()
     if args.token is None:
         args.token = getpass('Please enter your GitHub token: ')
@@ -40,13 +42,15 @@ def main():
     args = parse_args()
 
     gh_sess = login(token = args.token)
-    repolist = gh_sess.repositories_by(args.org)
+    org = gh_sess.organization(args.org)
+    repolist = org.repositories()
 
     for repo in repolist:
-        if args.with_org:
-            print(repo)
-        else:
-            print(repo.name)
+        if (repo.archived and args.archived) or not repo.archived:
+            if args.with_org:
+                print(repo)
+            else:
+                print(repo.name)
 
 
 
