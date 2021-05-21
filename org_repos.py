@@ -22,8 +22,8 @@ def parse_args():
                         action='store', type=str)
     parser.add_argument('--token', help='github token with perms to examine your repo',
                         action='store')
-    parser.add_argument('--with-org', help="Include the org in the name, 'org/repo-name'",
-                        action="store_true", default=False, dest="with_org")
+    parser.add_argument('--without-org', help="Include the org in the name, 'org/repo-name'",
+                        action="store_false", default=True, dest="with_org")
     args = parser.parse_args()
     if args.token is None:
         args.token = getpass('Please enter your GitHub token: ')
