@@ -8,6 +8,7 @@ import argparse
 from getpass import getpass
 from datetime import datetime
 from github3 import login
+from github3 import exceptions as gh_exceptions
 
 def parse_args():
     """
@@ -57,15 +58,18 @@ def repo_activity(gh_sess, org, repo, printout=True, header=True):
     # if there is, and it's a more recent week than we have recorded, record it.
     # (some returns from the commit_activity are out of order, hence
     # we can't just look at the last active week and assume it's the mose recent)
-    for week in commits:
-        if week['total'] != 0:
-            if week['week'] > topdate:
-                topdate = week['week']
-    commitval = 0
-    if topdate == 0:
+    try:
+        for week in commits:
+            if week['total'] != 0:
+                if week['week'] > topdate:
+                    topdate = week['week']
+        commitval = 0
+    except gh_exceptions.UnexpectedResponse:
+        commitval = "Unexpected, possibly empty repo"
+    if (commitval == 0 and topdate == 0):
         #no commits found, update list as apropos
         commitval = 'None'
-    else:
+    elif topdate != 0:
         commitval = datetime.fromtimestamp(topdate)
     commitlist[repo.name] = {'created_at':repo.created_at,
                             'updated_at':repo.pushed_at,
