@@ -5,6 +5,7 @@ Used to help determination for archiving/moving repos that aren't active
 """
 
 import argparse
+from time import sleep
 from getpass import getpass
 from datetime import datetime
 from github3 import login
@@ -16,17 +17,22 @@ def parse_args():
     Will accept many repos on the command line, and they can be in different orgs
     Also can take the output in a file.  one "org/repo" per line
     Detects if no PAT is given, asks for it.
+    And finally a delay for in between calls - defaults to 0.1 seconds
+    Used to rate limit so we don't get 202 for stats calls.
     :return: Returns the parsed CLI datastructures.
     """
 
     parser = argparse.ArgumentParser(description=
                     "Gets a latest activity for a repo or list of repos")
     parser.add_argument('repos',
-                    help='list of repos to examine',
-                    action='store', nargs='*')
+                    help = 'list of repos to examine',
+                    action = 'store', nargs='*')
     parser.add_argument('--token', help='github token with perms to examine your repo',
-                    action='store')
-    parser.add_argument('--file', help="File of repo names, 1 per line",
+                    action = 'store')
+    parser.add_argument('--delay',
+                    help = 'Default time between calls - if you see 202 errors, increase this',
+                    action = 'store', default=0.1)
+    parser.add_argument('--file', help = "File of repo names, 1 per line",
                     action = 'store')
 
     args = parser.parse_args()
@@ -113,6 +119,7 @@ def main():
         repo_activity(gh_sess, org, repo, header=header)
         if header:
             header = False #We only want a header on the first line
+        sleep(args.delay)
 
 if __name__ == '__main__':
     main()
