@@ -11,16 +11,15 @@ from github3 import login
 
 def parse_args():
     """
-    Parse the command line.  Required commands is the name of the repo, and the org
-    Will accept many repos on the command line
+    Parse the command line.  Required commands is the name of the "org/repo"
+    Will accept many repos on the command line, and they can be in different orgs
+    Also can take the output in a file.  one "org/repo" per line
     Detects if no PAT is given, asks for it.
     :return: Returns the parsed CLI datastructures.
     """
 
     parser = argparse.ArgumentParser(description=
                     "Gets a latest activity for a repo or list of repos")
-    parser.add_argument('--org', help='Name of the org the repos belong to',
-                    action='store', required=True)
     parser.add_argument('repos',
                     help='list of repos to examine',
                     action='store', nargs='*')
@@ -99,8 +98,10 @@ def main():
 
     gh_sess = login(token=args.token)
 
-    for repo in repolist:
-        repo_activity(gh_sess, args.org, repo.strip(), header=header)
+    for orgrepo in repolist:
+        org = orgrepo.split('/')[0].strip()
+        repo = orgrepo.split('/')[1].strip()
+        repo_activity(gh_sess, org, repo, header=header)
         if header:
             header = False #We only want a header on the first line
 
