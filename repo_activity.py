@@ -52,6 +52,11 @@ def repo_activity(gh_sess, org, repo, printout=True, header=True):
     repo = short_repo.refresh()
     topdate = 0
     commits = repo.commit_activity()
+    # Look through the last year of commit activity
+    # for each week, see if there's any commits
+    # if there is, and it's a more recent week than we have recorded, record it.
+    # (some returns from the commit_activity are out of order, hence
+    # we can't just look at the last active week and assume it's the mose recent)
     for week in commits:
         if week['total'] != 0:
             if week['week'] > topdate:
