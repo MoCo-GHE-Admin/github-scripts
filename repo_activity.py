@@ -33,8 +33,8 @@ def parse_args():
     parser.add_argument('--token', help='github token with perms to examine your repo',
                     action = 'store')
     parser.add_argument('--delay',
-                    help = 'Default time between calls - if you see 202 errors, increase this',
-                    action = 'store', default=0.1, type=float)
+                    help = 'Default time between calls - defaults so that you can''t overrun',
+                    action = 'store', default=4.5, type=float)
     parser.add_argument('--file', help = "File of repo names, 1 per line",
                     action = 'store')
 
