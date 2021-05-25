@@ -66,7 +66,6 @@ def repo_activity(gh_sess, org, repo, header=True):
     # if there is, and it's a more recent week than we have recorded, record it.
     # (some returns from the commit_activity are out of order, hence
     # we can't just look at the last active week and assume it's the mose recent)
-    # TODO BEFORE checking weekly - check  the commits.last_status for 202 - retry if you get
     status_code = commits.last_status
     try:
         first = True
@@ -74,7 +73,8 @@ def repo_activity(gh_sess, org, repo, header=True):
             # print(f'Result: {commits.last_status}, repo: {repo.name}', file = sys.stderr)
             if first:
                 status_code = commits.last_status
-                # print(f'Result: {commits.last_status}, response: {commits.last_response}, repo: {repo.name}', file = sys.stderr)
+                # print(f'Result: {commits.last_status}, response: '
+                #       f'{commits.last_response}, repo: {repo.name}', file = sys.stderr)
                 if status_code == 202:
                     return status_code
                 first = False
@@ -83,13 +83,16 @@ def repo_activity(gh_sess, org, repo, header=True):
                     topdate = week['week']
         commitval = 0
     except gh_exceptions.UnexpectedResponse:
-        # print(f'UNEXPECTED: Result: {commits.last_status}, response: {commits.last_response}, repo: {repo.name}', file = sys.stderr)
+        # print(f'UNEXPECTED: Result: {commits.last_status}, response: '
+        #       f'{commits.last_response}, repo: {repo.name}', file = sys.stderr)
         commitval = "Unexpected, possibly empty repo"
     except gh_exceptions.NotFoundError:
-        # print(f'NOTFOUND: Result: {commits.last_status}, response: {commits.last_response}, repo: {repo.name}', file = sys.stderr)
+        # print(f'NOTFOUND: Result: {commits.last_status}, response: '
+        #       f'{commits.last_response}, repo: {repo.name}', file = sys.stderr)
         commitval = "Unexpected, possibly temp repo"
     except gh_exceptions.ForbiddenError as forbidden_Error:
-        # print(f'FORBIDDEN: Result: {commits.last_status}, response: {commits.last_response}, repo: {repo.name}', file = sys.stderr)
+        # print(f'FORBIDDEN: Result: {commits.last_status}, response: '
+        #       f'{commits.last_response}, repo: {repo.name}', file = sys.stderr)
         raise Exception('Forbidden error, likely overran rate limiting ' + forbidden_Error.message)
     finally:
         status_code = commits.last_status
@@ -139,11 +142,13 @@ def main():
         done = False
         count = 0
         while not done:
-            #TODO: Thanks to this, we add up to 5 lines to the file for a 202-failed point.  
+            #TODO: Thanks to this, we add up to 5 lines
+            #       to the file for a 202-failed point.
             count += 1
             result = repo_activity(gh_sess, org, repo, header=header)
             if result != 202 or count >= MAX_RETRIES:
-                # print(f'Leaving Loop - result: {result}, done: {done}, count: {count}, repo: {repo}', file = sys.stderr)
+                # print(f'Leaving Loop - result: {result}, '
+                #       f'done: {done}, count: {count}, repo: {repo}', file = sys.stderr)
                 if count == MAX_RETRIES and result == 202:
                     # We errored out --- put in something in the output to that effect.
                     print(f'{org}/{repo},GH Gave 202 Error')
