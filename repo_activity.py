@@ -144,6 +144,7 @@ def main():
         while not done:
             #TODO: Thanks to this, we add up to 5 lines
             #       to the file for a 202-failed point.
+            #       Given the structure, it's unclear how to fix, and it's rare
             count += 1
             result = repo_activity(gh_sess, org, repo, header=header)
             if result != 202 or count >= MAX_RETRIES:
