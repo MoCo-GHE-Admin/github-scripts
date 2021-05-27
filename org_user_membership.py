@@ -46,8 +46,11 @@ def parse_args():
                     action = 'store')
     parser.add_argument('--token', help = 'The PAT to auth with', action = 'store')
     parser.add_argument('--delay', help = 'delay between queries - rate '
-                        'limits, default to 1, should never hit the limit',
-                        action = 'store', type = float, default = 1.0)
+                    'limits, default to 1, should never hit the limit',
+                    action = 'store', type = float, default = 1.0)
+    parser.add_argument('-i', action = 'store_true', default = False, dest = 'info',
+                    help = 'Give visual output of that progress continues - '
+                    'useful for long runs redirected to a file')
     args = parser.parse_args()
     if args.token is None:
         args.token = getpass('Please enter your GitHub token: ')
@@ -95,7 +98,8 @@ def main():
                         userlist[collaborator.login]['privrepo'] += 1
                     else:
                         userlist[collaborator.login]['pubrepo'] += 1
-            spinner()
+            if args.info:
+                spinner()
             sleep(args.delay)
         except gh_exceptions.NotFoundError as err:
             print(f'In repo {repo.name} and collab {collaborator.login} : {err.message}',

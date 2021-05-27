@@ -14,6 +14,26 @@ from github3 import exceptions as gh_exceptions
 
 MAX_RETRIES = 5
 
+def _create_char_spinner():
+    """
+    Creates a generator yielding a char based spinner.
+    """
+    while True:
+        for char in '|/-\\':
+            yield char
+
+
+_spinner = _create_char_spinner()
+
+def spinner(label=''):
+    """
+    Prints label with a spinner.
+    When called repeatedly from inside a loop this prints
+    a one line CLI spinner.
+    """
+    sys.stderr.write("\r%s %s" % (label, next(_spinner)))
+    sys.stderr.flush()
+
 def parse_args():
     """
     Parse the command line.  Required commands is the name of the "org/repo"
@@ -37,7 +57,9 @@ def parse_args():
                     action = 'store', default=4.5, type=float)
     parser.add_argument('--file', help = "File of repo names, 1 per line",
                     action = 'store')
-
+    parser.add_argument('-i', action = 'store_true', default = False, dest = 'info',
+                    help = 'Give visual output of that progress continues - '
+                    'useful for long runs redirected to a file')
     args = parser.parse_args()
     if args.repos is None and args.file is None:
         raise Exception("Must have either a list of repos, OR a file to read repos from")
@@ -161,6 +183,8 @@ def main():
             sleep(args.delay)
             if result == 202:
                 sleep(10)
+            if args.info:
+                spinner()
 
 if __name__ == '__main__':
     main()
