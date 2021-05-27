@@ -9,6 +9,7 @@ import sys
 from time import sleep
 from getpass import getpass
 from github3 import login
+from github3 import exceptions as gh_exceptions
 
 def _create_char_spinner():
     """
@@ -76,27 +77,31 @@ def main():
     repolist = org.repositories()
     for repo in repolist:
         # print(f'DEBUG: repo: {repo.name}', file=sys.stderr)
-        repocollabs = repo.collaborators()
-        for collaborator in repocollabs:
-            # go through and update their items
-            # External collabs aren't in the list already, so add them
-            if collaborator.login not in userlist:
-                if repo.private:
-                    userlist[collaborator.login] = {'role':'outside', 'team':0,
-                                                    'pubrepo':0, 'privrepo':1}
+        try:
+            repocollabs = repo.collaborators()
+
+            for collaborator in repocollabs:
+                # go through and update their items
+                # External collabs aren't in the list already, so add them
+                if collaborator.login not in userlist:
+                    if repo.private:
+                        userlist[collaborator.login] = {'role':'outside', 'team':0,
+                                                        'pubrepo':0, 'privrepo':1}
+                    else:
+                        userlist[collaborator.login] = {'role':'outside', 'team':0,
+                                                        'pubrepo':1, 'privrepo':0}
                 else:
-                    userlist[collaborator.login] = {'role':'outside', 'team':0,
-                                                    'pubrepo':1, 'privrepo':0}
-            else:
-                if repo.private:
-                    userlist[collaborator.login]['privrepo'] += 1
-                else:
-                    userlist[collaborator.login]['pubrepo'] += 1
-        spinner()
-        sleep(args.delay)
+                    if repo.private:
+                        userlist[collaborator.login]['privrepo'] += 1
+                    else:
+                        userlist[collaborator.login]['pubrepo'] += 1
+            spinner()
+            sleep(args.delay)
+        except gh_exceptions.NotFoundError as err:
+            print(f'In repo {repo.name} and collab {collaborator.login} : {err.message}',
+                    file=sys.stderr)
 
     # Print The Things.
-    print()
     print('Username, ORG Role, # of pubrepos with access, # of privrepos with access')
     for username, data in userlist.items():
         print(f'{username},{data["role"]},{data["pubrepo"]},{data["privrepo"]}')
