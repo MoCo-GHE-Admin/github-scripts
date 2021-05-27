@@ -45,7 +45,7 @@ def parse_args():
         args.token = getpass('Please enter your GitHub token: ')
     return args
 
-def repo_activity(gh_sess, org, repo, header=True):
+def repo_activity(gh_sess, org, repo, header=True): # pylint: disable=too-many-branches
     """
     Look at the repo, and return activity, with the date of their latest commit,
         or no commit, over the last year
@@ -65,7 +65,10 @@ def repo_activity(gh_sess, org, repo, header=True):
     # for each week, see if there's any commits
     # if there is, and it's a more recent week than we have recorded, record it.
     # (some returns from the commit_activity are out of order, hence
-    # we can't just look at the last active week and assume it's the mose recent)
+    # we can't just look at the last active week and assume it's the most recent)
+
+    # Note: Repos with LOTS of activity (gecko-dev for one) are SO busy that commit
+    # stats for them will ALWAYS return a 202.  This is basically expected.
     status_code = commits.last_status
     try:
         first = True
@@ -90,10 +93,6 @@ def repo_activity(gh_sess, org, repo, header=True):
         # print(f'NOTFOUND: Result: {commits.last_status}, response: '
         #       f'{commits.last_response}, repo: {repo.name}', file = sys.stderr)
         commitval = "Unexpected, possibly temp repo"
-    except gh_exceptions.ForbiddenError as forbidden_Error:
-        # print(f'FORBIDDEN: Result: {commits.last_status}, response: '
-        #       f'{commits.last_response}, repo: {repo.name}', file = sys.stderr)
-        raise Exception('Forbidden error, likely overran rate limiting ' + forbidden_Error.message)
     finally:
         status_code = commits.last_status
     if (commitval == 0 and topdate == 0):
@@ -142,7 +141,7 @@ def main():
         done = False
         count = 0
         while not done:
-            #TODO: Thanks to this, we add up to 5 lines
+            # Note: we add up to 5 lines
             #       to the file for a 202-failed point.
             #       Given the structure, it's unclear how to fix, and it's rare
             count += 1
