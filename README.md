@@ -37,4 +37,21 @@ optional arguments:
   --token TOKEN  github token with perms to examine your repo
   --delay DELAY  Default time between calls - if you see 202 errors, increase this
   --file FILE    File of repo names, 1 per line
+  -i             Give visual output of that progress continues - useful for long runs redirected to a file  
+```
+
+## `org_user_mmbership.py`
+```
+usage: org_user_membership.py [-h] [--token TOKEN] [--delay DELAY] [-i] org
+
+Gets a list of users for an org with how many repos they're involved with
+
+positional arguments:
+  org            The org to examine
+
+optional arguments:
+  -h, --help     show this help message and exit
+  --token TOKEN  The PAT to auth with
+  --delay DELAY  delay between queries - rate limits, default to 1, should never hit the limit
+  -i             Give visual output of that progress continues - useful for long runs redirected to a file
 ```
