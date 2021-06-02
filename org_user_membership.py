@@ -8,6 +8,7 @@ import argparse
 import sys
 from time import sleep
 from getpass import getpass
+from datetime import datetime
 from github3 import login
 from github3 import exceptions as gh_exceptions
 
@@ -22,6 +23,8 @@ def _create_char_spinner():
 
 _spinner = _create_char_spinner()
 
+#Roughly the number of github queries per loop.  Guessing bigger is better
+RATE_PER_LOOP = 1.2
 
 def spinner(label=''):
     """
@@ -45,9 +48,6 @@ def parse_args():
                     help = 'The org to examine',
                     action = 'store')
     parser.add_argument('--token', help = 'The PAT to auth with', action = 'store')
-    parser.add_argument('--delay', help = 'delay between queries - rate '
-                    'limits, default to 1, should never hit the limit',
-                    action = 'store', type = float, default = 1.0)
     parser.add_argument('-i', action = 'store_true', default = False, dest = 'info',
                     help = 'Give visual output of that progress continues - '
                     'useful for long runs redirected to a file')
@@ -55,6 +55,28 @@ def parse_args():
     if args.token is None:
         args.token = getpass('Please enter your GitHub token: ')
     return args
+
+def check_rate_remain(gh_sess, loopsize, update=False):
+    """
+    Given the session, and the size of the rate eaten by the loop,
+    and if not enough remains, sleep until it is.  
+    :param gh_sess: The github session
+    :param loopsize: The amount of rate eaten by a run through things
+    :param update: Should we print a progress element to stderr
+    """
+    while gh_sess.rate_limit()['resources']['core']['remaining'] < loopsize:
+        # Uh oh.
+        if update:
+            sleep(5)
+            spinner()
+        else:
+            #calculate how long to sleep, sleep that long.
+            refreshtime = datetime.fromtimestamp(
+                gh_sess.rate_limit()['resources']['core']['reset'])
+            now = datetime.now()
+            naptime = (refreshtime-now).seconds
+            print(f'Sleeping for {naptime} seconds', file=sys.stderr)
+            sleep(naptime)
 
 def main():
     """
@@ -78,6 +100,8 @@ def main():
     # great, we have initialized our lists - now to go through the repos
 
     repolist = org.repositories()
+    # FIXME Should I pull out "-ghsa-" repos - they NEVER find perms right.
+    # Alternatively, just silently pass the NotFoundError?  (don't like that at first blush)
     for repo in repolist:
         # print(f'DEBUG: repo: {repo.name}', file=sys.stderr)
         try:
@@ -98,12 +122,14 @@ def main():
                         userlist[collaborator.login]['privrepo'] += 1
                     else:
                         userlist[collaborator.login]['pubrepo'] += 1
+            check_rate_remain(gh_sess, RATE_PER_LOOP, args.info)
             if args.info:
                 spinner()
-            sleep(args.delay)
         except gh_exceptions.NotFoundError as err:
             print(f'In repo {repo.name} and collab {collaborator.login} : {err.message}',
                     file=sys.stderr)
+        # except gh_exceptions.ServerError:
+        #     print(f'50X error when processing repo: {repo.name} and collab {collaborator.login}')
 
     # Print The Things.
     print('Username, ORG Role, # of pubrepos with access, # of privrepos with access')
