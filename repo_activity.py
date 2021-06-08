@@ -13,6 +13,8 @@ from github3 import login
 from github3 import exceptions as gh_exceptions
 
 MAX_RETRIES = 5
+#Roughly the number of github queries per loop.  Guessing bigger is better
+RATE_PER_LOOP = 6
 
 def _create_char_spinner():
     """
@@ -48,14 +50,11 @@ def parse_args():
     parser = argparse.ArgumentParser(description=
                     "Gets a latest activity for a repo or list of repos")
     parser.add_argument('repos',
-                    help = 'list of repos to examine',
+                    help = 'list of repos to examine - or use --file for file base input',
                     action = 'store', nargs='*')
     parser.add_argument('--token', help='github token with perms to examine your repo',
                     action = 'store')
-    parser.add_argument('--delay',
-                    help = 'Default time between calls - defaults so that you can''t overrun',
-                    action = 'store', default=4.5, type=float)
-    parser.add_argument('--file', help = "File of repo names, 1 per line",
+    parser.add_argument('--file', help = "File of 'owner/repo' names, 1 per line",
                     action = 'store')
     parser.add_argument('-i', action = 'store_true', default = False, dest = 'info',
                     help = 'Give visual output of that progress continues - '
@@ -66,6 +65,28 @@ def parse_args():
     if args.token is None:
         args.token = getpass('Please enter your GitHub token: ')
     return args
+
+def check_rate_remain(gh_sess, loopsize, update=False):
+    """
+    Given the session, and the size of the rate eaten by the loop,
+    and if not enough remains, sleep until it is.  
+    :param gh_sess: The github session
+    :param loopsize: The amount of rate eaten by a run through things
+    :param update: Should we print a progress element to stderr
+    """
+    while gh_sess.rate_limit()['resources']['core']['remaining'] < loopsize:
+        # Uh oh.
+        if update:
+            sleep(5)
+            spinner()
+        else:
+            #calculate how long to sleep, sleep that long.
+            refreshtime = datetime.fromtimestamp(
+                gh_sess.rate_limit()['resources']['core']['reset'])
+            now = datetime.now()
+            naptime = (refreshtime-now).seconds
+            print(f'Sleeping for {naptime} seconds', file=sys.stderr)
+            sleep(naptime)
 
 def repo_activity(gh_sess, org, repo, header=True): # pylint: disable=too-many-branches
     """
@@ -180,7 +201,8 @@ def main():
                 done = True
             if header:
                 header = False #We only want a header on the first line
-            sleep(args.delay)
+            check_rate_remain(gh_sess, RATE_PER_LOOP, args.info)
+
             if result == 202:
                 sleep(10)
             if args.info:

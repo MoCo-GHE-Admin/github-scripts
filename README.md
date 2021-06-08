@@ -35,8 +35,7 @@ positional arguments:
 optional arguments:
   -h, --help     show this help message and exit
   --token TOKEN  github token with perms to examine your repo
-  --delay DELAY  Default time between calls - if you see 202 errors, increase this
-  --file FILE    File of repo names, 1 per line
+  --file FILE    File of org/repo names, 1 per line
   -i             Give visual output of that progress continues - useful for long runs redirected to a file  
 ```
 
