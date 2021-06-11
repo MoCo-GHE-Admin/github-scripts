@@ -79,6 +79,22 @@ def check_rate_remain(gh_sess, loopsize, update=False):
             print(f'Sleeping for {naptime} seconds', file=sys.stderr)
             sleep(naptime)
 
+def list_to_str(input_list):
+    """
+    Given an input list, return a comma delimited string of the list items
+    :param input_list: The list to work with
+    :result: the comma delimited string
+    """
+    firstcol = True
+    outstr = ''
+    for item in input_list:
+        if firstcol:
+            outstr = str(item)
+            firstcol = False
+        else:
+            outstr += f',{str(item)}'
+    return outstr
+
 def main():
     """
     Parse the args, connect to github, get the list of users in the org.
@@ -147,10 +163,11 @@ def main():
             ' priv-pull, priv-push, priv-admin')
     for username, data in userlist.items():
         pubcount = len(data["pubpull"]) + len(data["pubpush"]) + len(data["pubadmin"])
-        privcount = len(data["privpull"]) + len(data["privpush"]) + len(data["privadmin"])
-        print(f'{username},{data["role"]},{pubcount},{privcount},"{data["pubpull"]}",'
-            f'"{data["pubpush"]}","{data["pubadmin"]}","{data["privpull"]}","{data["privpush"]}",'
-            f'"{data["privadmin"]}"')
+        privcount = len(data["privpull"]) + len(data["privpush"]) + len(data["privadmin"])   
+        print(f'{username},{data["role"]},{pubcount},{privcount},"{list_to_str(data["pubpull"])}",'
+            f'"{list_to_str(data["pubpush"])}","{list_to_str(data["pubadmin"])}",'
+            f'"{list_to_str(data["privpull"])}","{list_to_str(data["privpush"])}",'
+            f'"{list_to_str(data["privadmin"])}"')
 
 
 if __name__ == '__main__':
