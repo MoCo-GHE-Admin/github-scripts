@@ -2,6 +2,7 @@
 """
 Script to look at an org, and parse out users with
 little/no permissions to repos in the org
+Split it out by push/pull/admin
 """
 
 import argparse
@@ -92,10 +93,12 @@ def main():
     org = gh_sess.organization(args.org)
     memberlist = org.members(role='member')
     for member in memberlist:
-        userlist[member.login] = {'role':'member','team':0, 'privrepo':0, 'pubrepo':0}
+        userlist[member.login] = {'role':'member', 'privpull':[], 'privpush':[], 'privadmin':[],
+                    'pubpull':[], 'pubpush':[], 'pubadmin':[]}
     adminlist = org.members(role='admin')
     for admin in adminlist:
-        userlist[admin.login] = {'role':'admin','team':0, 'privrepo':0, 'pubrepo':0}
+        userlist[admin.login] = {'role':'admin', 'privpull':[], 'privpush':[], 'privadmin':[],
+                    'pubpull':[], 'pubpush':[], 'pubadmin':[]}
 
     # great, we have initialized our lists - now to go through the repos
 
@@ -108,20 +111,28 @@ def main():
             repocollabs = repo.collaborators()
 
             for collaborator in repocollabs:
+                # print(f'collab: {collaborator.login}, repo: {repo.name}, perms: {collaborator.permissions}', file=sys.stderr)
                 # go through and update their items
                 # External collabs aren't in the list already, so add them
                 if collaborator.login not in userlist:
-                    if repo.private:
-                        userlist[collaborator.login] = {'role':'outside', 'team':0,
-                                                        'pubrepo':0, 'privrepo':1}
-                    else:
-                        userlist[collaborator.login] = {'role':'outside', 'team':0,
-                                                        'pubrepo':1, 'privrepo':0}
+                    userlist[collaborator.login] = {'role':'outside', 'privpull':[],
+                                'privpush':[], 'privadmin':[], 'pubpull':[], 'pubpush':[],
+                                'pubadmin':[]}
                 else:
                     if repo.private:
-                        userlist[collaborator.login]['privrepo'] += 1
+                        if collaborator.permissions['admin']:
+                            userlist[collaborator.login]['privadmin'].append(repo.name)
+                        elif collaborator.permissions['push']:
+                            userlist[collaborator.login]['privpush'].append(repo.name)
+                        elif collaborator.permissions['pull']:
+                            userlist[collaborator.login]['privpull'].append(repo.name)
                     else:
-                        userlist[collaborator.login]['pubrepo'] += 1
+                        if collaborator.permissions['admin']:
+                            userlist[collaborator.login]['pubadmin'].append(repo.name)
+                        elif collaborator.permissions['push']:
+                            userlist[collaborator.login]['pubpush'].append(repo.name)
+                        elif collaborator.permissions['pull']:
+                            userlist[collaborator.login]['pubpull'].append(repo.name)
             check_rate_remain(gh_sess, RATE_PER_LOOP, args.info)
             if args.info:
                 spinner()
@@ -132,9 +143,14 @@ def main():
         #     print(f'50X error when processing repo: {repo.name} and collab {collaborator.login}')
 
     # Print The Things.
-    print('Username, ORG Role, # of pubrepos with access, # of privrepos with access')
+    print('Username, ORG Role, pub-count, priv-count, pub-pull, pub-push, pub-admin,'
+            ' priv-pull, priv-push, priv-admin')
     for username, data in userlist.items():
-        print(f'{username},{data["role"]},{data["pubrepo"]},{data["privrepo"]}')
+        pubcount = len(data["pubpull"]) + len(data["pubpush"]) + len(data["pubadmin"])
+        privcount = len(data["privpull"]) + len(data["privpush"]) + len(data["privadmin"])
+        print(f'{username},{data["role"]},{pubcount},{privcount},"{data["pubpull"]}",'
+            f'"{data["pubpush"]}","{data["pubadmin"]}","{data["privpull"]}","{data["privpush"]}",'
+            f'"{data["privadmin"]}"')
 
 
 if __name__ == '__main__':
