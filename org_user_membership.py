@@ -134,21 +134,20 @@ def main():
                     userlist[collaborator.login] = {'role':'outside', 'privpull':[],
                                 'privpush':[], 'privadmin':[], 'pubpull':[], 'pubpush':[],
                                 'pubadmin':[]}
+                if repo.private:
+                    if collaborator.permissions['admin']:
+                        userlist[collaborator.login]['privadmin'].append(repo.name)
+                    if collaborator.permissions['push']:
+                        userlist[collaborator.login]['privpush'].append(repo.name)
+                    if collaborator.permissions['pull']:
+                        userlist[collaborator.login]['privpull'].append(repo.name)
                 else:
-                    if repo.private:
-                        if collaborator.permissions['admin']:
-                            userlist[collaborator.login]['privadmin'].append(repo.name)
-                        elif collaborator.permissions['push']:
-                            userlist[collaborator.login]['privpush'].append(repo.name)
-                        elif collaborator.permissions['pull']:
-                            userlist[collaborator.login]['privpull'].append(repo.name)
-                    else:
-                        if collaborator.permissions['admin']:
-                            userlist[collaborator.login]['pubadmin'].append(repo.name)
-                        elif collaborator.permissions['push']:
-                            userlist[collaborator.login]['pubpush'].append(repo.name)
-                        elif collaborator.permissions['pull']:
-                            userlist[collaborator.login]['pubpull'].append(repo.name)
+                    if collaborator.permissions['admin']:
+                        userlist[collaborator.login]['pubadmin'].append(repo.name)
+                    if collaborator.permissions['push']:
+                        userlist[collaborator.login]['pubpush'].append(repo.name)
+                    if collaborator.permissions['pull']:
+                        userlist[collaborator.login]['pubpull'].append(repo.name)
             check_rate_remain(gh_sess, RATE_PER_LOOP, args.info)
             if args.info:
                 spinner()
