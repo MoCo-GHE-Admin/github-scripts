@@ -58,7 +58,7 @@ def main():
         gh_repo = gh_sess.repository(owner = org, repository = repo)
         if not args.quiet:
             print(f'working with repo: {gh_repo.name}')
-            print('creating archive label')
+            print('\tcreating archive label')
         labellist = gh_repo.labels()
         for label in labellist:
             if label.name == "ARCHIVED":
@@ -67,7 +67,7 @@ def main():
         gh_repo.create_label(name = "ARCHIVED", color = '#c41a1a',
                             description = "CLOSED at time of archiving")
         if not args.quiet:
-            print('Starting work on issues')
+            print('\tStarting work on issues')
         issues = gh_repo.issues(state = 'open')
         #Need to do two passes - if we do one, the closure erases the label
         for issue in issues:
@@ -76,13 +76,13 @@ def main():
         for issue in issues:
             issue.close()
             if not args.quiet:
-                print(f'Labeled and closed issue: {issue.title}')
+                print(f'\tLabeled and closed issue: {issue.title}')
         topics = gh_repo.topics().names
         topics.append('abandoned')
         topics.append('unmaintained')
         gh_repo.replace_topics(topics)
         if not args.quiet:
-            print('Updated topics')      
+            print('\tUpdated topics')
         description = gh_repo.description
         if description is not None:
             description = 'DEPRECATED - ' + description
@@ -90,7 +90,7 @@ def main():
             description = 'DEPRECATED'
         gh_repo.edit(name = gh_repo.name, description = description, archived = True)
         if not args.quiet:
-            print('updated description and archived the repo')
+            print(f'\tUpdated description and archived the repo {repo}')
 
 if __name__ == '__main__':
     main()
