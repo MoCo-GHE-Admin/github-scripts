@@ -70,3 +70,34 @@ optional arguments:
   --token TOKEN  github token with perms to examine your org
   -f OUTPUT      File to store CSV to
 ```
+
+## `repo_archiver.py`
+```
+usage: repo_archiver.py [-h] [--token TOKEN] [--file FILE] [-q] [repos ...]
+
+Archive the specified repo, closing out issues and PRs
+
+positional arguments:
+  repos          owner/repo to archive
+
+optional arguments:
+  -h, --help     show this help message and exit
+  --token TOKEN  PAT to access github. Needs Write access to the repos
+  --file FILE    File with "owner/repo" one per line to archive
+  -q             DO NOT print, or request confirmations
+```
+
+## `repo_unarchiver.py`
+```
+usage: repo_unarchiver.py [-h] [--token TOKEN] [-q] repo
+
+Reverse archival closing of issues of the specified repo, Note, repo MUST be manually unarchived before this script
+
+positional arguments:
+  repo           owner/repo to unarchive
+
+optional arguments:
+  -h, --help     show this help message and exit
+  --token TOKEN  PAT to access github. Needs Write access to the repos
+  -q             DO NOT print, or request confirmations
+```
