@@ -145,7 +145,6 @@ def repo_activity(gh_sess, org, repo, header=True): # pylint: disable=too-many-b
         commitval = datetime.fromtimestamp(topdate)
     commitlist[repo.name] = {'created_at':repo.created_at,
                             'updated_at':repo.pushed_at,
-                            'admin_update':repo.updated_at,
                             'last_commit': commitval,
                             'archived':repo.archived}
 
@@ -156,7 +155,7 @@ def repo_activity(gh_sess, org, repo, header=True): # pylint: disable=too-many-b
             print(f"{repo}, ARCHIVED")
         else:
             print(f"{repo},{commitlist[repo]['created_at']},{commitlist[repo]['updated_at']},"
-                    f"{commitlist[repo]['admin_update']},{commitlist[repo]['last_commit']}")
+                    f"{commitlist[repo]['last_commit']}")
     return status_code
 
 def main():
