@@ -54,3 +54,19 @@ optional arguments:
   --delay DELAY  delay between queries - rate limits, default to 1, should never hit the limit
   -i             Give visual output of that progress continues - useful for long runs redirected to a file
 ```
+
+## `samlreport.py`
+```
+usage: samlreport.py [-h] [--url URL] [--token TOKEN] [-f OUTPUT] org
+
+Get SAML account mappings out of a GitHub org
+
+positional arguments:
+  org            The org to work on
+
+optional arguments:
+  -h, --help     show this help message and exit
+  --url URL      the graphql URL
+  --token TOKEN  github token with perms to examine your org
+  -f OUTPUT      File to store CSV to
+```

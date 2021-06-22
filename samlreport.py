@@ -1,8 +1,8 @@
+#!/usr/bin/env python
 """
 Script to get the mapping of SAML source name to GH login name
 Used in part for ID, also auditing who's clicked the auth button.
 """
-#!/usr/bin/env python
 
 import argparse
 from getpass import getpass
@@ -14,12 +14,12 @@ def parse_arguments():
     """
     Look at the first arg and handoff to the arg parser for that specific
     """
-    parser = argparse.ArgumentParser(description="Get SAML stats out of an org")
+    parser = argparse.ArgumentParser(description="Get SAML account mappings out of a GitHub org")
     parser.add_argument('org', type=str, help="The org to work on",
                         action='store')
     parser.add_argument('--url', type=str, help='the graphql URL',
                         action='store', default="https://api.github.com/graphql")
-    parser.add_argument('--token', help='github token with perms to examine your repo',
+    parser.add_argument('--token', help='github token with perms to examine your org',
                         action='store')
     parser.add_argument('-f', type=str, help='File to store CSV to',
                         action='store', default=None, dest='output')
