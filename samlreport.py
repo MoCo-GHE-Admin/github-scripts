@@ -86,6 +86,7 @@ def run_query(org, headers, url):
         # print(f'Query: {query}\n\n\n')
         request = requests.post(url=url, json={'query': query}, headers=headers)
         jsonified = request.json()
+        # print(f'Result of this loop - {request.json()}')
         if request.status_code == 200:
             results.update(jsonified)
         else:
@@ -134,7 +135,7 @@ def main():
     if args.output is not None:
         output = open(args.output, 'w')
 
-    print('SAML, GH Login', file = output)
+    print('SAML,GH Login', file = output)
 
     for gh_name, ldap in user_mapping.items():
         print(f'{ldap},{gh_name}', file = output)

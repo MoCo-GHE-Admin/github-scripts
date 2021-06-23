@@ -1,6 +1,10 @@
 #!/usr/bin/env python
 """
 Script for determining activity levels of a repo
+Going through the last years of commits for the last active week
+And barring that reporting the github updated_at which might be much earlier than
+a year.  And finally created_at so we know who old things are.
+
 Used to help determination for archiving/moving repos that aren't active
 """
 
@@ -12,6 +16,8 @@ from datetime import datetime
 from github3 import login
 from github3 import exceptions as gh_exceptions
 
+# Some repos that have LOTS of traffic (mozilla/gecko-dev) will ALWAYS fail on getting the stats
+# This is the number of retries, otherwise, just report the problem in the output and move along
 MAX_RETRIES = 5
 #Roughly the number of github queries per loop.  Guessing bigger is better
 RATE_PER_LOOP = 6
@@ -40,10 +46,8 @@ def parse_args():
     """
     Parse the command line.  Required commands is the name of the "org/repo"
     Will accept many repos on the command line, and they can be in different orgs
-    Also can take the output in a file.  one "org/repo" per line
+    Also can take the output in a file.  one "org/repo" per line.
     Detects if no PAT is given, asks for it.
-    And finally a delay for in between calls - defaults to 0.1 seconds
-    Used to rate limit so we don't get 202 for stats calls.
     :return: Returns the parsed CLI datastructures.
     """
 
@@ -69,11 +73,12 @@ def parse_args():
 def check_rate_remain(gh_sess, loopsize, update=False):
     """
     Given the session, and the size of the rate eaten by the loop,
-    and if not enough remains, sleep until it is.  
+    and if not enough remains, sleep until it is.
     :param gh_sess: The github session
     :param loopsize: The amount of rate eaten by a run through things
     :param update: Should we print a progress element to stderr
     """
+    #TODO: Look at making the naptime show that you're still making progress
     while gh_sess.rate_limit()['resources']['core']['remaining'] < loopsize:
         # Uh oh.
         if update:

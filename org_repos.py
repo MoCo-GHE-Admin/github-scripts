@@ -33,10 +33,10 @@ def parse_args():
 
 def main():
     """
-    Main function.  Parses the command line, reqeusts
-    PAT for GH, and outputs the list of repos
-    the PAT needs READ to repos if only public are desired, but read/write
-    if you want ALL the things.  this script is "dumb", it grabs whatever it can
+    Go through the org, and output all repos, either 'org/repo' or just 'repo'
+    Defaults to ignoring archived repos.
+    The PAT needs READ to repos if only public are desired, but read/write
+    if you want ALL the things.
     """
 
     args = parse_args()

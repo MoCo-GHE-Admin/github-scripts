@@ -1,8 +1,12 @@
 #!/usr/bin/env python
 """
-Script to look at an org, and parse out users with
-little/no permissions to repos in the org
-Split it out by push/pull/admin
+Script to look at an org, and output every users permissions to 
+the repos.  Including outside collab.  
+Useful for auditing who has access to what, and pointing out low handing 
+fruit for potential cleanup.
+Note - github API reports perms for users as if the team is the user...
+So there's no indication here if the perm is to the user or a team they
+belong to.
 """
 
 import argparse
@@ -60,11 +64,12 @@ def parse_args():
 def check_rate_remain(gh_sess, loopsize, update=False):
     """
     Given the session, and the size of the rate eaten by the loop,
-    and if not enough remains, sleep until it is.  
+    and if not enough remains, sleep until it is.
     :param gh_sess: The github session
     :param loopsize: The amount of rate eaten by a run through things
     :param update: Should we print a progress element to stderr
     """
+    #TODO: Look at making the naptime show that you're still making progress
     while gh_sess.rate_limit()['resources']['core']['remaining'] < loopsize:
         # Uh oh.
         if update:
@@ -127,7 +132,8 @@ def main():
             repocollabs = repo.collaborators()
 
             for collaborator in repocollabs:
-                # print(f'collab: {collaborator.login}, repo: {repo.name}, perms: {collaborator.permissions}', file=sys.stderr)
+                # print(f'collab: {collaborator.login}, repo: {repo.name}, '
+                    # f'perms: {collaborator.permissions}', file=sys.stderr)
                 # go through and update their items
                 # External collabs aren't in the list already, so add them
                 if collaborator.login not in userlist:
@@ -154,8 +160,8 @@ def main():
         except gh_exceptions.NotFoundError as err:
             print(f'In repo {repo.name} and collab {collaborator.login} : {err.message}',
                     file=sys.stderr)
-        # except gh_exceptions.ServerError:
-        #     print(f'50X error when processing repo: {repo.name} and collab {collaborator.login}')
+        except gh_exceptions.ServerError:
+            print(f'50X error when processing repo: {repo.name} and collab {collaborator.login}')
 
     # Print The Things.
     print('Username, ORG Role, pub-count, priv-count, pub-pull, pub-push, pub-admin,'
