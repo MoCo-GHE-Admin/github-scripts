@@ -7,10 +7,16 @@ reverts topic changes
 uses the ARCHIVED label to reopen issues/PRs
 Reverts description changes
 un-archives the repo
+
+Unlike the archiver - this works with 1 repo only.
+assumption being that unarchiving is rarer than archiving.
 """
+
 import argparse
+import sys
 from getpass import getpass
 from github3 import login
+from github3 import exceptions as gh_exceptions
 
 def parse_args():
     """
@@ -38,10 +44,19 @@ def main():
     """
     args = parse_args()
     gh_sess = login(token = args.token)
+    try:
+        org = args.repo.split('/')[0].strip()
+        repo = args.repo.split('/')[1].strip()
+    except IndexError:
+        print(f'{args.repo} needs to be in the form ORG/REPO')
+        sys.exit()
 
-    org = args.repo.split('/')[0].strip()
-    repo = args.repo.split('/')[1].strip()
-    gh_repo = gh_sess.repository(owner = org, repository = repo)
+    try:
+        gh_repo = gh_sess.repository(owner = org, repository = repo)
+    except gh_exceptions.NotFoundError:
+        print(f'Trying to open {org=}, {repo=}, failed with 404')
+        sys.exit()
+
     if not args.quiet:
         print(f'Working with repo: {gh_repo.name}')
         print('\tRe-opening issues/PRs')

@@ -12,6 +12,7 @@ import argparse
 import sys
 from getpass import getpass
 from github3 import login
+from github3 import exceptions as gh_exceptions
 
 def parse_args():
     """
@@ -53,23 +54,32 @@ def main():
         txtfile.close()
 
     for orgrepo in repolist:
-        org = orgrepo.split('/')[0].strip()
-        repo = orgrepo.split('/')[1].strip()
-        gh_repo = gh_sess.repository(owner = org, repository = repo)
+        try:
+            org = orgrepo.split('/')[0].strip()
+            repo = orgrepo.split('/')[1].strip()
+        except IndexError:
+            print(f'{orgrepo} needs to be in the form ORG/REPO')
+            sys.exit()
+        try:
+            gh_repo = gh_sess.repository(owner = org, repository = repo)
+        except gh_exceptions.NotFoundError:
+            print(f'Trying to open {org=}, {repo=}, failed with 404')
+            sys.exit()
         if not args.quiet:
             print(f'working with repo: {gh_repo.name}')
             print('\tcreating archive label')
         labellist = gh_repo.labels()
         for label in labellist:
             if label.name == "ARCHIVED":
-                print('Uh oh.  ARCHIVED label already exists?')
+                print('Uh oh.  ARCHIVED label already exists?  Closing out so I don''t '
+                        'step on other processes')
                 sys.exit()
         gh_repo.create_label(name = "ARCHIVED", color = '#c41a1a',
                             description = "CLOSED at time of archiving")
         if not args.quiet:
             print('\tStarting work on issues')
         issues = gh_repo.issues(state = 'open')
-        #Need to do two passes - if we do one, the closure erases the label
+        #Need to do two passes - if we do one pass, the closure erases the label
         for issue in issues:
             #update label
             issue.add_labels('ARCHIVED')
