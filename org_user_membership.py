@@ -1,8 +1,8 @@
 #!/usr/bin/env python
 """
-Script to look at an org, and output every users permissions to 
-the repos.  Including outside collab.  
-Useful for auditing who has access to what, and pointing out low handing 
+Script to look at an org, and output every users permissions to
+the repos.  Including outside collab.
+Useful for auditing who has access to what, and pointing out low handing
 fruit for potential cleanup.
 Note - github API reports perms for users as if the team is the user...
 So there's no indication here if the perm is to the user or a team they
@@ -168,7 +168,7 @@ def main():
             ' priv-pull, priv-push, priv-admin')
     for username, data in userlist.items():
         pubcount = len(data["pubpull"]) + len(data["pubpush"]) + len(data["pubadmin"])
-        privcount = len(data["privpull"]) + len(data["privpush"]) + len(data["privadmin"])   
+        privcount = len(data["privpull"]) + len(data["privpush"]) + len(data["privadmin"])
         print(f'{username},{data["role"]},{pubcount},{privcount},"{list_to_str(data["pubpull"])}",'
             f'"{list_to_str(data["pubpush"])}","{list_to_str(data["pubadmin"])}",'
             f'"{list_to_str(data["privpull"])}","{list_to_str(data["privpush"])}",'
