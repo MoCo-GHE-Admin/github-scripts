@@ -39,7 +39,7 @@ optional arguments:
   -i             Give visual output of that progress continues - useful for long runs redirected to a file  
 ```
 
-## `org_user_mmbership.py`
+## `org_user_membership.py`
 ```
 usage: org_user_membership.py [-h] [--token TOKEN] [--delay DELAY] [-i] org
 
