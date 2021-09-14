@@ -101,3 +101,19 @@ optional arguments:
   --token TOKEN  PAT to access github. Needs Write access to the repos
   -q             DO NOT print, or request confirmations
 ```
+
+## `gh_gile_search.py`
+```
+usage: gh_file_search.py [-h] --query QUERY [--token TOKEN] orgs [orgs ...]
+
+Get file search resuls for an org, returning repo list. e.g. if you want 'org:<ORGNAME> filename:<FILENAME> <CONTENTS>' Then you just need 'filename:<FILENAME>
+<CONTENTS>' and then list the orgs to apply it to
+
+positional arguments:
+  orgs           The org to work on
+
+optional arguments:
+  -h, --help     show this help message and exit
+  --query QUERY  The query to run, without orgs
+  --token TOKEN  github token with perms to examine your org
+```
