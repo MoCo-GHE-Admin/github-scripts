@@ -104,10 +104,9 @@ optional arguments:
 
 ## `gh_gile_search.py`
 ```
-usage: gh_file_search.py [-h] --query QUERY [--token TOKEN] orgs [orgs ...]
+usage: gh_file_search.py [-h] --query QUERY [--orgini] [--token TOKEN] [-v] [-t TIME] [orgs ...]
 
-Get file search resuls for an org, returning repo list. e.g. if you want 'org:<ORGNAME> filename:<FILENAME> <CONTENTS>' Then you just need 'filename:<FILENAME>
-<CONTENTS>' and then list the orgs to apply it to
+Get file search resuls for an org, returning repo list. e.g. if you want 'org:<ORGNAME> filename:<FILENAME> <CONTENTS>', then you just need 'filename:<FILENAME> <CONTENTS>' and then list the orgs to apply it to. Note: There's a pause of ~10 seconds between org searches due to GitHub rate limits - add a -v if you want notice printed that it's waiting
 
 positional arguments:
   orgs           The org to work on
@@ -115,5 +114,17 @@ positional arguments:
 optional arguments:
   -h, --help     show this help message and exit
   --query QUERY  The query to run, without orgs
+  --orgini       use "orglist.ini" with the "orgs" entry with a csv list of all orgs to check
   --token TOKEN  github token with perms to examine your org
+  -v             Verbose - Print out that we're waiting for rate limit reasons
+  -t TIME        Time to sleep between searches, in seconds, should be 10s or more
+```
+
+# Supporting files
+
+## `orglist.ini`
+Used for scripts using lists of orgs, (currently only gh_file_search.py)
+```
+[GITHUB]
+orgs = org1,org2,org3
 ```
