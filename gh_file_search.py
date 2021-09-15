@@ -39,9 +39,9 @@ def main():
 
     for org in args.orgs:
         search = gh_sess.search_code(f'org:{org} {args.query}')
-        repos = []
+        repos = set()
         for result in search:
-            repos.append(result.repository.name)
+            repos.add(result.repository.name)
         print(f'org: {org} Repo: {",".join(repos)}')
 
 
