@@ -69,7 +69,6 @@ def main():
             for result in search:
                 repos.add(result.repository.name)
             print(f'org: {org} Repo: {",".join(repos)}')
-            #per https://docs.github.com/en/rest/guides/best-practices-for-integrators#dealing-with-secondary-rate-limits
         except gh_exceptions.UnprocessableEntity:
             print(f'org: {org} Failed, likely due to lack of repos in the org')
         finally:
@@ -78,6 +77,7 @@ def main():
                 if args.verbose:
                     print(f"Sleeping {args.time} seconds per GitHub's secondary rate limits",
                             file = sys.stderr)
+#per https://docs.github.com/en/rest/guides/best-practices-for-integrators#dealing-with-secondary-rate-limits
                 sleep(args.time)
 
 
