@@ -25,19 +25,19 @@ optional arguments:
 ## repo_activity.py
 
 ```
-usage: repo_activity.py [-h] [--token TOKEN] [--delay DELAY] [--file FILE] [repos ...]
+usage: repo_activity.py [-h] [--token TOKEN] [--file FILE] [--parse-commit] [-i] [repos ...]
 
 Gets a latest activity for a repo or list of repos
 
 positional arguments:
-  repos          list of repos to examine
+  repos           list of repos to examine - or use --file for file base input
 
 optional arguments:
-  -h, --help     show this help message and exit
-  --token TOKEN  github token with perms to examine your repo
-  --file FILE    File of org/repo names, 1 per line
-  -i             Give visual output of that progress continues - useful for long runs redirected to a file  
-```
+  -h, --help      show this help message and exit
+  --token TOKEN   github token with perms to examine your repo
+  --file FILE     File of 'owner/repo' names, 1 per line
+  --parse-commit  look at the weekly commits of the repo. Only useful if you care about usage in the last year.
+  -i              Give visual output of that progress continues - useful for long runs redirected to a file```
 
 ## `org_user_membership.py`
 ```

@@ -60,6 +60,9 @@ def parse_args():
                     action = 'store')
     parser.add_argument('--file', help = "File of 'owner/repo' names, 1 per line",
                     action = 'store')
+    parser.add_argument('--parse-commit', help = 'look at the weekly commits of the repo.'
+                        '  Only useful if you care about usage in the last year.',
+                        action='store_true')
     parser.add_argument('-i', action = 'store_true', default = False, dest = 'info',
                     help = 'Give visual output of that progress continues - '
                     'useful for long runs redirected to a file')
@@ -93,14 +96,13 @@ def check_rate_remain(gh_sess, loopsize, update=False):
             print(f'Sleeping for {naptime} seconds', file=sys.stderr)
             sleep(naptime)
 
-def repo_activity(gh_sess, org, repo, header=True): # pylint: disable=too-many-branches
+def repo_activity(gh_sess, org, repo): # pylint: disable=too-many-branches
     """
     Look at the repo, and return activity, with the date of their latest commit,
         or no commit, over the last year
     :param gh_sess: an initialized github session
     :param org: the organization (or owner) name
     :param repo: the repo name
-    :param header: Should I print a descriptive header?
     :return: Status code of the commits iterator for retry purposes.
     """
     short_repo = gh_sess.repository(org, repo)
@@ -108,6 +110,7 @@ def repo_activity(gh_sess, org, repo, header=True): # pylint: disable=too-many-b
     commitlist = {}
     repo = short_repo.refresh()
     topdate = 0
+    status_code = 200
     commits = repo.commit_activity()
     # Look through the last year of commit activity
     # for each week, see if there's any commits
@@ -150,18 +153,33 @@ def repo_activity(gh_sess, org, repo, header=True): # pylint: disable=too-many-b
         commitval = datetime.fromtimestamp(topdate)
     commitlist[repo.name] = {'created_at':repo.created_at,
                             'updated_at':repo.pushed_at,
+                            'admin_update': repo.updated_at,
                             'last_commit': commitval,
+                            'private': repo.private,
                             'archived':repo.archived}
 
-    if header:
-        print("Repo, Created, Updated, Admin_update, Last_commit")
     for repo in commitlist:
-        if commitlist[repo]['archived']:
-            print(f"{repo}, ARCHIVED")
-        else:
-            print(f"{repo},{commitlist[repo]['created_at']},{commitlist[repo]['updated_at']},"
-                    f"{commitlist[repo]['last_commit']}")
+        print(f"{repo},{commitlist[repo]['created_at']},"
+                f"{commitlist[repo]['updated_at']},"
+                f"{commitlist[repo]['admin_update']},"
+                f"{commitlist[repo]['last_commit']},"
+                f"{commitlist[repo]['private']},"
+                f"{commitlist[repo]['archived']}")
     return status_code
+
+def mini_repo_activity(gh_sess, org, repo):
+    """
+    Print out only the top level repo data without looking at the last years commits.
+    :param gh_sess: an initialized GH session
+    :param org: string of the org
+    :param repo: string of the repo
+    :result: Prints out the data.
+    """
+    short_repo = gh_sess.repository(org, repo)
+    repo = short_repo.refresh()
+    print(f'{repo.name},{repo.created_at},{repo.pushed_at},{repo.updated_at},unexamined,{repo.private},{repo.archived}')
+
+
 
 def main():
     """
@@ -170,7 +188,6 @@ def main():
 
     args = parse_args()
 
-    header = True
     repolist = []
     if args.repos != []:
         repolist = args.repos
@@ -182,33 +199,38 @@ def main():
 
     gh_sess = login(token=args.token)
 
+    #Print out the header.
+    print("Repo, Created, Updated, Admin_update, Last_commit, Private, Archive_status")
+
     for orgrepo in repolist:
         org = orgrepo.split('/')[0].strip()
         repo = orgrepo.split('/')[1].strip()
         done = False
         count = 0
-        while not done:
-            # Note: we add up to 5 lines
-            #       to the file for a 202-failed point.
-            #       Given the structure, it's unclear how to fix, and it's rare
-            count += 1
-            result = repo_activity(gh_sess, org, repo, header=header)
-            if result != 202 or count >= MAX_RETRIES:
-                # print(f'Leaving Loop - result: {result}, '
-                #       f'done: {done}, count: {count}, repo: {repo}', file = sys.stderr)
-                if count == MAX_RETRIES and result == 202:
-                    # We errored out --- put in something in the output to that effect.
-                    print(f'{org}/{repo},GH Gave 202 Error')
-                    print(f'{org}/{repo},GH Gave 202 Error '
-                        f'- failed out after {MAX_RETRIES} attempts.',
-                        file = sys.stderr)
-                done = True
-            if header:
-                header = False #We only want a header on the first line
-            check_rate_remain(gh_sess, RATE_PER_LOOP, args.info)
+        if args.parse_commit:
+            while not done:
+                # Note: we add up to 5 lines
+                #       to the file for a 202-failed point.
+                #       Given the structure, it's unclear how to fix, and it's rare
+                count += 1
+                result = repo_activity(gh_sess, org, repo)
+                if result != 202 or count >= MAX_RETRIES:
+                    # print(f'Leaving Loop - result: {result}, '
+                    #       f'done: {done}, count: {count}, repo: {repo}', file = sys.stderr)
+                    if count == MAX_RETRIES and result == 202:
+                        # We errored out --- put in something in the output to that effect.
+                        print(f'{org}/{repo},GH Gave 202 Error '
+                            f'- failed out after {MAX_RETRIES} attempts.',
+                            file = sys.stderr)
+                    done = True
+                check_rate_remain(gh_sess, RATE_PER_LOOP, args.info)
 
-            if result == 202:
-                sleep(10)
+                if result == 202:
+                    sleep(10)
+                if args.info:
+                    spinner()
+        else:
+            mini_repo_activity(gh_sess, org, repo)
             if args.info:
                 spinner()
 
