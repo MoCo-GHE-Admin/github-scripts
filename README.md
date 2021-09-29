@@ -120,6 +120,23 @@ optional arguments:
   -t TIME        Time to sleep between searches, in seconds, should be 10s or more
 ```
 
+## `gh_user_moderation.py`
+```
+usage: gh_user_moderation.py [-h] [--block] [--orgini] [--token TOKEN] username [orgs ...]
+
+Look at orgs, and either block or unblock the specified username
+
+positional arguments:
+  username       The GH user name to block/unblock
+  orgs           The org to work on
+
+optional arguments:
+  -h, --help     show this help message and exit
+  --block        should we block the user - default is unblock
+  --orgini       use "orglist.ini" with the "orgs" entry with a csv list of all orgs to check
+  --token TOKEN  github token with perms to examine your org
+```
+
 # Supporting files
 
 ## `orglist.ini`
