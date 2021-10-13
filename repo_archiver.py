@@ -27,6 +27,8 @@ def parse_args():
                         action='store')
     parser.add_argument('--file', help = 'File with "owner/repo" one per line to archive',
                         action = 'store')
+    parser.add_argument("--force", help="Don't stop if you detect previous archivers",
+                        action='store_true')
     parser.add_argument('-q', help = 'DO NOT print, or request confirmations', dest = 'quiet',
                         action='store_true', default = False)
     args = parser.parse_args()
@@ -69,12 +71,17 @@ def main():
             print(f'working with repo: {gh_repo.name}')
             print('\tcreating archive label')
         labellist = gh_repo.labels()
+
+        need_flag = True
         for label in labellist:
             if label.name == "ARCHIVED":
-                print('Uh oh.  ARCHIVED label already exists?  Closing out so I don''t '
+                need_flag = False
+                if not args.force:
+                    print('Uh oh.  ARCHIVED label already exists?  Closing out so I don''t '
                         'step on other processes')
-                sys.exit()
-        gh_repo.create_label(name = "ARCHIVED", color = '#c41a1a',
+                    sys.exit()
+        if need_flag:
+            gh_repo.create_label(name = "ARCHIVED", color = '#c41a1a',
                             description = "CLOSED at time of archiving")
         if not args.quiet:
             print('\tStarting work on issues')
@@ -84,9 +91,13 @@ def main():
             #update label
             issue.add_labels('ARCHIVED')
         for issue in issues:
-            issue.close()
-            if not args.quiet:
-                print(f'\tLabeled and closed issue: {issue.title}')
+            try:
+                issue.close()
+                if not args.quiet:
+                    print(f'\tLabeled and closed issue: {issue.title}')
+            except gh_exceptions.UnprocessableEntity:
+                print(f"Got 422 Unproccessable on issue {issue.title},"
+                    " continuing.  May need to run --force or manually finish closing.")
         topics = gh_repo.topics().names
         topics.append('abandoned')
         topics.append('unmaintained')
