@@ -138,6 +138,22 @@ optional arguments:
   --token TOKEN  github token with perms to examine your org
 ```
 
+## `gh_comms_team.py`
+```
+usage: gh_comms_team.py [-h] [--team-name TEAM_NAME] [--token TOKEN] org
+
+Go into an org, create a team named for the --team-name and add all members to it
+
+positional arguments:
+  org                   organization to do this to
+
+optional arguments:
+  -h, --help            show this help message and exit
+  --team-name TEAM_NAME
+                        name of the team to create, defaults to 'everybody-temp-comms'
+  --token TOKEN         PAT to access github. Needs Write access to the repos
+```
+
 # Supporting files
 
 ## `orglist.ini`
