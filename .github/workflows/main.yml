@@ -30,7 +30,7 @@ jobs:
         # export PATH="$POETRY_HOME:$PATH"
         # poetry install
         pip install -r requirements.txt
-        pip install -U pre-commit
+        pip install -r requirements-dev.txt
     - name: Run pre-commit
       run: |
         pre-commit run -av
