@@ -2,6 +2,7 @@
 Helper file for code reuse throughout the github-scripts
 """
 import os
+import sys
 import toml
 
 def get_pat_from_file(key_name='admin'):
@@ -26,7 +27,11 @@ def get_pat_from_file(key_name='admin'):
     else:
         return None
 
-    # TODO: check that file permissions are 600
+    # Get the last 3 octal digits of the perms from stat
+    perm = oct(os.stat(config_file).st_mode)[-3:]
+    if perm != '600':
+        print("Err: .gh_pat.toml exists, but is NOT 600 perms", file=sys.stderr)
+        return None
 
     try:
         toml_blob = toml.load(config_file)
