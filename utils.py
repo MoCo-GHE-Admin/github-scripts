@@ -9,7 +9,6 @@ def get_pat(key_name='admin'):
     elif os.path.exists(os.path.join(home, config_file_name)):
         config_file = os.path.join(home, config_file_name)
     else:
-      # TODO: figure out more paths?
       return None
 
     try:
