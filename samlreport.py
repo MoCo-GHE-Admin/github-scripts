@@ -16,9 +16,7 @@ def parse_arguments():
     """
     Look at the first arg and handoff to the arg parser for that specific
     """
-    parser = argparse.ArgumentParser(
-        description="Get SAML account mappings out of a GitHub org"
-    )
+    parser = argparse.ArgumentParser(description="Get SAML account mappings out of a GitHub org")
     parser.add_argument("org", type=str, help="The org to work on", action="store")
     parser.add_argument(
         "--url",
@@ -110,15 +108,14 @@ def run_query(org, headers, url):
             results.update(jsonified)
         else:
             raise Exception(
-                f"Query failed to run by returning code of"
-                f" {request.status_code}. {query}"
+                f"Query failed to run by returning code of" f" {request.status_code}. {query}"
             )
         has_next_page = jsonified["data"]["organization"]["samlIdentityProvider"][
             "externalIdentities"
         ]["pageInfo"]["hasNextPage"]
-        cursor = jsonified["data"]["organization"]["samlIdentityProvider"][
-            "externalIdentities"
-        ]["pageInfo"]["endCursor"]
+        cursor = jsonified["data"]["organization"]["samlIdentityProvider"]["externalIdentities"][
+            "pageInfo"
+        ]["endCursor"]
 
     return results
 
@@ -138,9 +135,9 @@ def main():
 
     saml_dict = run_query(args.org, headers, args.url)
     # Get rid of the overarching structures we don't care about in the results
-    saml_dict = saml_dict["data"]["organization"]["samlIdentityProvider"][
-        "externalIdentities"
-    ]["edges"]
+    saml_dict = saml_dict["data"]["organization"]["samlIdentityProvider"]["externalIdentities"][
+        "edges"
+    ]
 
     # Have the SAML mapping - now let's get the whole list of users for the org
     user_mapping = {}

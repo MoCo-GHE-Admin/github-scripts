@@ -67,9 +67,7 @@ def parse_args():
     parser.add_argument(
         "--token", help="github token with perms to examine your repo", action="store"
     )
-    parser.add_argument(
-        "--file", help="File of 'owner/repo' names, 1 per line", action="store"
-    )
+    parser.add_argument("--file", help="File of 'owner/repo' names, 1 per line", action="store")
     parser.add_argument(
         "--parse-commit",
         help="look at the weekly commits of the repo."
@@ -86,9 +84,7 @@ def parse_args():
     )
     args = parser.parse_args()
     if args.repos is None and args.file is None:
-        raise Exception(
-            "Must have either a list of repos, OR a file to read repos from"
-        )
+        raise Exception("Must have either a list of repos, OR a file to read repos from")
     if args.token is None:
         args.token = getpass("Please enter your GitHub token: ")
     return args
@@ -110,9 +106,7 @@ def check_rate_remain(gh_sess, loopsize, update=False):
             spinner()
         else:
             # calculate how long to sleep, sleep that long.
-            refreshtime = datetime.fromtimestamp(
-                gh_sess.rate_limit()["resources"]["core"]["reset"]
-            )
+            refreshtime = datetime.fromtimestamp(gh_sess.rate_limit()["resources"]["core"]["reset"])
             now = datetime.now()
             naptime = (refreshtime - now).seconds
             print(f"Sleeping for {naptime} seconds", file=sys.stderr)

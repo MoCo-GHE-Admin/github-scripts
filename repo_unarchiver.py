@@ -86,9 +86,7 @@ def main():
         print("\tFixing topics")
     gh_repo.replace_topics(topics)
 
-    new_desc = gh_repo.description.replace("DEPRECATED - ", "").replace(
-        "DEPRECATED", ""
-    )
+    new_desc = gh_repo.description.replace("DEPRECATED - ", "").replace("DEPRECATED", "")
     if not args.quiet:
         print(f"\tFixing description, completed revert of repo {repo}")
     gh_repo.edit(name=gh_repo.name, description=new_desc)

@@ -85,9 +85,7 @@ def check_rate_remain(gh_sess, loopsize, update=False):
             spinner()
         else:
             # calculate how long to sleep, sleep that long.
-            refreshtime = datetime.fromtimestamp(
-                gh_sess.rate_limit()["resources"]["core"]["reset"]
-            )
+            refreshtime = datetime.fromtimestamp(gh_sess.rate_limit()["resources"]["core"]["reset"])
             now = datetime.now()
             naptime = (refreshtime - now).seconds
             print(f"Sleeping for {naptime} seconds", file=sys.stderr)
@@ -194,9 +192,7 @@ def main():
                 file=sys.stderr,
             )
         except gh_exceptions.ServerError:
-            print(
-                f"50X error when processing repo: {repo.name} and collab {collaborator.login}"
-            )
+            print(f"50X error when processing repo: {repo.name} and collab {collaborator.login}")
 
     # Print The Things.
     print(
@@ -205,9 +201,7 @@ def main():
     )
     for username, data in userlist.items():
         pubcount = len(data["pubpull"]) + len(data["pubpush"]) + len(data["pubadmin"])
-        privcount = (
-            len(data["privpull"]) + len(data["privpush"]) + len(data["privadmin"])
-        )
+        privcount = len(data["privpull"]) + len(data["privpush"]) + len(data["privadmin"])
         print(
             f'{username},{data["role"]},{pubcount},{privcount},"{list_to_str(data["pubpull"])}",'
             f'"{list_to_str(data["pubpush"])}","{list_to_str(data["pubadmin"])}",'

@@ -27,9 +27,7 @@ def parse_args():
     parser = argparse.ArgumentParser(
         description="Archive the specified repo, closing out issues and PRs"
     )
-    parser.add_argument(
-        "repos", help="owner/repo to archive", nargs="*", action="store"
-    )
+    parser.add_argument("repos", help="owner/repo to archive", nargs="*", action="store")
     parser.add_argument(
         "--token",
         help="PAT to access github.  Needs Write access to the repos",
@@ -52,9 +50,7 @@ def parse_args():
     )
     args = parser.parse_args()
     if args.repos is None and args.file is None:
-        raise Exception(
-            "Must have either a list of repos, OR a file to read repos from"
-        )
+        raise Exception("Must have either a list of repos, OR a file to read repos from")
     if args.token is None:
         args.token = utils.get_pat_from_file()
         if args.token is None:

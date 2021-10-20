@@ -15,8 +15,7 @@ def parse_arguments():
     Look at the first arg and handoff to the arg parser for that specific
     """
     parser = argparse.ArgumentParser(
-        description="Look at orgs, and either block or "
-        "unblock the specified username"
+        description="Look at orgs, and either block or " "unblock the specified username"
     )
     parser.add_argument("username", type=str, help="The GH user name to block/unblock")
     parser.add_argument(
@@ -24,13 +23,10 @@ def parse_arguments():
         help="should we block the user - default is unblock",
         action="store_true",
     )
-    parser.add_argument(
-        "orgs", type=str, help="The org to work on", action="store", nargs="*"
-    )
+    parser.add_argument("orgs", type=str, help="The org to work on", action="store", nargs="*")
     parser.add_argument(
         "--orgini",
-        help='use "orglist.ini" with the "orgs" '
-        "entry with a csv list of all orgs to check",
+        help='use "orglist.ini" with the "orgs" ' "entry with a csv list of all orgs to check",
         action="store_const",
         const="orglist.ini",
     )
