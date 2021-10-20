@@ -1,5 +1,7 @@
 # Ignore ini files with local settings
 *.ini
+#ignore any pat files
+.gh_pat.toml
 
 #From https://github.com/github/gitignore/blob/master/Python.gitignore
 
