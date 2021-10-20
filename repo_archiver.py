@@ -64,6 +64,7 @@ def main():
             return
     else:
         print("Please specify an org/repo or a file.")
+        return
 
     for orgrepo in repolist:
         try:
