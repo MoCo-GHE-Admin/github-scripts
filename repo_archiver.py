@@ -37,7 +37,7 @@ def parse_args():
     if args.repos is None and args.file is None:
         raise Exception("Must have either a list of repos, OR a file to read repos from")
     if args.token is None:
-        args.token = utils.get_pat()
+        args.token = utils.get_pat_from_file()
         if args.token is None:
             args.token = getpass('Please enter your GitHub token: ')
     return args
