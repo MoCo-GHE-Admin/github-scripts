@@ -17,6 +17,8 @@ def get_pat_from_file(key_name='admin'):
     else:
       return None
 
+    # TODO: check that file permissions are 600
+
     try:
       toml_blob = toml.load(config_file)
       pat = toml_blob[key_name]
