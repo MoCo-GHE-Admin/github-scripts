@@ -53,11 +53,17 @@ def main():
     repolist = []
     if args.repos != []:
         repolist = args.repos
+    elif args.file:
+        try:
+            # Rip open the file, make a list
+            txtfile = open(args.file, 'r')
+            repolist = txtfile.readlines()
+            txtfile.close()
+        except:
+            print("Problem loading file!")
+            return
     else:
-        # Rip open the file, make a list
-        txtfile = open(args.file, 'r')
-        repolist = txtfile.readlines()
-        txtfile.close()
+        print("Please specify an org/repo or a file.")
 
     for orgrepo in repolist:
         try:
