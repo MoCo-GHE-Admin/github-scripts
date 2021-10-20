@@ -14,6 +14,8 @@ from getpass import getpass
 from github3 import login
 from github3 import exceptions as gh_exceptions
 
+import utils
+
 def parse_args():
     """
     Go through the command line.
@@ -35,7 +37,9 @@ def parse_args():
     if args.repos is None and args.file is None:
         raise Exception("Must have either a list of repos, OR a file to read repos from")
     if args.token is None:
-        args.token = getpass('Please enter your GitHub token: ')
+        args.token = utils.get_pat()
+        if args.token is None:
+            args.token = getpass('Please enter your GitHub token: ')
     return args
 
 
