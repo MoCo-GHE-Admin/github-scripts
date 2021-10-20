@@ -2,9 +2,11 @@
 Helper file for code reuse throughout the github-scripts
 """
 import os
+
 import toml
 
-def get_pat_from_file(key_name='admin'):
+
+def get_pat_from_file(key_name="admin"):
     """
     Retrieve the personal access token from a file named .gh_pat.toml
     :param key_name: the toml key of the token in the file
