@@ -37,7 +37,8 @@ optional arguments:
   --token TOKEN   github token with perms to examine your repo
   --file FILE     File of 'owner/repo' names, 1 per line
   --parse-commit  look at the weekly commits of the repo. Only useful if you care about usage in the last year.
-  -i              Give visual output of that progress continues - useful for long runs redirected to a file```
+  -i              Give visual output of that progress continues - useful for long runs redirected to a file
+```
 
 ## `org_user_membership.py`
 ```
@@ -73,34 +74,36 @@ optional arguments:
 
 ## `repo_archiver.py`
 ```
-usage: repo_archiver.py [-h] [--token TOKEN] [--file FILE] [--force] [-q] [repos ...]
+usage: repo_archiver.py [-h] [--token TOKEN] [--pat-key PATKEY] [--file FILE] [--force] [-q] [repos ...]
 
 Archive the specified repo, closing out issues and PRs
 
 positional arguments:
-  repos          owner/repo to archive
+  repos             owner/repo to archive
 
 optional arguments:
-  -h, --help     show this help message and exit
-  --token TOKEN  PAT to access github. Needs Write access to the repos
-  --file FILE    File with "owner/repo" one per line to archive
-  --force        Don't stop if you detect previous archivers
-  -q             DO NOT print, or request confirmations
+  -h, --help        show this help message and exit
+  --token TOKEN     PAT to access github. Needs Write access to the repos
+  --pat-key PATKEY  key in .gh_pat.toml of the PAT to use
+  --file FILE       File with "owner/repo" one per line to archive
+  --force           Don't stop if you detect previous archivers
+  -q                DO NOT print, or request confirmations
 ```
 
 ## `repo_unarchiver.py`
 ```
-usage: repo_unarchiver.py [-h] [--token TOKEN] [-q] repo
+usage: repo_unarchiver.py [-h] [--token TOKEN] [--pat-key PATKEY] [-q] repo
 
 Reverse archival closing of issues of the specified repo, Note, repo MUST be manually unarchived before this script
 
 positional arguments:
-  repo           owner/repo to unarchive
+  repo              owner/repo to unarchive
 
 optional arguments:
-  -h, --help     show this help message and exit
-  --token TOKEN  PAT to access github. Needs Write access to the repos
-  -q             DO NOT print, or request confirmations
+  -h, --help        show this help message and exit
+  --token TOKEN     PAT to access github. Needs Write access to the repos
+  --pat-key PATKEY  key in .gh_pat.toml of the PAT to use, default: 'admin'
+  -q                DO NOT print, or request confirmations
 ```
 
 ## `gh_gile_search.py`
@@ -161,4 +164,15 @@ Used for scripts using lists of orgs, (currently only gh_file_search.py)
 ```
 [GITHUB]
 orgs = org1,org2,org3
+```
+
+## `.gh_pat.toml`
+Used to store PAT files - used by several of the scripts.
+Can be either in the repo directory or homedir.
+Should be 600 permissions.
+```
+admin = "PAT1"
+read-only = "PAT2"
+key99 = "PAT99"
+
 ```
