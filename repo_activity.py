@@ -10,30 +10,33 @@ Used to help determination for archiving/moving repos that aren't active
 
 import argparse
 import sys
-from time import sleep
-from getpass import getpass
 from datetime import datetime
-from github3 import login
+from getpass import getpass
+from time import sleep
+
 from github3 import exceptions as gh_exceptions
+from github3 import login
 
 # Some repos that have LOTS of traffic (mozilla/gecko-dev) will ALWAYS fail on getting the stats
 # This is the number of retries, otherwise, just report the problem in the output and move along
 MAX_RETRIES = 5
-#Roughly the number of github queries per loop.  Guessing bigger is better
+# Roughly the number of github queries per loop.  Guessing bigger is better
 RATE_PER_LOOP = 6
+
 
 def _create_char_spinner():
     """
     Creates a generator yielding a char based spinner.
     """
     while True:
-        for char in '|/-\\':
+        for char in "|/-\\":
             yield char
 
 
 _spinner = _create_char_spinner()
 
-def spinner(label=''):
+
+def spinner(label=""):
     """
     Prints label with a spinner.
     When called repeatedly from inside a loop this prints
@@ -41,6 +44,7 @@ def spinner(label=''):
     """
     sys.stderr.write("\r%s %s" % (label, next(_spinner)))
     sys.stderr.flush()
+
 
 def parse_args():
     """
@@ -51,27 +55,40 @@ def parse_args():
     :return: Returns the parsed CLI datastructures.
     """
 
-    parser = argparse.ArgumentParser(description=
-                    "Gets a latest activity for a repo or list of repos")
-    parser.add_argument('repos',
-                    help = 'list of repos to examine - or use --file for file base input',
-                    action = 'store', nargs='*')
-    parser.add_argument('--token', help='github token with perms to examine your repo',
-                    action = 'store')
-    parser.add_argument('--file', help = "File of 'owner/repo' names, 1 per line",
-                    action = 'store')
-    parser.add_argument('--parse-commit', help = 'look at the weekly commits of the repo.'
-                        '  Only useful if you care about usage in the last year.',
-                        action='store_true')
-    parser.add_argument('-i', action = 'store_true', default = False, dest = 'info',
-                    help = 'Give visual output of that progress continues - '
-                    'useful for long runs redirected to a file')
+    parser = argparse.ArgumentParser(
+        description="Gets a latest activity for a repo or list of repos"
+    )
+    parser.add_argument(
+        "repos",
+        help="list of repos to examine - or use --file for file base input",
+        action="store",
+        nargs="*",
+    )
+    parser.add_argument(
+        "--token", help="github token with perms to examine your repo", action="store"
+    )
+    parser.add_argument("--file", help="File of 'owner/repo' names, 1 per line", action="store")
+    parser.add_argument(
+        "--parse-commit",
+        help="look at the weekly commits of the repo."
+        "  Only useful if you care about usage in the last year.",
+        action="store_true",
+    )
+    parser.add_argument(
+        "-i",
+        action="store_true",
+        default=False,
+        dest="info",
+        help="Give visual output of that progress continues - "
+        "useful for long runs redirected to a file",
+    )
     args = parser.parse_args()
     if args.repos is None and args.file is None:
         raise Exception("Must have either a list of repos, OR a file to read repos from")
     if args.token is None:
-        args.token = getpass('Please enter your GitHub token: ')
+        args.token = getpass("Please enter your GitHub token: ")
     return args
+
 
 def check_rate_remain(gh_sess, loopsize, update=False):
     """
@@ -81,22 +98,22 @@ def check_rate_remain(gh_sess, loopsize, update=False):
     :param loopsize: The amount of rate eaten by a run through things
     :param update: Should we print a progress element to stderr
     """
-    #TODO: Look at making the naptime show that you're still making progress
-    while gh_sess.rate_limit()['resources']['core']['remaining'] < loopsize:
+    # TODO: Look at making the naptime show that you're still making progress
+    while gh_sess.rate_limit()["resources"]["core"]["remaining"] < loopsize:
         # Uh oh.
         if update:
             sleep(5)
             spinner()
         else:
-            #calculate how long to sleep, sleep that long.
-            refreshtime = datetime.fromtimestamp(
-                gh_sess.rate_limit()['resources']['core']['reset'])
+            # calculate how long to sleep, sleep that long.
+            refreshtime = datetime.fromtimestamp(gh_sess.rate_limit()["resources"]["core"]["reset"])
             now = datetime.now()
-            naptime = (refreshtime-now).seconds
-            print(f'Sleeping for {naptime} seconds', file=sys.stderr)
+            naptime = (refreshtime - now).seconds
+            print(f"Sleeping for {naptime} seconds", file=sys.stderr)
             sleep(naptime)
 
-def repo_activity(gh_sess, org, repo): # pylint: disable=too-many-branches
+
+def repo_activity(gh_sess, org, repo):  # pylint: disable=too-many-branches
     """
     Look at the repo, and return activity, with the date of their latest commit,
         or no commit, over the last year
@@ -132,9 +149,9 @@ def repo_activity(gh_sess, org, repo): # pylint: disable=too-many-branches
                 if status_code == 202:
                     return status_code
                 first = False
-            if week['total'] != 0:
-                if week['week'] > topdate:
-                    topdate = week['week']
+            if week["total"] != 0:
+                if week["week"] > topdate:
+                    topdate = week["week"]
         commitval = 0
     except gh_exceptions.UnexpectedResponse:
         # print(f'UNEXPECTED: Result: {commits.last_status}, response: '
@@ -146,26 +163,31 @@ def repo_activity(gh_sess, org, repo): # pylint: disable=too-many-branches
         commitval = "Unexpected, possibly temp repo"
     finally:
         status_code = commits.last_status
-    if (commitval == 0 and topdate == 0):
-        #no commits found, update list as apropos
-        commitval = 'None'
+    if commitval == 0 and topdate == 0:
+        # no commits found, update list as apropos
+        commitval = "None"
     elif topdate != 0:
         commitval = datetime.fromtimestamp(topdate)
-    commitlist[repo.name] = {'created_at':repo.created_at,
-                            'updated_at':repo.pushed_at,
-                            'admin_update': repo.updated_at,
-                            'last_commit': commitval,
-                            'private': repo.private,
-                            'archived':repo.archived}
+    commitlist[repo.name] = {
+        "created_at": repo.created_at,
+        "updated_at": repo.pushed_at,
+        "admin_update": repo.updated_at,
+        "last_commit": commitval,
+        "private": repo.private,
+        "archived": repo.archived,
+    }
 
     for repo in commitlist:
-        print(f"{repo},{commitlist[repo]['created_at']},"
-                f"{commitlist[repo]['updated_at']},"
-                f"{commitlist[repo]['admin_update']},"
-                f"{commitlist[repo]['last_commit']},"
-                f"{commitlist[repo]['private']},"
-                f"{commitlist[repo]['archived']}")
+        print(
+            f"{repo},{commitlist[repo]['created_at']},"
+            f"{commitlist[repo]['updated_at']},"
+            f"{commitlist[repo]['admin_update']},"
+            f"{commitlist[repo]['last_commit']},"
+            f"{commitlist[repo]['private']},"
+            f"{commitlist[repo]['archived']}"
+        )
     return status_code
+
 
 def mini_repo_activity(gh_sess, org, repo):
     """
@@ -177,8 +199,9 @@ def mini_repo_activity(gh_sess, org, repo):
     """
     short_repo = gh_sess.repository(org, repo)
     repo = short_repo.refresh()
-    print(f'{repo.name},{repo.created_at},{repo.pushed_at},{repo.updated_at},unexamined,{repo.private},{repo.archived}')
-
+    print(
+        f"{repo.name},{repo.created_at},{repo.pushed_at},{repo.updated_at},unexamined,{repo.private},{repo.archived}"
+    )
 
 
 def main():
@@ -193,18 +216,18 @@ def main():
         repolist = args.repos
     else:
         # Rip open the file, make a list
-        txtfile = open(args.file, 'r')
+        txtfile = open(args.file, "r")
         repolist = txtfile.readlines()
         txtfile.close()
 
     gh_sess = login(token=args.token)
 
-    #Print out the header.
+    # Print out the header.
     print("Repo, Created, Updated, Admin_update, Last_commit, Private, Archive_status")
 
     for orgrepo in repolist:
-        org = orgrepo.split('/')[0].strip()
-        repo = orgrepo.split('/')[1].strip()
+        org = orgrepo.split("/")[0].strip()
+        repo = orgrepo.split("/")[1].strip()
         done = False
         count = 0
         if args.parse_commit:
@@ -219,9 +242,11 @@ def main():
                     #       f'done: {done}, count: {count}, repo: {repo}', file = sys.stderr)
                     if count == MAX_RETRIES and result == 202:
                         # We errored out --- put in something in the output to that effect.
-                        print(f'{org}/{repo},GH Gave 202 Error '
-                            f'- failed out after {MAX_RETRIES} attempts.',
-                            file = sys.stderr)
+                        print(
+                            f"{org}/{repo},GH Gave 202 Error "
+                            f"- failed out after {MAX_RETRIES} attempts.",
+                            file=sys.stderr,
+                        )
                     done = True
                 check_rate_remain(gh_sess, RATE_PER_LOOP, args.info)
 
@@ -234,5 +259,6 @@ def main():
             if args.info:
                 spinner()
 
-if __name__ == '__main__':
+
+if __name__ == "__main__":
     main()
