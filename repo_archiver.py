@@ -27,6 +27,8 @@ def parse_args():
     parser.add_argument('repos', help = "owner/repo to archive", nargs = '*', action = 'store')
     parser.add_argument('--token', help = "PAT to access github.  Needs Write access to the repos",
                         action='store')
+    parser.add_argument("--pat-key", default="admin", action="store", dest="patkey",
+                        help="key in .gh_pat.toml of the PAT to use")
     parser.add_argument('--file', help = 'File with "owner/repo" one per line to archive',
                         action = 'store')
     parser.add_argument("--force", help="Don't stop if you detect previous archivers",
@@ -37,7 +39,7 @@ def parse_args():
     if args.repos is None and args.file is None:
         raise Exception("Must have either a list of repos, OR a file to read repos from")
     if args.token is None:
-        args.token = utils.get_pat_from_file()
+        args.token = utils.get_pat_from_file(args.patkey)
         if args.token is None:
             args.token = getpass('Please enter your GitHub token: ')
     return args
