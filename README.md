@@ -5,7 +5,7 @@ A set of scripts for working with/analysis of github orgs/repos
 ## Requirements
 [github3.py](https://github3py.readthedocs.io/en/master/index.html)
 
-## org_repos.py 
+## org_repos.py
 
 ```
 usage: org_repos.py [-h] [--token TOKEN] [--without-org] [--archived] org
