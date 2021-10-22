@@ -3,9 +3,11 @@ Helper file for code reuse throughout the github-scripts
 """
 import os
 import sys
+
 import toml
 
-def get_pat_from_file(key_name='admin'):
+
+def get_pat_from_file(key_name="admin"):
     """
     Retrieve the personal access token from a file named .gh_pat.toml
     :param key_name: the toml key of the token in the file
@@ -29,7 +31,7 @@ def get_pat_from_file(key_name='admin'):
 
     # Get the last 3 octal digits of the perms from stat
     perm = oct(os.stat(config_file).st_mode)[-3:]
-    if perm != '600':
+    if perm != "600":
         print("Err: .gh_pat.toml exists, but is NOT 600 perms", file=sys.stderr)
         return None
 

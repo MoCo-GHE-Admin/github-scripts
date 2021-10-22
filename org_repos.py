@@ -7,6 +7,7 @@ Used primarily as input to repo related scripts - allowing action on all or a su
 
 import argparse
 from getpass import getpass
+
 from github3 import login
 
 
@@ -18,18 +19,28 @@ def parse_args():
     """
 
     parser = argparse.ArgumentParser(description="Gets a list of Repos for an Org.")
-    parser.add_argument('org', help="The GH org to query",
-                        action='store', type=str)
-    parser.add_argument('--token', help='GH token (PAT) with perms to examine your org',
-                        action='store')
-    parser.add_argument('--without-org', help="Include the org in the name, 'org/repo-name'",
-                        action='store_false', default=True, dest='with_org')
-    parser.add_argument('--archived', help="Include archived repos.  Default is unarchived only.",
-                        action='store_true', default=False)
+    parser.add_argument("org", help="The GH org to query", action="store", type=str)
+    parser.add_argument(
+        "--token", help="GH token (PAT) with perms to examine your org", action="store"
+    )
+    parser.add_argument(
+        "--without-org",
+        help="Include the org in the name, 'org/repo-name'",
+        action="store_false",
+        default=True,
+        dest="with_org",
+    )
+    parser.add_argument(
+        "--archived",
+        help="Include archived repos.  Default is unarchived only.",
+        action="store_true",
+        default=False,
+    )
     args = parser.parse_args()
     if args.token is None:
-        args.token = getpass('Please enter your GitHub token: ')
+        args.token = getpass("Please enter your GitHub token: ")
     return args
+
 
 def main():
     """
@@ -41,7 +52,7 @@ def main():
 
     args = parse_args()
 
-    gh_sess = login(token = args.token)
+    gh_sess = login(token=args.token)
     org = gh_sess.organization(args.org)
     repolist = org.repositories()
 
@@ -53,6 +64,5 @@ def main():
                 print(repo.name)
 
 
-
-if __name__ == '__main__':
+if __name__ == "__main__":
     main()

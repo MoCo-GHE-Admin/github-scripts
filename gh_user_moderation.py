@@ -4,34 +4,42 @@ Script to manually poke the blocks/unblocks for orgs.
 """
 
 import argparse
-from getpass import getpass
 import configparser
+from getpass import getpass
+
 import requests
+
 
 def parse_arguments():
     """
     Look at the first arg and handoff to the arg parser for that specific
     """
-    parser = argparse.ArgumentParser(description="Look at orgs, and either block or "
-                    "unblock the specified username")
-    parser.add_argument('username', type=str, help='The GH user name to block/unblock')
-    parser.add_argument('--block', help='should we block the user - default is unblock',
-                        action='store_true')
-    parser.add_argument('orgs', type=str, help="The org to work on",
-                        action='store', nargs='*')
-    parser.add_argument('--orgini', help='use "orglist.ini" with the "orgs" '
-                        'entry with a csv list of all orgs to check',
-                        action='store_const', const='orglist.ini')
-    parser.add_argument('--token', help='github token with perms to examine your org',
-                        action='store')
+    parser = argparse.ArgumentParser(
+        description="Look at orgs, and either block or " "unblock the specified username"
+    )
+    parser.add_argument("username", type=str, help="The GH user name to block/unblock")
+    parser.add_argument(
+        "--block", help="should we block the user - default is unblock", action="store_true"
+    )
+    parser.add_argument("orgs", type=str, help="The org to work on", action="store", nargs="*")
+    parser.add_argument(
+        "--orgini",
+        help='use "orglist.ini" with the "orgs" ' "entry with a csv list of all orgs to check",
+        action="store_const",
+        const="orglist.ini",
+    )
+    parser.add_argument(
+        "--token", help="github token with perms to examine your org", action="store"
+    )
     args = parser.parse_args()
     if args.orgs == [] and args.orgini is None:
         raise Exception("You must specify either an org or an orgini")
     if args.token is None:
-        args.token = getpass('Please enter your GitHub token: ')
+        args.token = getpass("Please enter your GitHub token: ")
     return args
 
-def blockuser(org, username, token, url='api.github.com'):
+
+def blockuser(org, username, token, url="api.github.com"):
     """
     Block the user ffrom the org
     :param org: the organization
@@ -41,11 +49,12 @@ def blockuser(org, username, token, url='api.github.com'):
     :return: true if successful - false if not.
     """
     headers = {"content-type": "application/json", "Authorization": "token " + token}
-    query = f'https://{url}/orgs/{org}/blocks/{username}'
+    query = f"https://{url}/orgs/{org}/blocks/{username}"
     request = requests.put(query, headers=headers)
     return request.status_code
 
-def unblockuser(org, username, token, url='api.github.com'):
+
+def unblockuser(org, username, token, url="api.github.com"):
     """
     Unblock the user ffrom the org
     :param org: the organization
@@ -55,9 +64,10 @@ def unblockuser(org, username, token, url='api.github.com'):
     :return: true if successful - false if not.
     """
     headers = {"content-type": "application/json", "Authorization": "token " + token}
-    query = f'https://{url}/orgs/{org}/blocks/{username}'
+    query = f"https://{url}/orgs/{org}/blocks/{username}"
     request = requests.delete(query, headers=headers)
     return request.status_code
+
 
 def main():
     """
@@ -70,7 +80,7 @@ def main():
     if args.orgini is not None:
         config = configparser.ConfigParser()
         config.read(args.orgini)
-        orglist = config['GITHUB']['orgs'].split(',')
+        orglist = config["GITHUB"]["orgs"].split(",")
     else:
         orglist = args.orgs
 
@@ -85,13 +95,18 @@ def main():
         # Per API docs, 204 is happy, 422 is already in blocklist
 
         if result == 204:
-            print(f'User {args.username} was {actionstr} from org {org}')
+            print(f"User {args.username} was {actionstr} from org {org}")
         elif result == 422:
-            print(f'Problem with {actionstr} action.  '
-                    f'Reason: {args.username} is already blocked in {org}')
+            print(
+                f"Problem with {actionstr} action.  "
+                f"Reason: {args.username} is already blocked in {org}"
+            )
         else:
-            print(f'Problem with blocking/unblocking {args.username} from org {org}'
-                    f'- status code for support: {result}')
+            print(
+                f"Problem with blocking/unblocking {args.username} from org {org}"
+                f"- status code for support: {result}"
+            )
 
-if __name__ == '__main__':
+
+if __name__ == "__main__":
     main()
