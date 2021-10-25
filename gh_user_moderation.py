@@ -9,6 +9,8 @@ from getpass import getpass
 
 import requests
 
+import utils
+
 
 def parse_arguments():
     """
@@ -29,11 +31,16 @@ def parse_arguments():
         const="orglist.ini",
     )
     parser.add_argument(
-        "--token", help="github token with perms to examine your org", action="store"
+        "--pat-key",
+        default="admin",
+        action="store",
+        dest="patkey",
+        help="key in .gh_pat.toml of the PAT to use",
     )
     args = parser.parse_args()
     if args.orgs == [] and args.orgini is None:
         raise Exception("You must specify either an org or an orgini")
+    args.token = utils.get_pat_from_file(args.patkey)
     if args.token is None:
         args.token = getpass("Please enter your GitHub token: ")
     return args

@@ -11,6 +11,8 @@ from getpass import getpass
 import requests
 from github3 import login
 
+import utils
+
 
 def parse_arguments():
     """
@@ -26,12 +28,17 @@ def parse_arguments():
         default="https://api.github.com/graphql",
     )
     parser.add_argument(
-        "--token", help="github token with perms to examine your org", action="store"
+        "--pat-key",
+        default="admin",
+        action="store",
+        dest="patkey",
+        help="key in .gh_pat.toml of the PAT to use",
     )
     parser.add_argument(
         "-f", type=str, help="File to store CSV to", action="store", default=None, dest="output"
     )
     args = parser.parse_args()
+    args.token = utils.get_pat_from_file(args.patkey)
     if args.token is None:
         args.token = getpass("Please enter your GitHub token: ")
     return args

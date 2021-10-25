@@ -51,11 +51,9 @@ def parse_args():
         default=False,
     )
     args = parser.parse_args()
+    args.token = utils.get_pat_from_file(args.patkey)
     if args.token is None:
-        args.token = utils.get_pat_from_file(args.patkey)
-        if args.token is None:
-            args.token = getpass("Please enter your GitHub token: ")
-    print(f"{args.token=}")
+        args.token = getpass("Please enter your GitHub token: ")
     return args
 
 
