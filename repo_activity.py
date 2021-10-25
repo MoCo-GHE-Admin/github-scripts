@@ -17,6 +17,8 @@ from time import sleep
 from github3 import exceptions as gh_exceptions
 from github3 import login
 
+import utils
+
 # Some repos that have LOTS of traffic (mozilla/gecko-dev) will ALWAYS fail on getting the stats
 # This is the number of retries, otherwise, just report the problem in the output and move along
 MAX_RETRIES = 5
@@ -65,7 +67,11 @@ def parse_args():
         nargs="*",
     )
     parser.add_argument(
-        "--token", help="github token with perms to examine your repo", action="store"
+        "--pat-key",
+        default="admin",
+        action="store",
+        dest="patkey",
+        help="key in .gh_pat.toml of the PAT to use",
     )
     parser.add_argument("--file", help="File of 'owner/repo' names, 1 per line", action="store")
     parser.add_argument(
@@ -85,6 +91,7 @@ def parse_args():
     args = parser.parse_args()
     if args.repos is None and args.file is None:
         raise Exception("Must have either a list of repos, OR a file to read repos from")
+    args.token = utils.get_pat_from_file(args.patkey)
     if args.token is None:
         args.token = getpass("Please enter your GitHub token: ")
     return args

@@ -18,6 +18,8 @@ from time import sleep
 from github3 import exceptions as gh_exceptions
 from github3 import login
 
+import utils
+
 
 def _create_char_spinner():
     """
@@ -54,7 +56,13 @@ def parse_args():
         description="Gets a list of users for an org with how many repos they're involved with"
     )
     parser.add_argument("org", help="The org to examine", action="store")
-    parser.add_argument("--token", help="The PAT to auth with", action="store")
+    parser.add_argument(
+        "--pat-key",
+        default="admin",
+        action="store",
+        dest="patkey",
+        help="key in .gh_pat.toml of the PAT to use",
+    )
     parser.add_argument(
         "-i",
         action="store_true",
@@ -64,6 +72,7 @@ def parse_args():
         "useful for long runs redirected to a file",
     )
     args = parser.parse_args()
+    args.token = utils.get_pat_from_file(args.patkey)
     if args.token is None:
         args.token = getpass("Please enter your GitHub token: ")
     return args
