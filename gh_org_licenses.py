@@ -10,10 +10,7 @@ Outside collaborators with ANY access (even just read) to a private repo take a 
 
 import argparse
 import configparser
-import sys
-from datetime import datetime
 from getpass import getpass
-from time import sleep
 
 from github3 import exceptions as gh_exceptions
 from github3 import login
@@ -53,53 +50,6 @@ def parse_arguments():
     return args
 
 
-def _create_char_spinner():
-    """
-    Creates a generator yielding a char based spinner.
-    """
-    while True:
-        for char in "|/-\\":
-            yield char
-
-
-_spinner = _create_char_spinner()
-
-
-def spinner(label=""):
-    """
-    Prints label with a spinner.
-    When called repeatedly from inside a loop this prints
-    a one line CLI spinner.
-    """
-    sys.stderr.write("\r%s %s" % (label, next(_spinner)))
-    sys.stderr.flush()
-
-
-def check_rate_remain(gh_sess, loopsize=100, update=True):
-    """
-    Given the session, and the size of the rate eaten by the loop,
-    and if not enough remains, sleep until it is.
-    :param gh_sess: The github session
-    :param loopsize: The amount of rate eaten by a run through things
-    :param update: should we print things letting you know what we're doing?
-    Note, we always print the "sleeping for XXX seconds"
-    """
-    # TODO: Look at making the naptime show that you're still making progress
-    while gh_sess.rate_limit()["resources"]["core"]["remaining"] < loopsize:
-        # Uh oh.
-        # calculate how long to sleep, sleep that long.
-        refreshtime = datetime.fromtimestamp(gh_sess.rate_limit()["resources"]["core"]["reset"])
-        now = datetime.now()
-        naptime = (refreshtime - now).seconds + 120
-        print(f"API limits exhausted - sleeping for {naptime} seconds", file=sys.stderr)
-        for timer in range(naptime):
-            sleep(1)
-            if update:
-                spinner()
-        if update:
-            print(file=sys.stderr)
-
-
 def org_members_set(gh_sess, org_name, pending):
     """
     :param gh_sess: initialized github object
@@ -113,10 +63,10 @@ def org_members_set(gh_sess, org_name, pending):
     try:
         for member in member_list:
             result_set.add(member.login)
-            check_rate_remain(gh_sess)
+            utils.check_rate_remain(gh_sess)
         if pending:
             for invite in org.invitations():
-                check_rate_remain(gh_sess)
+                utils.check_rate_remain(gh_sess)
                 if invite.login is None:
                     result_set.add(invite.email)
                 else:
@@ -148,11 +98,11 @@ def org_oc_set(gh_sess, org_name, pending):
                 # We're in a private repo - get me all OC's
                 for collab in repo.collaborators(affiliation="outside"):
                     oc_set.add(collab.login)
-                    check_rate_remain(gh_sess)
+                    utils.check_rate_remain(gh_sess)
                 if pending:
                     # Get me all invites to the private repo
                     for invite in repo.invitations():
-                        check_rate_remain(gh_sess)
+                        utils.check_rate_remain(gh_sess)
                         oc_set.add(invite.invitee.login)
         except gh_exceptions.NotFoundError:
             # If this is a ghsa - this is expected, else scream and shout
@@ -181,7 +131,7 @@ def main():
 
     gh_sess = login(token=args.token)
     # Check the API rate remaining before starting.
-    check_rate_remain(gh_sess)
+    utils.check_rate_remain(gh_sess)
 
     # Go through every org given
     for org in orglist:
