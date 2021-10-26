@@ -11,39 +11,15 @@ belong to.
 
 import argparse
 import sys
-from datetime import datetime
 from getpass import getpass
-from time import sleep
 
 from github3 import exceptions as gh_exceptions
 from github3 import login
 
 import utils
 
-
-def _create_char_spinner():
-    """
-    Creates a generator yielding a char based spinner.
-    """
-    while True:
-        for char in "|/-\\":
-            yield char
-
-
-_spinner = _create_char_spinner()
-
 # Roughly the number of github queries per loop.  Guessing bigger is better
-RATE_PER_LOOP = 1.2
-
-
-def spinner(label=""):
-    """
-    Prints label with a spinner.
-    When called repeatedly from inside a loop this prints
-    a one line CLI spinner.
-    """
-    sys.stderr.write("\r%s %s" % (label, next(_spinner)))
-    sys.stderr.flush()
+RATE_PER_LOOP = 20
 
 
 def parse_args():
@@ -76,29 +52,6 @@ def parse_args():
     if args.token is None:
         args.token = getpass("Please enter your GitHub token: ")
     return args
-
-
-def check_rate_remain(gh_sess, loopsize, update=False):
-    """
-    Given the session, and the size of the rate eaten by the loop,
-    and if not enough remains, sleep until it is.
-    :param gh_sess: The github session
-    :param loopsize: The amount of rate eaten by a run through things
-    :param update: Should we print a progress element to stderr
-    """
-    # TODO: Look at making the naptime show that you're still making progress
-    while gh_sess.rate_limit()["resources"]["core"]["remaining"] < loopsize:
-        # Uh oh.
-        if update:
-            sleep(5)
-            spinner()
-        else:
-            # calculate how long to sleep, sleep that long.
-            refreshtime = datetime.fromtimestamp(gh_sess.rate_limit()["resources"]["core"]["reset"])
-            now = datetime.now()
-            naptime = (refreshtime - now).seconds
-            print(f"Sleeping for {naptime} seconds", file=sys.stderr)
-            sleep(naptime)
 
 
 def list_to_str(input_list):
@@ -192,9 +145,9 @@ def main():
                         userlist[collaborator.login]["pubpush"].append(repo.name)
                     if collaborator.permissions["pull"]:
                         userlist[collaborator.login]["pubpull"].append(repo.name)
-            check_rate_remain(gh_sess, RATE_PER_LOOP, args.info)
+            utils.check_rate_remain(gh_sess, RATE_PER_LOOP, args.info)
             if args.info:
-                spinner()
+                utils.spinner()
         except gh_exceptions.NotFoundError as err:
             print(
                 f"In repo {repo.name} and collab {collaborator.login} : {err.message}",
@@ -204,6 +157,8 @@ def main():
             print(f"50X error when processing repo: {repo.name} and collab {collaborator.login}")
 
     # Print The Things.
+    if args.info:
+        print(file=sys.stderr)
     print(
         "Username, ORG Role, pub-count, priv-count, pub-pull, pub-push, pub-admin,"
         " priv-pull, priv-push, priv-admin"
