@@ -158,6 +158,21 @@ optional arguments:
   --pat-key PATKEY      key in .gh_pat.toml of the PAT to use
 ```
 
+## `gh_org_owners.py`
+```
+usage: gh_org_owners.py [-h] [--orgini] [--pat-key PATKEY] [orgs ...]
+
+Look at orgs, and get the list of owners
+
+positional arguments:
+  orgs              The org to work on
+
+optional arguments:
+  -h, --help        show this help message and exit
+  --orgini          use "orglist.ini" with the "orgs" entry with a csv list of all orgs to check
+  --pat-key PATKEY  key in .gh_pat.toml of the PAT to use
+```
+
 # Supporting files
 
 ## `orglist.ini`
