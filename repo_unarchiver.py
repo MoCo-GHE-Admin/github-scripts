@@ -10,6 +10,10 @@ un-archives the repo
 
 Unlike the archiver - this works with 1 repo only.
 assumption being that unarchiving is rarer than archiving.
+
+Per GitHub API docs, MUST manually unarchive:
+https://docs.github.com/en/rest/reference/repos#update-a-repository
+Note: You cannot unarchive repositories through the API.
 """
 
 import argparse
