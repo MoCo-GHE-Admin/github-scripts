@@ -66,7 +66,10 @@ def handle_issues(repo, force=False, quiet=False):
     :param repo: the initialized repo object
     :param force: if we run into a label conflict, do we barrel through?
     :param quiet: should we talk out loud?
+    :return: True is all is well, False if there was an exception that we handled
     """
+
+    result = True
 
     if not quiet:
         print("\tcreating archive label")
@@ -101,10 +104,12 @@ def handle_issues(repo, force=False, quiet=False):
             if not quiet:
                 print(f"\tLabeled and closed issue: {issue.title}")
         except gh_exceptions.UnprocessableEntity:
+            result = False
             print(
                 f"Got 422 Unproccessable on issue {issue.title},"
                 " continuing.  May need to run --force or manually finish closing."
             )
+    return result
 
 
 def main():
@@ -153,7 +158,7 @@ def main():
 
             # Deal with issues
 
-            handle_issues(gh_repo, args.force, args.quiet)
+            handled = handle_issues(gh_repo, args.force, args.quiet)
 
             # Handle the overall repo marking:
 
@@ -168,9 +173,17 @@ def main():
                 description = "DEPRECATED - " + description
             else:
                 description = "DEPRECATED"
-            gh_repo.edit(name=gh_repo.name, description=description, archived=True)
-            if not args.quiet:
-                print(f"\tUpdated description and archived the repo {repo}")
+            if handled:
+                gh_repo.edit(name=gh_repo.name, description=description, archived=True)
+                if not args.quiet:
+                    print(f"\tUpdated description and archived the repo {repo}")
+            else:
+                gh_repo.edit(name=gh_repo.name, description=description)
+                print(
+                    f"\tUpdated description, but there was a problem with issues in repo {repo}"
+                    ", pausing so you can fix and manually archive"
+                )
+                getpass("Press enter to continue")
 
 
 if __name__ == "__main__":
