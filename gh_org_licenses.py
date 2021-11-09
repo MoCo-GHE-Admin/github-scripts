@@ -10,7 +10,10 @@ Outside collaborators with ANY access (even just read) to a private repo take a 
 
 import argparse
 import configparser
+import sys
+from datetime import datetime
 from getpass import getpass
+from time import sleep
 
 from github3 import exceptions as gh_exceptions
 from github3 import login
@@ -27,6 +30,7 @@ def parse_arguments():
         description="Provided a list of orgs, output how many GHE licenses are required."
     )
     parser.add_argument("orgs", type=str, help="The org to work on", action="store", nargs="*")
+    parser.add_argument("--pending", help="Include Pending requests?", action="store_true")
     parser.add_argument(
         "--orgini",
         help='use "orglist.ini" with the "orgs" ' "entry with a csv list of all orgs to check",
@@ -49,21 +53,54 @@ def parse_arguments():
     return args
 
 
-def org_members_set(org):
+def check_rate_remain(gh_sess, loopsize=5):
+    """
+    Given the session, and the size of the rate eaten by the loop,
+    and if not enough remains, sleep until it is.
+    :param gh_sess: The github session
+    :param loopsize: The amount of rate eaten by a run through things
+    :param update: Should we print a progress element to stderr
+    """
+    # TODO: Look at making the naptime show that you're still making progress
+    while gh_sess.ratelimit_remaining < loopsize:
+        # Uh oh.
+        # calculate how long to sleep, sleep that long.
+        refreshtime = datetime.fromtimestamp(gh_sess.rate_limit()["resources"]["core"]["reset"])
+        now = datetime.now()
+        naptime = (refreshtime - now).seconds
+        print(f"Sleeping for {naptime} seconds", file=sys.stderr)
+        sleep(naptime)
+
+
+def org_members_set(org, pending):
     """
     :param org: Initialized GH org
+    :param pending: boolean if we are to include pending invites
     :result: Set of the members of this org
     """
     member_list = org.members()
     result_set = set()
-    for member in member_list:
-        result_set.add(member.login)
+    try:
+        for member in member_list:
+            result_set.add(member.login)
+            check_rate_remain(org, loopsize=5)
+        if pending:
+            for invite in org.invitations():
+                check_rate_remain(org, loopsize=5)
+                # print(f"found invites for {org.name=}")
+                if invite.login is None:
+                    result_set.add(invite.email)
+                else:
+                    result_set.add(invite.login)
+    except gh_exceptions.ForbiddenError:
+        print(f"You don't have admin access to org {org.name} to view invitations")
     return result_set
 
 
-def org_oc_set(org):
+def org_oc_set(org, pending):
     """
     :param org: Initialized GH org
+    :param pending: boolean if we are to include pending invites
     :result: Set of the OCs with private repo priv in this org
 
     Note, we have to go through ALL the repos - while "internal" repos
@@ -79,6 +116,12 @@ def org_oc_set(org):
                 # repo_set.add(repo.name)
                 for collab in repo.collaborators(affiliation="outside"):
                     oc_set.add(collab.login)
+                    check_rate_remain(org, loopsize=5)
+            if pending:
+                for invite in repo.invitations():
+                    check_rate_remain(org, loopsize=5)
+                    oc_set.add(invite.invitee.login)
+                    print(f"{repo.name=} has an invite for {invite.invitee.login}")
         except gh_exceptions.NotFoundError:
             # If this is a ghsa - this is expected, else scream and shout
             if repo.name.find("-ghsa-") == -1:
@@ -108,8 +151,8 @@ def main():
     gh_sess = login(token=args.token)
     for org in orglist:
         init_org = gh_sess.organization(org)
-        org_set = org_members_set(init_org)
-        oc_set = org_oc_set(init_org)
+        org_set = org_members_set(init_org, args.pending)
+        oc_set = org_oc_set(init_org, args.pending)
 
         print(f"ORG: {org}: Members: {len(org_set)}, OC: {len(oc_set)}")
 

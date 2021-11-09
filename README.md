@@ -175,7 +175,7 @@ optional arguments:
 
 ## `gh_org_licenses.py`
 ```
-usage: gh_org_licenses.py [-h] [--orgini] [--pat-key PATKEY] [orgs ...]
+usage: gh_org_licenses.py [-h] [--pending] [--orgini] [--pat-key PATKEY] [orgs ...]
 
 Provided a list of orgs, output how many GHE licenses are required.
 
@@ -184,6 +184,7 @@ positional arguments:
 
 optional arguments:
   -h, --help        show this help message and exit
+  --pending         Include Pending requests?
   --orgini          use "orglist.ini" with the "orgs" entry with a csv list of all orgs to check
   --pat-key PATKEY  key in .gh_pat.toml of the PAT to use
 ```
