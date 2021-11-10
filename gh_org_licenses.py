@@ -53,41 +53,70 @@ def parse_arguments():
     return args
 
 
-def check_rate_remain(gh_sess, loopsize=5):
+def _create_char_spinner():
+    """
+    Creates a generator yielding a char based spinner.
+    """
+    while True:
+        for char in "|/-\\":
+            yield char
+
+
+_spinner = _create_char_spinner()
+
+
+def spinner(label=""):
+    """
+    Prints label with a spinner.
+    When called repeatedly from inside a loop this prints
+    a one line CLI spinner.
+    """
+    sys.stderr.write("\r%s %s" % (label, next(_spinner)))
+    sys.stderr.flush()
+
+
+def check_rate_remain(gh_sess, loopsize=100, update=True):
     """
     Given the session, and the size of the rate eaten by the loop,
     and if not enough remains, sleep until it is.
     :param gh_sess: The github session
     :param loopsize: The amount of rate eaten by a run through things
-    :param update: Should we print a progress element to stderr
+    :param update: should we print things letting you know what we're doing?
+    Note, we always print the "sleeping for XXX seconds"
     """
     # TODO: Look at making the naptime show that you're still making progress
-    while gh_sess.ratelimit_remaining < loopsize:
+    while gh_sess.rate_limit()["resources"]["core"]["remaining"] < loopsize:
         # Uh oh.
         # calculate how long to sleep, sleep that long.
         refreshtime = datetime.fromtimestamp(gh_sess.rate_limit()["resources"]["core"]["reset"])
         now = datetime.now()
-        naptime = (refreshtime - now).seconds
-        print(f"Sleeping for {naptime} seconds", file=sys.stderr)
-        sleep(naptime)
+        naptime = (refreshtime - now).seconds + 120
+        print(f"API limits exhausted - sleeping for {naptime} seconds", file=sys.stderr)
+        for timer in range(naptime):
+            sleep(1)
+            if update:
+                spinner()
+        if update:
+            print(file=sys.stderr)
 
 
-def org_members_set(org, pending):
+def org_members_set(gh_sess, org_name, pending):
     """
-    :param org: Initialized GH org
+    :param gh_sess: initialized github object
+    :param org_name: Name of a GH org
     :param pending: boolean if we are to include pending invites
     :result: Set of the members of this org
     """
+    org = gh_sess.organization(org_name)
     member_list = org.members()
     result_set = set()
     try:
         for member in member_list:
             result_set.add(member.login)
-            check_rate_remain(org, loopsize=5)
+            check_rate_remain(gh_sess)
         if pending:
             for invite in org.invitations():
-                check_rate_remain(org, loopsize=5)
-                # print(f"found invites for {org.name=}")
+                check_rate_remain(gh_sess)
                 if invite.login is None:
                     result_set.add(invite.email)
                 else:
@@ -97,8 +126,10 @@ def org_members_set(org, pending):
     return result_set
 
 
-def org_oc_set(org, pending):
+def org_oc_set(gh_sess, org_name, pending):
     """
+    :param gh_sess: initialized github object
+    :param org_name: Name of a GH org
     :param org: Initialized GH org
     :param pending: boolean if we are to include pending invites
     :result: Set of the OCs with private repo priv in this org
@@ -107,27 +138,27 @@ def org_oc_set(org, pending):
     show as "private" when asked, asking for all "private" repos does
     not return internal repos.
     """
+    org = gh_sess.organization(org_name)
     oc_set = set()
     # repo_set = set()
     repo_list = org.repositories()
     for repo in repo_list:
         try:
             if repo.private:
-                # repo_set.add(repo.name)
+                # We're in a private repo - get me all OC's
                 for collab in repo.collaborators(affiliation="outside"):
                     oc_set.add(collab.login)
-                    check_rate_remain(org, loopsize=5)
-            if pending:
-                for invite in repo.invitations():
-                    check_rate_remain(org, loopsize=5)
-                    oc_set.add(invite.invitee.login)
-                    print(f"{repo.name=} has an invite for {invite.invitee.login}")
+                    check_rate_remain(gh_sess)
+                if pending:
+                    # Get me all invites to the private repo
+                    for invite in repo.invitations():
+                        check_rate_remain(gh_sess)
+                        oc_set.add(invite.invitee.login)
         except gh_exceptions.NotFoundError:
             # If this is a ghsa - this is expected, else scream and shout
             if repo.name.find("-ghsa-") == -1:
                 raise gh_exceptions.NotFoundError()
 
-    # print(f"list of private repos {repo_set}")
     return oc_set
 
 
@@ -149,18 +180,21 @@ def main():
         orglist = args.orgs
 
     gh_sess = login(token=args.token)
+    # Check the API rate remaining before starting.
+    check_rate_remain(gh_sess)
+
+    # Go through every org given
     for org in orglist:
-        init_org = gh_sess.organization(org)
-        org_set = org_members_set(init_org, args.pending)
-        oc_set = org_oc_set(init_org, args.pending)
+        # Get a set (naturally deduped) of members
+        org_set = org_members_set(gh_sess, org, args.pending)
+        # Get a set (naturally deduped) of private OCs
+        oc_set = org_oc_set(gh_sess, org, args.pending)
 
         print(f"ORG: {org}: Members: {len(org_set)}, OC: {len(oc_set)}")
 
         # union of overallset with the org_set and oc_set
         overallset |= org_set | oc_set
         print(f"Current overall license count: {len(overallset)}")
-        # print(f"{org=}, {oc_set=}")
-        # print(f"Set List: {overallset}")
     print(f"Final count: {len(overallset)}")
 
 
