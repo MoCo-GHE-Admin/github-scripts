@@ -52,6 +52,12 @@ def parse_arguments():
         default=False,
     )
     parser.add_argument(
+        "-f",
+        dest="print_file",
+        help="Print out file level responses rather than repo level",
+        action="store_true",
+    )
+    parser.add_argument(
         "-t",
         dest="time",
         default=10,
@@ -88,9 +94,15 @@ def main():
         try:
             search = gh_sess.search_code(f"org:{org} {args.query}")
             repos = set()
+            files = []
             for result in search:
                 repos.add(result.repository.name)
+                files.append(f"{result.repository}:{result.path}/{result.name}")
             print(f'org: {org} Repo: {",".join(repos)}')
+            if args.print_file:
+                print("Files found:")
+                for line in files:
+                    print(line)
         except gh_exceptions.UnprocessableEntity:
             print(f"org: {org} Failed, likely due to lack of repos in the org")
         finally:
