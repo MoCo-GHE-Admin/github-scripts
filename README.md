@@ -189,6 +189,22 @@ optional arguments:
   --pat-key PATKEY  key in .gh_pat.toml of the PAT to use
 ```
 
+## `org_remove_user.py`
+```
+usage: org_remove_user.py [-h] [--pat-key PATKEY] [--orgfile] [--do-it] username [orgs ...]
+
+Given a username - go through all orgs in the orglist.ini file and see what they need to be removed from
+
+positional arguments:
+  username          User to remove
+  orgs              The org to work on
+
+optional arguments:
+  -h, --help        show this help message and exit
+  --pat-key PATKEY  key in .gh_pat.toml of the PAT to use
+  --orgfile         use an ini file with the "orgs" entry with a csv list of all orgs to check, defaults to "orglist.ini"
+  --do-it           Actually do the removal - Otherwise just report on what you found
+```
 # Supporting files
 
 ## `orglist.ini`
