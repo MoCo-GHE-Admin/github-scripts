@@ -1,19 +1,20 @@
 #!/usr/bin/env python
 """
 Script for determining activity levels of a repo
-Going through the last years of commits for the last active week
-And barring that reporting the github updated_at which might be much earlier than
-a year.  And finally created_at so we know who old things are.
-
+report the updated at (that's the last commit), created, and admin updates
+Also look to see if there's a wiki, and check for activity there.
 Used to help determination for archiving/moving repos that aren't active
 """
 
 import argparse
 import sys
+import tempfile
 from datetime import datetime
 from getpass import getpass
-from time import sleep
 
+import pytz
+from git import Repo
+from git import exc as git_exceptions
 from github3 import exceptions as gh_exceptions
 from github3 import login
 
@@ -52,12 +53,6 @@ def parse_args():
         help="key in .gh_pat.toml of the PAT to use",
     )
     parser.add_argument("--file", help="File of 'owner/repo' names, 1 per line", action="store")
-    parser.add_argument(
-        "--parse-commit",
-        help="look at the weekly commits of the repo."
-        "  Only useful if you care about usage in the last year.",
-        action="store_true",
-    )
     parser.add_argument(
         "-i",
         action="store_true",
@@ -151,19 +146,55 @@ def repo_activity(gh_sess, org, repo):  # pylint: disable=too-many-branches
     return status_code
 
 
-def mini_repo_activity(gh_sess, org, repo):
+def get_wiki_date(reponame, token):
+    """
+    Get the date of the last activity on the wiki - if there is one.
+    :param reponame: name of the org/repo to examine
+    Note that this assumes there is a wiki, so test before calling here.
+    :result: datetime of the last commit to the wiki
+    """
+    # Setup the URL/paths
+    remoteURL = f"https://{token}:x-oauth-basic@github.com/{reponame}.wiki.git"
+    localpath = tempfile.TemporaryDirectory()
+    try:
+        # Checkout the repo
+        clone = Repo.clone_from(remoteURL, localpath, depth="1")
+        lastcommit = clone.commit("HEAD")
+        date = datetime.fromtimestamp(lastcommit.committed_date, tz=pytz.UTC)
+        clone.close()
+    except git_exceptions.GitCommandError:
+        # print(f"Tried finding a wiki on a non-wiki repo, likely uninitialized.  Repo: {reponame}", file=sys.stderr)
+        date = datetime(year=1900, month=1, day=1, tzinfo=pytz.UTC)
+    finally:
+        localpath.cleanup()
+    return date
+
+
+def mini_repo_activity(gh_sess, org, repo, token):
     """
     Print out only the top level repo data without looking at the last years commits.
     :param gh_sess: an initialized GH session
     :param org: string of the org
     :param repo: string of the repo
+    :param token: PAT needed for wiki analysis
     :result: Prints out the data.
     """
-    short_repo = gh_sess.repository(org, repo)
-    repo = short_repo.refresh()
-    print(
-        f"{repo.name},{repo.created_at},{repo.pushed_at},{repo.updated_at},unexamined,{repo.private},{repo.archived}"
-    )
+    utils.check_rate_remain(gh_sess)
+    try:
+        short_repo = gh_sess.repository(org, repo)
+        repo = short_repo.refresh()
+        # This gets us the commit date (pushed_at) but ignores the wiki
+        pushed_date = repo.pushed_at
+        if repo.has_wiki:
+            # print(f"Found a Wiki: {repo.full_name}", file=sys.stderr)
+            wikidate = get_wiki_date(repo.full_name, token)
+            if wikidate > pushed_date:
+                pushed_date = wikidate
+        print(
+            f"{repo.name},{repo.created_at.strftime('%Y-%m-%d')},{pushed_date.strftime('%Y-%m-%d')},{repo.updated_at.strftime('%Y-%m-%d')},{repo.private},{repo.archived}"
+        )
+    except gh_exceptions.ConnectionError:
+        print(f"Timeout error, 'CLOUD' on repo {org}/{repo}")
 
 
 def main():
@@ -185,41 +216,14 @@ def main():
     gh_sess = login(token=args.token)
 
     # Print out the header.
-    print("Repo, Created, Updated, Admin_update, Last_commit, Private, Archive_status")
+    print("Repo, Created, Updated, Admin_update, Private, Archive_status")
 
     for orgrepo in repolist:
         org = orgrepo.split("/")[0].strip()
         repo = orgrepo.split("/")[1].strip()
-        done = False
-        count = 0
-        if args.parse_commit:
-            while not done:
-                # Note: we add up to 5 lines
-                #       to the file for a 202-failed point.
-                #       Given the structure, it's unclear how to fix, and it's rare
-                count += 1
-                result = repo_activity(gh_sess, org, repo)
-                if result != 202 or count >= MAX_RETRIES:
-                    # print(f'Leaving Loop - result: {result}, '
-                    #       f'done: {done}, count: {count}, repo: {repo}', file = sys.stderr)
-                    if count == MAX_RETRIES and result == 202:
-                        # We errored out --- put in something in the output to that effect.
-                        print(
-                            f"{org}/{repo},GH Gave 202 Error "
-                            f"- failed out after {MAX_RETRIES} attempts.",
-                            file=sys.stderr,
-                        )
-                    done = True
-                utils.check_rate_remain(gh_sess, RATE_PER_LOOP, args.info)
-
-                if result == 202:
-                    sleep(10)
-                if args.info:
-                    utils.spinner()
-        else:
-            mini_repo_activity(gh_sess, org, repo)
-            if args.info:
-                utils.spinner()
+        mini_repo_activity(gh_sess, org, repo, args.token)
+        if args.info:
+            utils.spinner()
 
     if args.info:
         print(file=sys.stderr)

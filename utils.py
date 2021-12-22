@@ -83,10 +83,14 @@ def check_rate_remain(gh_sess, loopsize=100, update=True):
         refreshtime = datetime.fromtimestamp(gh_sess.rate_limit()["resources"]["core"]["reset"])
         now = datetime.now()
         naptime = (refreshtime - now).seconds + 120
-        print(f"API limits exhausted - sleeping for {naptime} seconds", file=sys.stderr)
+        print(
+            f"API limits exhausted - sleeping for {naptime} seconds from {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}",
+            file=sys.stderr,
+        )
         for timer in range(naptime):
             sleep(1)
             if update:
                 spinner()
         if update:
             print(file=sys.stderr)
+            print("API timeout reset, continuing", file=sys.stderr)

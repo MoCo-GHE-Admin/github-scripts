@@ -25,7 +25,7 @@ optional arguments:
 ## repo_activity.py
 
 ```
-usage: repo_activity.py [-h] [--pat-key PATKEY] [--file FILE] [--parse-commit] [-i] [repos ...]
+usage: repo_activity.py [-h] [--pat-key PATKEY] [--file FILE] [-i] [repos ...]
 
 Gets a latest activity for a repo or list of repos
 
@@ -36,7 +36,6 @@ optional arguments:
   -h, --help        show this help message and exit
   --pat-key PATKEY  key in .gh_pat.toml of the PAT to use
   --file FILE       File of 'owner/repo' names, 1 per line
-  --parse-commit    look at the weekly commits of the repo. Only useful if you care about usage in the last year.
   -i                Give visual output of that progress continues - useful for long runs redirected to a file
 ```
 
