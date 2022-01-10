@@ -191,7 +191,7 @@ def mini_repo_activity(gh_sess, org, repo, token):
             if wikidate > pushed_date:
                 pushed_date = wikidate
         print(
-            f"{repo.name},{repo.created_at.strftime('%Y-%m-%d')},{pushed_date.strftime('%Y-%m-%d')},{repo.updated_at.strftime('%Y-%m-%d')},{repo.private},{repo.archived}"
+            f"{org}/{repo.name},{repo.created_at.strftime('%Y-%m-%d')},{pushed_date.strftime('%Y-%m-%d')},{repo.updated_at.strftime('%Y-%m-%d')},{repo.private},{repo.archived}"
         )
     except gh_exceptions.ConnectionError:
         print(f"Timeout error, 'CLOUD' on repo {org}/{repo}")
@@ -216,7 +216,7 @@ def main():
     gh_sess = login(token=args.token)
 
     # Print out the header.
-    print("Repo, Created, Updated, Admin_update, Private, Archive_status")
+    print("Org/Repo, Created, Updated, Admin_update, Private, Archive_status")
 
     for orgrepo in repolist:
         org = orgrepo.split("/")[0].strip()
