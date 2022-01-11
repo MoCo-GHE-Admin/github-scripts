@@ -90,15 +90,26 @@ def main():
             print(f"\tReopening issue/PR {issue.title}")
     for issue in issues:
         issue.remove_label("ARCHIVED")
-    gh_repo.label("ARCHIVED").delete()
+    try:
+        gh_repo.label("ARCHIVED").delete()
+    except gh_exceptions.NotFoundError:
+        print(
+            "No ARCHIVED label found, was this archived?  manually remove topics and update description..."
+        )
+        sys.exit()
     topics = gh_repo.topics().names
-    topics.remove("unmaintained")
-    topics.remove("abandoned")
+    if "unmaintained" in topics:
+        topics.remove("unmaintained")
+    if "abandoned" in topics:
+        topics.remove("abandoned")
+    if "inactive" in topics:
+        topics.remove("inactive")
     if not args.quiet:
         print("\tFixing topics")
     gh_repo.replace_topics(topics)
 
     new_desc = gh_repo.description.replace("DEPRECATED - ", "").replace("DEPRECATED", "")
+    new_desc = new_desc.replace("INACTIVE - ", "").replace("INACTIVE", "")
     if not args.quiet:
         print(f"\tFixing description, completed revert of repo {repo}")
     gh_repo.edit(name=gh_repo.name, description=new_desc)

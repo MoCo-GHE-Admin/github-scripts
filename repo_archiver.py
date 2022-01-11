@@ -39,6 +39,11 @@ def parse_args():
         help="key in .gh_pat.toml of the PAT to use",
     )
     parser.add_argument(
+        "--inactive",
+        help="Change the 'abandoned' and 'deprecated' wording to 'inactive'",
+        action="store_true",
+    )
+    parser.add_argument(
         "--file", help='File with "owner/repo" one per line to archive', action="store"
     )
     parser.add_argument(
@@ -92,7 +97,7 @@ def handle_issues(repo, force=False, quiet=False):
             name="ARCHIVED", color="#c41a1a", description="CLOSED at time of archiving"
         )
     if not quiet:
-        print("\tStarting work on issues")
+        print(f"\tStarting work on {repo.open_issues_count} issues")
     issues = repo.issues(state="open")
     # Need to do two passes - if we do one pass, the closure erases the label
     for issue in issues:
@@ -163,16 +168,25 @@ def main():
             # Handle the overall repo marking:
 
             topics = gh_repo.topics().names
-            topics.append("abandoned")
+            if args.inactive:
+                topics.append("inactive")
+            else:
+                topics.append("abandoned")
             topics.append("unmaintained")
             gh_repo.replace_topics(topics)
             if not args.quiet:
                 print("\tUpdated topics")
             description = gh_repo.description
             if description is not None:
-                description = "DEPRECATED - " + description
+                if args.inactive:
+                    description = "INACTIVE - " + description
+                else:
+                    description = "DEPRECATED - " + description
             else:
-                description = "DEPRECATED"
+                if args.inactive:
+                    description = "INACTIVE"
+                else:
+                    description = "DEPRECATED"
             if handled:
                 gh_repo.edit(name=gh_repo.name, description=description, archived=True)
                 if not args.quiet:
