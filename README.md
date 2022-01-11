@@ -5,6 +5,17 @@ A set of scripts for working with/analysis of github orgs/repos
 ## Requirements
 [github3.py](https://github3py.readthedocs.io/en/master/index.html)
 
+## gh_api_remain.py
+```
+usage: gh_api_remain.py [-h] [--pat-key PATKEY]
+
+Print out the remaining API limits, and the time of the reset
+
+optional arguments:
+  -h, --help        show this help message and exit
+  --pat-key PATKEY  key in .gh_pat.toml of the PAT to use
+```
+
 ## org_repos.py
 
 ```
