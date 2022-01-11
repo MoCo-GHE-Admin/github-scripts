@@ -83,7 +83,7 @@ optional arguments:
 
 ## `repo_archiver.py`
 ```
-usage: repo_archiver.py [-h] [--token TOKEN] [--pat-key PATKEY] [--file FILE] [--force] [-q] [repos ...]
+usage: repo_archiver.py [-h] [--token TOKEN] [--pat-key PATKEY] [--inactive] [--file FILE] [--force] [-q] [repos ...]
 
 Archive the specified repo, closing out issues and PRs
 
@@ -94,6 +94,7 @@ optional arguments:
   -h, --help        show this help message and exit
   --token TOKEN     PAT to access github. Needs Write access to the repos
   --pat-key PATKEY  key in .gh_pat.toml of the PAT to use
+  --inactive        Change the 'abandoned' and 'deprecated' wording to 'inactive'
   --file FILE       File with "owner/repo" one per line to archive
   --force           Don't stop if you detect previous archivers
   -q                DO NOT print, or request confirmations
