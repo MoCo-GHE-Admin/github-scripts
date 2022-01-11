@@ -84,7 +84,8 @@ def check_rate_remain(gh_sess, loopsize=100, update=True):
         now = datetime.now()
         naptime = (refreshtime - now).seconds + 120
         print(
-            f"API limits exhausted - sleeping for {naptime} seconds from {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}",
+            f"API limits exhausted - sleeping for {naptime} seconds from {datetime.now().strftime('%Y-%m-%d %H:%M:%S')} "
+            f"until {refreshtime.strftime('%Y-%m-%d %H:%M:%S')}",
             file=sys.stderr,
         )
         for timer in range(naptime):
