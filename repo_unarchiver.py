@@ -25,6 +25,8 @@ from github3 import login
 
 import utils
 
+# TODO: CUSTOM LABEL TEXT REMEDIATION
+
 
 def parse_args():
     """
@@ -61,6 +63,62 @@ def parse_args():
     return args
 
 
+def handle_issues(repo, quiet):
+    """
+    Find any custom label, and reopen and unlabel issues.
+    Return the label name that was found.  (Assumption - "ARCHIVED" is the seed)
+    :param repo: initialized gh repo object
+    :param quiet: if true, we won't print out things.
+    return: labelname that was found.
+    """
+    if not quiet:
+        print("\tFinding if there's a custom label")
+
+    labelname = "ARCHIVED"
+    labellist = repo.labels()
+    for label in labellist:
+        if label.name.find("ARCHIVED") != -1:
+            labelname = label.name
+
+    if not quiet:
+        print(f"\tFound labelname: {labelname}")
+
+    issues = repo.issues(state="closed", labels=labelname)
+
+    for issue in issues:
+        issue.edit(state="open")
+        if not quiet:
+            print(f"\tReopening issue/PR {issue.title}")
+    for issue in issues:
+        issue.remove_label(labelname)
+    try:
+        repo.label(labelname).delete()
+    except gh_exceptions.NotFoundError:
+        print(
+            "No ARCHIVED label found, was this archived?  manually remove topics and update description..."
+        )
+        sys.exit()
+    return labelname
+
+
+def handle_topics(repo, quiet):
+    """
+    Remove the unmaintained, abandoned, inactive topics if they're there.
+    :param repo: is the initialized repo object
+    :param quiet: should we not print out?
+    """
+    topics = repo.topics().names
+    if "unmaintained" in topics:
+        topics.remove("unmaintained")
+    if "abandoned" in topics:
+        topics.remove("abandoned")
+    if "inactive" in topics:
+        topics.remove("inactive")
+    if not quiet:
+        print("\tFixing topics")
+    repo.replace_topics(topics)
+
+
 def main():
     """
     Main logic for the archiver
@@ -80,36 +138,31 @@ def main():
         print(f"Trying to open {org=}, {repo=}, failed with 404")
         sys.exit()
 
+    if gh_repo.archived:
+        print(
+            "This repo is still archived, per "
+            "https://docs.github.com/en/rest/reference/repos#update-a-repository "
+            "you must manually unarchive, then this script can clean up the other changes."
+        )
+        sys.exit()
+
     if not args.quiet:
         print(f"Working with repo: {gh_repo.name}")
         print("\tRe-opening issues/PRs")
-    issues = gh_repo.issues(state="closed", labels="ARCHIVED")
-    for issue in issues:
-        issue.edit(state="open")
-        if not args.quiet:
-            print(f"\tReopening issue/PR {issue.title}")
-    for issue in issues:
-        issue.remove_label("ARCHIVED")
-    try:
-        gh_repo.label("ARCHIVED").delete()
-    except gh_exceptions.NotFoundError:
-        print(
-            "No ARCHIVED label found, was this archived?  manually remove topics and update description..."
-        )
-        sys.exit()
-    topics = gh_repo.topics().names
-    if "unmaintained" in topics:
-        topics.remove("unmaintained")
-    if "abandoned" in topics:
-        topics.remove("abandoned")
-    if "inactive" in topics:
-        topics.remove("inactive")
-    if not args.quiet:
-        print("\tFixing topics")
-    gh_repo.replace_topics(topics)
+    # TODO: find custom label
 
-    new_desc = gh_repo.description.replace("DEPRECATED - ", "").replace("DEPRECATED", "")
-    new_desc = new_desc.replace("INACTIVE - ", "").replace("INACTIVE", "")
+    labelname = handle_issues(repo=gh_repo, quiet=args.quiet)
+
+    handle_topics(repo=gh_repo, quiet=args.quiet)
+
+    customstr = labelname.replace("ARCHIVED - ", "")
+    # Remove the DEPRECATED if it exists.
+    new_desc = gh_repo.description.replace("DEPRECATED - ", "", 1).replace("DEPRECATED", "", 1)
+    # Remove the INACTIVE if it exists.
+    new_desc = new_desc.replace("INACTIVE - ", "", 1).replace("INACTIVE", "", 1)
+    # Remove the custom label if it exists.
+    new_desc = new_desc.replace(customstr + " - ", "", 1).replace(customstr, "", 1)
+
     if not args.quiet:
         print(f"\tFixing description, completed revert of repo {repo}")
     gh_repo.edit(name=gh_repo.name, description=new_desc)

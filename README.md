@@ -83,9 +83,11 @@ optional arguments:
 
 ## `repo_archiver.py`
 ```
-usage: repo_archiver.py [-h] [--token TOKEN] [--pat-key PATKEY] [--inactive] [--file FILE] [--force] [-q] [repos ...]
+usage: repo_archiver.py [-h] [--token TOKEN] [--pat-key PATKEY] [--inactive] [--custom CUSTOM] [--file FILE] [--force] [-q]
+                        [repos ...]
 
-Archive the specified repo, closing out issues and PRs
+Archive the specified repo, labelling and then closing out issues and PRs, per GitHub best practices. Closed issues/PRs, and
+description/topic changes can be completely reversed using the repo_unarchiver script.
 
 positional arguments:
   repos             owner/repo to archive
@@ -95,6 +97,7 @@ optional arguments:
   --token TOKEN     PAT to access github. Needs Write access to the repos
   --pat-key PATKEY  key in .gh_pat.toml of the PAT to use
   --inactive        Change the 'abandoned' and 'deprecated' wording to 'inactive'
+  --custom CUSTOM   Custom text to add to issue/PR label, and description, less than 36 char long
   --file FILE       File with "owner/repo" one per line to archive
   --force           Don't stop if you detect previous archivers
   -q                DO NOT print, or request confirmations

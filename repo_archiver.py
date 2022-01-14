@@ -17,6 +17,9 @@ from github3 import login
 
 import utils
 
+# TODO: CUSTOM LABEL TEXT
+MAX_CUSTOM_LENGTH = 50 - len("ARCHIVED - " + " - ")
+
 
 def parse_args():
     """
@@ -25,7 +28,9 @@ def parse_args():
     :return: Returns the parsed CLI datastructures.
     """
     parser = argparse.ArgumentParser(
-        description="Archive the specified repo, closing out issues and PRs"
+        description="Archive the specified repo, labelling and then closing out issues and PRs, "
+        "per GitHub best practices.  Closed issues/PRs, and description/topic changes "
+        "can be completely reversed using the repo_unarchiver script."
     )
     parser.add_argument("repos", help="owner/repo to archive", nargs="*", action="store")
     parser.add_argument(
@@ -44,6 +49,12 @@ def parse_args():
         action="store_true",
     )
     parser.add_argument(
+        "--custom",
+        help=f"Custom text to add to issue/PR label, and description, less than {MAX_CUSTOM_LENGTH} char long",
+        type=str,
+        action="store",
+    )
+    parser.add_argument(
         "--file", help='File with "owner/repo" one per line to archive', action="store"
     )
     parser.add_argument(
@@ -59,16 +70,19 @@ def parse_args():
     args = parser.parse_args()
     if args.repos is None and args.file is None:
         raise Exception("Must have either a list of repos, OR a file to read repos from")
+    if args.custom is not None and len(args.custom) > MAX_CUSTOM_LENGTH:
+        raise Exception(f"Custom string must be less than {MAX_CUSTOM_LENGTH} characters")
     args.token = utils.get_pat_from_file(args.patkey)
     if args.token is None:
         args.token = getpass("Please enter your GitHub token: ")
     return args
 
 
-def handle_issues(repo, force=False, quiet=False):
+def handle_issues(repo, custom, force=False, quiet=False):
     """
     Handle labelling the issues and closing them out reversibly
     :param repo: the initialized repo object
+    :param custom: additional custom text for label
     :param force: if we run into a label conflict, do we barrel through?
     :param quiet: should we talk out loud?
     :return: True is all is well, False if there was an exception that we handled
@@ -81,9 +95,15 @@ def handle_issues(repo, force=False, quiet=False):
 
     labellist = repo.labels()
 
+    if custom is None:
+        labelname = "ARCHIVED"
+    else:
+        labelname = "ARCHIVED - " + custom
+
+    print(f"\tLabelname is {labelname}")
     need_flag = True
     for label in labellist:
-        if label.name == "ARCHIVED":
+        if label.name.find(labelname) != -1:
             need_flag = False
             if not force:
                 print(
@@ -94,7 +114,7 @@ def handle_issues(repo, force=False, quiet=False):
                 sys.exit()
     if need_flag:
         repo.create_label(
-            name="ARCHIVED", color="#c41a1a", description="CLOSED at time of archiving"
+            name=labelname, color="#c41a1a", description="CLOSED at time of archiving"
         )
     if not quiet:
         print(f"\tStarting work on {repo.open_issues_count} issues")
@@ -102,7 +122,7 @@ def handle_issues(repo, force=False, quiet=False):
     # Need to do two passes - if we do one pass, the closure erases the label
     for issue in issues:
         # update label
-        issue.add_labels("ARCHIVED")
+        issue.add_labels(labelname)
     for issue in issues:
         try:
             issue.close()
@@ -163,7 +183,7 @@ def main():
 
             # Deal with issues
 
-            handled = handle_issues(gh_repo, args.force, args.quiet)
+            handled = handle_issues(gh_repo, args.custom, args.force, args.quiet)
 
             # Handle the overall repo marking:
 
@@ -177,16 +197,16 @@ def main():
             if not args.quiet:
                 print("\tUpdated topics")
             description = gh_repo.description
-            if description is not None:
-                if args.inactive:
-                    description = "INACTIVE - " + description
-                else:
-                    description = "DEPRECATED - " + description
+            if args.inactive:
+                preamble = "INACTIVE"
             else:
-                if args.inactive:
-                    description = "INACTIVE"
-                else:
-                    description = "DEPRECATED"
+                preamble = "DEPRECATED"
+            if args.custom is not None:
+                preamble += " - " + args.custom
+            if description is not None:
+                description = preamble + " - " + description
+            else:
+                description = preamble
             if handled:
                 gh_repo.edit(name=gh_repo.name, description=description, archived=True)
                 if not args.quiet:
