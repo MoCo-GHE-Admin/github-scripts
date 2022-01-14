@@ -71,11 +71,17 @@ def handle_issues(repo, quiet):
     :param quiet: if true, we won't print out things.
     return: labelname that was found.
     """
+    if not quiet:
+        print("\tFinding if there's a custom label")
+
     labelname = "ARCHIVED"
     labellist = repo.labels()
     for label in labellist:
         if label.name.find("ARCHIVED") != -1:
             labelname = label.name
+
+    if not quiet:
+        print(f"\tFound labelname: {labelname}")
 
     issues = repo.issues(state="closed", labels=labelname)
 
@@ -143,20 +149,19 @@ def main():
     if not args.quiet:
         print(f"Working with repo: {gh_repo.name}")
         print("\tRe-opening issues/PRs")
-        print("finding if there's a custom label")
     # TODO: find custom label
 
     labelname = handle_issues(repo=gh_repo, quiet=args.quiet)
 
     handle_topics(repo=gh_repo, quiet=args.quiet)
 
-    customstr = labelname.replace("ARCHIVED - ", "") + " - "
+    customstr = labelname.replace("ARCHIVED - ", "")
     # Remove the DEPRECATED if it exists.
     new_desc = gh_repo.description.replace("DEPRECATED - ", "", 1).replace("DEPRECATED", "", 1)
     # Remove the INACTIVE if it exists.
     new_desc = new_desc.replace("INACTIVE - ", "", 1).replace("INACTIVE", "", 1)
     # Remove the custom label if it exists.
-    new_desc = new_desc.replace(customstr, "", 1).replace(customstr, "", 1)
+    new_desc = new_desc.replace(customstr + " - ", "", 1).replace(customstr, "", 1)
 
     if not args.quiet:
         print(f"\tFixing description, completed revert of repo {repo}")

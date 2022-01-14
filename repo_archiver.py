@@ -100,7 +100,7 @@ def handle_issues(repo, custom, force=False, quiet=False):
     else:
         labelname = "ARCHIVED - " + custom
 
-    print(f"labelname = {labelname}")
+    print(f"\tLabelname is {labelname}")
     need_flag = True
     for label in labellist:
         if label.name.find(labelname) != -1:
