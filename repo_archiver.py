@@ -12,6 +12,7 @@ import argparse
 import sys
 from getpass import getpass
 
+import getch
 from github3 import exceptions as gh_exceptions
 from github3 import login
 
@@ -170,21 +171,20 @@ def main():
         try:
             gh_repo = gh_sess.repository(owner=org, repository=repo)
         except gh_exceptions.NotFoundError:
-            print(f"Trying to open {org=}, {repo=}, failed with 404")
+            print(f"Trying to open {org}/{repo}, failed with 404")
             sys.exit()
 
         if gh_repo.archived:
             if not args.quiet:
-                print(f"repo {gh_repo.name} is already archived, skipping")
+                print(f"repo {org}/{repo} is already archived, skipping")
         else:
 
             if not args.quiet:
-                print(f"working with repo: {gh_repo.name}")
+                print(f"working with repo: {org}/{repo}")
 
             # Deal with issues
 
             handled = handle_issues(gh_repo, args.custom, args.force, args.quiet)
-
             # Handle the overall repo marking:
 
             topics = gh_repo.topics().names
@@ -210,14 +210,22 @@ def main():
             if handled:
                 gh_repo.edit(name=gh_repo.name, description=description, archived=True)
                 if not args.quiet:
-                    print(f"\tUpdated description and archived the repo {repo}")
+                    print(f"\tUpdated description and archived the repo {org}/{repo}")
             else:
                 gh_repo.edit(name=gh_repo.name, description=description)
                 print(
-                    f"\tUpdated description, but there was a problem with issues in repo {repo}"
-                    ", pausing so you can fix and manually archive"
+                    f"\tUpdated description, but there was a problem with issues in repo "
+                    f"https://github.com/{org}/{repo}, pausing so you can fix, and then "
+                    f"I'll archive for you.  (Press N to not archive)"
                 )
-                getpass("Press enter to continue")
+                char = getch.getch()
+                if char not in ("n", "N"):
+                    gh_repo.edit(name=gh_repo.name, archived=True)
+                    if not args.quiet:
+                        print(f"\tArchived repo {org}/{repo}")
+                else:
+                    if not args.quiet:
+                        print(f"\tDid NOT archive {org}/{repo}")
 
 
 if __name__ == "__main__":
