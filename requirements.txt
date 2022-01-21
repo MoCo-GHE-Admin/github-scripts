@@ -12,7 +12,7 @@ isort==5.7.0
 jwcrypto==0.8
 lazy-object-proxy==1.5.2
 mccabe==0.6.1
-numpy==1.20.2
+numpy==1.21.0
 pycparser==2.20
 pylint==2.7.2
 python-dateutil==2.8.1
