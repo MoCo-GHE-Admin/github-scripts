@@ -227,6 +227,23 @@ optional arguments:
 ## `orglist.ini`
 Used for scripts using lists of orgs, (currently only gh_file_search.py)
 ```
+```
+usage: repo_add_user.py [-h] [--repos REPOS [REPOS ...]] [--perms {read,write,admin}] [--pat-key PATKEY] username org
+
+invite user to specified orgs at specified level
+
+positional arguments:
+  username              The GH user name add
+  org                   The org that the repos are in
+
+optional arguments:
+  -h, --help            show this help message and exit
+  --repos REPOS [REPOS ...]
+                        The 'repo' to invite to
+  --perms {read,write,admin}
+                        permissions to add: read, write, admin.
+  --pat-key PATKEY      key in .gh_pat.toml of the PAT to use
+```
 [GITHUB]
 orgs = org1,org2,org3
 ```
