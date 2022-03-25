@@ -42,6 +42,12 @@ def parse_args():
         action="store_true",
         default=False,
     )
+    parser.add_argument(
+        "--type",
+        help="Type of repo: private, public, all.",
+        default="all",
+        choices=["public", "private", "all"],
+    )
     args = parser.parse_args()
     args.token = utils.get_pat_from_file(args.patkey)
     if args.token is None:
@@ -61,7 +67,14 @@ def main():
 
     gh_sess = login(token=args.token)
     org = gh_sess.organization(args.org)
-    repolist = org.repositories()
+    if args.type == "all":
+        repolist = org.repositories()
+    elif args.type == "public":
+        repolist = org.repositories(type="public")
+    elif args.type == "private":
+        repolist = org.repositories(type="private")
+    else:
+        raise Exception(f"{args.type} not a known repository visibility type")
 
     for repo in repolist:
         if (repo.archived and args.archived) or not repo.archived:
