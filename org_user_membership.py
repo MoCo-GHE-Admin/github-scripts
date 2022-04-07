@@ -113,9 +113,12 @@ def main():
     # Alternatively, just silently pass the NotFoundError?  (don't like that at first blush)
     for repo in repolist:
         # print(f'DEBUG: repo: {repo.name}', file=sys.stderr)
+        if repo.archived:
+            repo_name = f"*{repo.name}"
+        else:
+            repo_name = repo.name
         try:
             repocollabs = repo.collaborators()
-
             for collaborator in repocollabs:
                 # print(f'collab: {collaborator.login}, repo: {repo.name}, '
                 # f'perms: {collaborator.permissions}', file=sys.stderr)
@@ -133,18 +136,18 @@ def main():
                     }
                 if repo.private:
                     if collaborator.permissions["admin"]:
-                        userlist[collaborator.login]["privadmin"].append(repo.name)
+                        userlist[collaborator.login]["privadmin"].append(repo_name)
                     if collaborator.permissions["push"]:
-                        userlist[collaborator.login]["privpush"].append(repo.name)
+                        userlist[collaborator.login]["privpush"].append(repo_name)
                     if collaborator.permissions["pull"]:
-                        userlist[collaborator.login]["privpull"].append(repo.name)
+                        userlist[collaborator.login]["privpull"].append(repo_name)
                 else:
                     if collaborator.permissions["admin"]:
-                        userlist[collaborator.login]["pubadmin"].append(repo.name)
+                        userlist[collaborator.login]["pubadmin"].append(repo_name)
                     if collaborator.permissions["push"]:
-                        userlist[collaborator.login]["pubpush"].append(repo.name)
+                        userlist[collaborator.login]["pubpush"].append(repo_name)
                     if collaborator.permissions["pull"]:
-                        userlist[collaborator.login]["pubpull"].append(repo.name)
+                        userlist[collaborator.login]["pubpull"].append(repo_name)
             utils.check_rate_remain(gh_sess, RATE_PER_LOOP, args.info)
             if args.info:
                 utils.spinner()
@@ -154,7 +157,7 @@ def main():
                 file=sys.stderr,
             )
         except gh_exceptions.ServerError:
-            print(f"50X error when processing repo: {repo.name} and collab {collaborator.login}")
+            print(f"50X error when processing repo: {repo_name} and collab {collaborator.login}")
 
     # Print The Things.
     if args.info:
