@@ -110,6 +110,20 @@ optional arguments:
                         Type of repo: private, public, all.
 ```
 
+## `org_secret_alerts.py`
+```
+usage: org_secret_alerts.py [-h] [--pat-key PATKEY] org
+
+examine org for open security alerts from secret scanning, outputing csv data to pursue the alerts
+
+positional arguments:
+  org               The org that the repos are in
+
+optional arguments:
+  -h, --help        show this help message and exit
+  --pat-key PATKEY  key in .gh_pat.toml of the PAT to use
+```
+
 ## `org_user_membership.py`
 ```
 usage: org_user_membership.py [-h] [--pat-key PATKEY] [-i] org
