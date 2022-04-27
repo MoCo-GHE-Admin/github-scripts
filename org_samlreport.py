@@ -112,9 +112,14 @@ def run_query(org, headers, url):
             raise Exception(
                 f"Query failed to run by returning code of" f" {request.status_code}. {query}"
             )
-        has_next_page = jsonified["data"]["organization"]["samlIdentityProvider"][
-            "externalIdentities"
-        ]["pageInfo"]["hasNextPage"]
+        try:
+            has_next_page = jsonified["data"]["organization"]["samlIdentityProvider"][
+                "externalIdentities"
+            ]["pageInfo"]["hasNextPage"]
+        except KeyError:
+            # missing scopes or PAT not authorized most likely
+            print(jsonified)
+            raise Exception("please inspect output above")
         cursor = jsonified["data"]["organization"]["samlIdentityProvider"]["externalIdentities"][
             "pageInfo"
         ]["endCursor"]
