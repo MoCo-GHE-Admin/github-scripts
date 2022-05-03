@@ -24,7 +24,7 @@ optional arguments:
 
 ## `gh_gile_search.py`
 ```
-usage: gh_file_search.py [-h] --query QUERY [--orgini] [--pat-key PATKEY] [-v] [-t TIME] [orgs ...]
+usage: gh_file_search.py [-h] --query QUERY [--orgini] [--pat-key PATKEY] [-v] [-f] [-t TIME] [orgs ...]
 
 Get file search resuls for an org, returning repo list. e.g. if you want 'org:<ORGNAME> filename:<FILENAME> <CONTENTS>', then you
 just need 'filename:<FILENAME> <CONTENTS>' and then list the orgs to apply it to. Note: There's a pause of ~10 seconds between org
@@ -39,6 +39,7 @@ optional arguments:
   --orgini          use "orglist.ini" with the "orgs" entry with a csv list of all orgs to check
   --pat-key PATKEY  key in .gh_pat.toml of the PAT to use
   -v                Verbose - Print out that we're waiting for rate limit reasons
+  -f                Print out file level responses rather than repo level
   -t TIME           Time to sleep between searches, in seconds, should be 10s or more
 ```
 
