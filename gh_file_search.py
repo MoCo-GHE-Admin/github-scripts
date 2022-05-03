@@ -15,6 +15,11 @@ from github3 import login
 import utils
 
 
+# DONE #TODO: Print repo visibility.
+# TODO: print out code found
+# TODO: print out hit counts?
+# TODO: limit result report?
+# TODO: Make the output format consistent and at least somewhat readable
 def parse_arguments():
     """
     Look at the first arg and handoff to the arg parser for that specific
@@ -52,6 +57,12 @@ def parse_arguments():
         default=False,
     )
     parser.add_argument(
+        "-f",
+        dest="print_file",
+        help="Print out file level responses rather than repo level",
+        action="store_true",
+    )
+    parser.add_argument(
         "-t",
         dest="time",
         default=10,
@@ -86,11 +97,23 @@ def main():
     length = len(orglist)  # Used to determine when to pause
     for org in orglist:
         try:
-            search = gh_sess.search_code(f"org:{org} {args.query}")
+            search = gh_sess.search_code(f"org:{org} {args.query}", text_match=True)
             repos = set()
+            files = []
             for result in search:
                 repos.add(result.repository.name)
+                if result.repository.private:
+                    vistext = "Private"
+                else:
+                    vistext = "Public"
+                files.append(
+                    f"{result.repository},{vistext}:{result.path}/{result.name},{result.text_matches[0]['fragment']}"
+                )
             print(f'org: {org} Repo: {",".join(repos)}')
+            if args.print_file:
+                print("Files found:")
+                for line in files:
+                    print(line)
         except gh_exceptions.UnprocessableEntity:
             print(f"org: {org} Failed, likely due to lack of repos in the org")
         finally:
