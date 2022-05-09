@@ -22,7 +22,7 @@ optional arguments:
   --pat-key PATKEY  key in .gh_pat.toml of the PAT to use
 ```
 
-## `gh_gile_search.py`
+## `gh_file_search.py`
 ```
 usage: gh_file_search.py [-h] --query QUERY [--orgini] [--pat-key PATKEY] [-v] [-f] [-t TIME] [orgs ...]
 
@@ -57,6 +57,21 @@ optional arguments:
   --pending         Include Pending requests?
   --orgini          use "orglist.ini" with the "orgs" entry with a csv list of all orgs to check
   --pat-key PATKEY  key in .gh_pat.toml of the PAT to use
+```
+
+## `gh_pat_owner.py`
+```
+usage: gh_pat_owner.py [-h] [--apihost APIHOST] [--raw] pat
+
+Get details of a PAT, 'GH name, GH ID, Permissions'
+
+positional arguments:
+  pat                The PAT to analyze
+
+optional arguments:
+  -h, --help         show this help message and exit
+  --apihost APIHOST  hostname to use for query - api.github.com is default
+  --raw              Print out the raw results and headers
 ```
 
 ## `gh_user_moderation.py`
