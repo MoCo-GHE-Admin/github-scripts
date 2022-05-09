@@ -45,7 +45,7 @@ def analyze_pat(pat, hostname):
         return {"json": json, "headers": result.headers}
         # return f"{json['login']},{json['node_id']},\"{result.headers['X-OAuth-Scopes']}\""
     else:
-        print("uh oh")
+        raise Exception(f"Query failed to run by returning code of {result.status_code}. {query}")
 
 
 def main():
