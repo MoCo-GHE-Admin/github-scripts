@@ -2,6 +2,12 @@
 """
 Script to get the mapping of SAML source name to GH login name
 Used in part for ID, also auditing who's clicked the auth button.
+
+hwine suggests potentially rewriting this to use github3 is possible, and
+even if the samlreport isn't included in the library he gives the following example code on how to
+make github3.py do things it doesn't know about.
+search for OutsideCollaboratorIterator on this page:
+https://github.com/mozilla/github-org-scripts/blob/main/notebooks/UserSearchPy3.ipynb
 """
 
 import argparse
@@ -95,20 +101,19 @@ def run_query(org, headers, url):
     headers -- string - any headers needed for auth.
     url -- graphql engpoint
     return - either the JSON return, or an exception.
+           - note that we strip off the everything except the list of users
+           - and it's returned as a dict keyed by the cursor returned by the query
     """
 
     cursor = None
     has_next_page = True
-    results = {}
+    data = {}
     while has_next_page:
         query = make_query(org, cursor)
-        # print(f'Query: {query}\n\n\n')
         request = requests.post(url=url, json={"query": query}, headers=headers)
         jsonified = request.json()
         # print(f'Result of this loop - {request.json()}')
-        if request.status_code == 200:
-            results.update(jsonified)
-        else:
+        if request.status_code != 200:
             raise Exception(
                 f"Query failed to run by returning code of" f" {request.status_code}. {query}"
             )
@@ -123,8 +128,12 @@ def run_query(org, headers, url):
         cursor = jsonified["data"]["organization"]["samlIdentityProvider"]["externalIdentities"][
             "pageInfo"
         ]["endCursor"]
+        # Get rid of the overarching structures we don't care about in the results
+        data[cursor] = jsonified["data"]["organization"]["samlIdentityProvider"][
+            "externalIdentities"
+        ]["edges"]
 
-    return results
+    return data
 
 
 def main():
@@ -138,10 +147,6 @@ def main():
     headers = {"content-type": "application/json", "Authorization": "Bearer " + args.token}
 
     saml_dict = run_query(args.org, headers, args.url)
-    # Get rid of the overarching structures we don't care about in the results
-    saml_dict = saml_dict["data"]["organization"]["samlIdentityProvider"]["externalIdentities"][
-        "edges"
-    ]
 
     # Have the SAML mapping - now let's get the whole list of users for the org
     user_mapping = {}
@@ -154,9 +159,10 @@ def main():
     # Now we have the users for the org, with None in the field for SAML name
     # Go through saml, and match up the login to SAML id --- anyone without a
     # SAML will keep "None" in the SAML field.
-    for line in saml_dict:
-        saml_name = line["node"]["samlIdentity"]["nameId"]
-        user_mapping[line["node"]["user"]["login"]] = saml_name
+    for cursor in saml_dict:
+        for line in saml_dict[cursor]:
+            saml_name = line["node"]["samlIdentity"]["nameId"]
+            user_mapping[line["node"]["user"]["login"]] = saml_name
 
     output = sys.stdout
     if args.output is not None:
