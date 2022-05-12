@@ -170,25 +170,6 @@ optional arguments:
   --pat-key PATKEY  key in .gh_pat.toml of the PAT to use
 ```
 
-## `org_add_user.py`
-```
-usage: org_add_user.py [-h] [--repos REPOS [REPOS ...]] [--perms {read,write,admin}] [--pat-key PATKEY] username org
-
-invite user to specified orgs at specified level
-
-positional arguments:
-  username              The GH user name add
-  org                   The org that the repos are in
-
-optional arguments:
-  -h, --help            show this help message and exit
-  --repos REPOS [REPOS ...]
-                        The 'repo' to invite to
-  --perms {read,write,admin}
-                        permissions to add: read, write, admin.
-  --pat-key PATKEY      key in .gh_pat.toml of the PAT to use
-```
-
 ## `org_remove_user.py`
 ```
 usage: org_remove_user.py [-h] [--pat-key PATKEY] [--orgfile] [--do-it] username [orgs ...]
@@ -238,6 +219,29 @@ optional arguments:
   --issues          Check the issues to set a date of activity if more recent than code
   --file FILE       File of 'owner/repo' names, 1 per line
   -i                Give visual output of that progress continues - useful for long runs redirected to a file
+```
+
+## `repo_add_perms.py`
+```
+usage: repo_add_perms.py [-h] --perm PERM --org ORG --repos REPOS [REPOS ...] [--apihost APIHOST] [--pat-key PATKEY]
+                         {team,member} name
+
+invite member or team to specified repos at specified level. If adding a user, if the user is a member, adds the member, else invites
+as an OC.
+
+positional arguments:
+  {team,member}         team or member - specify type of perm
+  name                  Name of the member or team to add
+
+optional arguments:
+  -h, --help            show this help message and exit
+  --perm PERM           String of the role name, defaults are 'read', 'write', 'triage', 'maintain', 'admin' - but others can be set
+                        by the repo admin
+  --org ORG             Organization/owner that the repos belong to
+  --repos REPOS [REPOS ...]
+                        list of repo names
+  --apihost APIHOST     API host to connect to - default api.github.com
+  --pat-key PATKEY      key in .gh_pat.toml of the PAT to use
 ```
 
 ## `repo_archiver.py`
