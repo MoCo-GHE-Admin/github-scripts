@@ -11,6 +11,7 @@ https://github.com/mozilla/github-org-scripts/blob/main/notebooks/UserSearchPy3.
 """
 
 import argparse
+import datetime
 import sys
 from getpass import getpass
 
@@ -168,7 +169,11 @@ def main():
     if args.output is not None:
         output = open(args.output, "w")
 
-    print("# org_samlreport_output gh_org:%s" % args.org)
+    # add comment header with structured data
+    my_date = datetime.datetime.now()
+    the_dt = my_date.strftime("%Y%m%dT%H%M%S%z")
+    print("# org_samlreport_output gh_org:%s datetime:%s" % (args.org, the_dt))
+
     print("SAML,GH Login", file=output)
 
     for gh_name, ldap in user_mapping.items():
