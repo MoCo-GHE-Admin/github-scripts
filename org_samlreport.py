@@ -170,9 +170,9 @@ def main():
         output = open(args.output, "w")
 
     # add comment header with structured data
-    my_date = datetime.datetime.now()
-    the_dt = my_date.strftime("%Y%m%dT%H%M%S%z")
-    print("# org_samlreport_output gh_org:%s datetime:%s" % (args.org, the_dt))
+    now_dt = datetime.datetime.now()
+    dt_string = now_dt.strftime("%Y%m%dT%H%M%S%z")
+    print("# org_samlreport_output gh_org:%s datetime:%s" % (args.org, dt_string))
 
     print("SAML,GH Login", file=output)
 
