@@ -168,6 +168,7 @@ def main():
     if args.output is not None:
         output = open(args.output, "w")
 
+    print("# org_samlreport_output gh_org:%s" % args.org)
     print("SAML,GH Login", file=output)
 
     for gh_name, ldap in user_mapping.items():
