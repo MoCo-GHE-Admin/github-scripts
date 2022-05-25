@@ -162,7 +162,11 @@ def main():
     for cursor in saml_dict:
         for line in saml_dict[cursor]:
             saml_name = line["node"]["samlIdentity"]["nameId"]
-            user_mapping[line["node"]["user"]["login"]] = saml_name
+            if line["node"]["user"] is None:
+                # Occasionally a user will get an LDAP but no link in github?
+                print(f"ERROR: SAML {saml_name} has NO match in github?!", file=sys.stderr)
+            else:
+                user_mapping[line["node"]["user"]["login"]] = saml_name
 
     output = sys.stdout
     if args.output is not None:
