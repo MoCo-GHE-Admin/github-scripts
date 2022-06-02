@@ -169,12 +169,14 @@ def main():
     if args.output is not None:
         output = open(args.output, "w")
 
-    # add comment header with structured data
+    # add header column with structured data
     now_dt = datetime.datetime.now()
     dt_string = now_dt.strftime("%Y%m%dT%H%M%S%z")
-    print("# org_samlreport_output gh_org:%s datetime:%s" % (args.org, dt_string))
-
-    print("SAML,GH Login", file=output)
+    structured_data_header = (
+        "structured-data-header source=org_samlreport_output gh_org=%s datetime=%s"
+        % (args.org, dt_string)
+    )
+    print("SAML,GH Login,%s" % structured_data_header, file=output)
 
     for gh_name, ldap in user_mapping.items():
         print(f"{ldap},{gh_name}", file=output)
