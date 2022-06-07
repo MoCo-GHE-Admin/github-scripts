@@ -172,10 +172,7 @@ def main():
     # add header column with structured data
     now_dt = datetime.datetime.now()
     dt_string = now_dt.strftime("%Y%m%dT%H%M%S%z")
-    structured_data_header = (
-        "structured-data-header source=org_samlreport_output gh_org=%s datetime=%s"
-        % (args.org, dt_string)
-    )
+    structured_data_header = f"structured-data-header source=org_samlreport_output gh_org={args.org} datetime={dt_string}"
     print("SAML,GH Login,%s" % structured_data_header, file=output)
 
     for gh_name, ldap in user_mapping.items():
