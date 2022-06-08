@@ -93,9 +93,10 @@ optional arguments:
 
 ## `org_comms_team.py`
 ```
-usage: org_comms_team.py [-h] [--team-name TEAM_NAME] [--pat-key PATKEY] org
+usage: org_comms_team.py [-h] [--team-name TEAM_NAME] [--pat-key PATKEY] [--users USERS [USERS ...]] [--remove] org
 
-Go into an org, create a team named for the --team-name and add all members to it
+Go into an org, create a team named for the --team-name and add all members to it, OR if --users is specified - add that list of
+users. Specify --remove to invert the operation
 
 positional arguments:
   org                   organization to do this to
@@ -105,6 +106,9 @@ optional arguments:
   --team-name TEAM_NAME
                         name of the team to create, defaults to 'everybody-temp-comms'
   --pat-key PATKEY      key in .gh_pat.toml of the PAT to use
+  --users USERS [USERS ...]
+                        List of users to add to the team
+  --remove              Remove the specified users from the team rather than add
 ```
 
 ## `org_repos.py`

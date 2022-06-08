@@ -23,7 +23,7 @@ def parse_args():
     :return: Returns the parsed CLI datastructures.
     """
     parser = argparse.ArgumentParser(
-        description="Go into an org, create a team named for the --team-name and add all members to it"
+        description="Go into an org, create a team named for the --team-name and add all members to it, OR if --users is specified - add that list of users.  Specify --remove to invert the operation"
     )
     parser.add_argument("org", help="organization to do this to", action="store")
     parser.add_argument(
@@ -39,6 +39,12 @@ def parse_args():
         action="store",
         dest="patkey",
         help="key in .gh_pat.toml of the PAT to use",
+    )
+    parser.add_argument("--users", nargs="+", help="List of users to add to the team")
+    parser.add_argument(
+        "--remove",
+        help="Remove the specified users from the team rather than add",
+        action="store_true",
     )
     args = parser.parse_args()
     args.token = utils.get_pat_from_file(args.patkey)
@@ -77,16 +83,33 @@ def main():
         team = org.team(team_found)
     else:
         team = org.create_team(name=args.team_name)
-    member_list = org.members()
-    for member in member_list:
-        # Note, this call will fail if SAML is enforced, but the user isn't SAMLd.
-        # This is precisely NOT the use case for this program, so "Note it and move on"
-        try:
-            team.add_or_update_membership(username=member.login)
-            print(f"Added {member.login} to the team")
-        except gh_exceptions.UnprocessableEntity:
-            print(f"User {member.login} doesn't appear to be addable (SAML?) Skipping.")
-    print(f"Group named {args.team_name} created in org {args.org}")
+    if args.users is not None:
+        for member in args.users:
+            try:
+                if args.remove:
+                    team.revoke_membership(username=member)
+                    print(f"Removed {member} from the team")
+                else:
+                    team.add_or_update_membership(username=member)
+                    print(f"Added {member} to the team")
+            except gh_exceptions.UnprocessableEntity:
+                print(f"User {member} doesn't appear to be addable (SAML?  misspelled?) Skipping.")
+
+    else:
+        member_list = org.members()
+        for member in member_list:
+            # Note, this call will fail if SAML is enforced, but the user isn't SAMLd.
+            # This is precisely NOT the use case for this program, so "Note it and move on"
+            try:
+                if args.remove:
+                    team.revoke_membership(username=member.login)
+                    print(f"Removed {member.login} from the team")
+                else:
+                    team.add_or_update_membership(username=member.login)
+                    print(f"Added {member.login} to the team")
+            except gh_exceptions.UnprocessableEntity:
+                print(f"User {member.login} doesn't appear to be addable (SAML?) Skipping.")
+    print(f"Group named {args.team_name} created or updated in org {args.org}")
 
 
 if __name__ == "__main__":
