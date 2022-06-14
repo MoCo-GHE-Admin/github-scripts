@@ -59,6 +59,24 @@ optional arguments:
   --pat-key PATKEY  key in .gh_pat.toml of the PAT to use
 ```
 
+## gh_org_repo_perms.py
+```
+usage: gh_org_repo_perms.py [-h] [--pat-key PATKEY] [--user USER | --repo REPO] [-i] org
+
+Depending on args, dump all repos in an org, repos for a user or users for a repo, and their user permissions, defaults to all repos
+and users in an org.
+
+positional arguments:
+  org               The org to examine
+
+optional arguments:
+  -h, --help        show this help message and exit
+  --pat-key PATKEY  key in .gh_pat.toml of the PAT to use
+  --user USER       Single user to examine in the org
+  --repo REPO       Single repo to examine in the org
+  -i                Give visual output of that progress continues - useful for long runs redirected to a file
+```
+
 ## `gh_pat_owner.py`
 ```
 usage: gh_pat_owner.py [-h] [--apihost APIHOST] [--raw] pat
@@ -142,21 +160,6 @@ positional arguments:
 optional arguments:
   -h, --help        show this help message and exit
   --pat-key PATKEY  key in .gh_pat.toml of the PAT to use
-```
-
-## `org_user_membership.py`
-```
-usage: org_user_membership.py [-h] [--pat-key PATKEY] [-i] org
-
-Gets a list of users for an org with how many repos they're involved with
-
-positional arguments:
-  org               The org to examine
-
-optional arguments:
-  -h, --help        show this help message and exit
-  --pat-key PATKEY  key in .gh_pat.toml of the PAT to use
-  -i                Give visual output of that progress continues - useful for long runs redirected to a file
 ```
 
 ## `org_owners.py`
