@@ -29,7 +29,7 @@ def parse_args():
     """
 
     parser = argparse.ArgumentParser(
-        description="Gets a list of users for an org with how many repos they're involved with"
+        description="Depending on args, dump all repos in an org, repos for a user or users for a repo, and their user permissions, defaults to all repos and users in an org."
     )
     parser.add_argument("org", help="The org to examine", action="store")
     parser.add_argument(
@@ -39,6 +39,9 @@ def parse_args():
         dest="patkey",
         help="key in .gh_pat.toml of the PAT to use",
     )
+    analyse_group = parser.add_mutually_exclusive_group()
+    analyse_group.add_argument("--user", help="Single user to examine in the org")
+    analyse_group.add_argument("--repo", help="Single repo to examine in the org")
     parser.add_argument(
         "-i",
         action="store_true",
@@ -83,7 +86,11 @@ def main():
     gh_sess = login(token=args.token)
 
     org = gh_sess.organization(args.org)
-    memberlist = org.members(role="member")
+    # If a user was specified, just do that one, else, list all org members
+    if args.user is None:
+        memberlist = org.members(role="member")
+    else:
+        memberlist = [gh_sess.user(args.user)]
     for member in memberlist:
         userlist[member.login] = {
             "role": "member",
@@ -94,21 +101,27 @@ def main():
             "pubpush": [],
             "pubadmin": [],
         }
-    adminlist = org.members(role="admin")
-    for admin in adminlist:
-        userlist[admin.login] = {
-            "role": "admin",
-            "privpull": [],
-            "privpush": [],
-            "privadmin": [],
-            "pubpull": [],
-            "pubpush": [],
-            "pubadmin": [],
-        }
+
+    if args.user is None:
+        adminlist = org.members(role="admin")
+        for admin in adminlist:
+            userlist[admin.login] = {
+                "role": "admin",
+                "privpull": [],
+                "privpush": [],
+                "privadmin": [],
+                "pubpull": [],
+                "pubpush": [],
+                "pubadmin": [],
+            }
 
     # great, we have initialized our lists - now to go through the repos
 
-    repolist = org.repositories()
+    # If a repo is specified, just look at that one, otherwise all of them in the org.
+    if args.repo is None:
+        repolist = org.repositories()
+    else:
+        repolist = [gh_sess.repository(args.org, args.repo)]
     # FIXME Should I pull out "-ghsa-" repos - they NEVER find perms right.
     # Alternatively, just silently pass the NotFoundError?  (don't like that at first blush)
     for repo in repolist:
@@ -124,30 +137,31 @@ def main():
                 # f'perms: {collaborator.permissions}', file=sys.stderr)
                 # go through and update their items
                 # External collabs aren't in the list already, so add them
-                if collaborator.login not in userlist:
-                    userlist[collaborator.login] = {
-                        "role": "outside",
-                        "privpull": [],
-                        "privpush": [],
-                        "privadmin": [],
-                        "pubpull": [],
-                        "pubpush": [],
-                        "pubadmin": [],
-                    }
-                if repo.private:
-                    if collaborator.permissions["admin"]:
-                        userlist[collaborator.login]["privadmin"].append(repo_name)
-                    if collaborator.permissions["push"]:
-                        userlist[collaborator.login]["privpush"].append(repo_name)
-                    if collaborator.permissions["pull"]:
-                        userlist[collaborator.login]["privpull"].append(repo_name)
-                else:
-                    if collaborator.permissions["admin"]:
-                        userlist[collaborator.login]["pubadmin"].append(repo_name)
-                    if collaborator.permissions["push"]:
-                        userlist[collaborator.login]["pubpush"].append(repo_name)
-                    if collaborator.permissions["pull"]:
-                        userlist[collaborator.login]["pubpull"].append(repo_name)
+                if args.user is None or args.user == collaborator.login:
+                    if collaborator.login not in userlist:
+                        userlist[collaborator.login] = {
+                            "role": "outside",
+                            "privpull": [],
+                            "privpush": [],
+                            "privadmin": [],
+                            "pubpull": [],
+                            "pubpush": [],
+                            "pubadmin": [],
+                        }
+                    if repo.private:
+                        if collaborator.permissions["admin"]:
+                            userlist[collaborator.login]["privadmin"].append(repo_name)
+                        if collaborator.permissions["push"]:
+                            userlist[collaborator.login]["privpush"].append(repo_name)
+                        if collaborator.permissions["pull"]:
+                            userlist[collaborator.login]["privpull"].append(repo_name)
+                    else:
+                        if collaborator.permissions["admin"]:
+                            userlist[collaborator.login]["pubadmin"].append(repo_name)
+                        if collaborator.permissions["push"]:
+                            userlist[collaborator.login]["pubpush"].append(repo_name)
+                        if collaborator.permissions["pull"]:
+                            userlist[collaborator.login]["pubpull"].append(repo_name)
             utils.check_rate_remain(gh_sess, RATE_PER_LOOP, args.info)
             if args.info:
                 utils.spinner()
