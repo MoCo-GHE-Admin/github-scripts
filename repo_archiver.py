@@ -62,6 +62,11 @@ def parse_args():
         "--force", help="Don't stop if you detect previous archivers", action="store_true"
     )
     parser.add_argument(
+        "--pause",
+        help="Pause upon detecting anomalies that might need fixing, but aren't blockers",
+        action="store_true",
+    )
+    parser.add_argument(
         "-q",
         help="DO NOT print, or request confirmations",
         dest="quiet",
@@ -181,6 +186,16 @@ def main():
 
             if not args.quiet:
                 print(f"working with repo: {org}/{repo}")
+
+            # If there are gh_pages - let people know about it.
+            if gh_repo.has_pages:
+                if args.pause:
+                    print(
+                        "\tNOTE: Repo has gh_pages - please deal with them in the UI and press any key to continue"
+                    )
+                    char = getch.getch()
+                else:
+                    print("\tNOTE: Repo has gh_pages")
 
             # Deal with issues
 

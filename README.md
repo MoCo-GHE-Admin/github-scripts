@@ -253,7 +253,7 @@ optional arguments:
 
 ## `repo_archiver.py`
 ```
-usage: repo_archiver.py [-h] [--token TOKEN] [--pat-key PATKEY] [--inactive] [--custom CUSTOM] [--file FILE] [--force] [-q]
+usage: repo_archiver.py [-h] [--token TOKEN] [--pat-key PATKEY] [--inactive] [--custom CUSTOM] [--file FILE] [--force] [--pause] [-q]
                         [repos ...]
 
 Archive the specified repo, labelling and then closing out issues and PRs, per GitHub best practices. Closed issues/PRs, and
@@ -270,6 +270,7 @@ optional arguments:
   --custom CUSTOM   Custom text to add to issue/PR label, and description, less than 36 char long
   --file FILE       File with "owner/repo" one per line to archive
   --force           Don't stop if you detect previous archivers
+  --pause           Pause upon detecting anomalies that might need fixing, but aren't blockers
   -q                DO NOT print, or request confirmations
 ```
 
