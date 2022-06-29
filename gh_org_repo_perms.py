@@ -120,7 +120,9 @@ def main():
 
     # If a repo is specified, just look at that one, otherwise all of them in the org.
     if args.repo is None:
-        repolist = org.repositories()
+        # repolist = org.repositories()
+        # TESTING
+        repolist = org.repositories(number=100)
     else:
         repolist = [gh_sess.repository(args.org, args.repo)]
 
@@ -183,22 +185,75 @@ def main():
                 )
             bar()
 
-    # Print The Things.
-    if args.info:
-        print(file=sys.stderr)
-    print(
-        "Username, ORG Role, pub-count, priv-count, pub-pull, pub-push, pub-admin,"
-        " priv-pull, priv-push, priv-admin"
-    )
-    for username, data in userlist.items():
-        pubcount = len(data["pubpull"]) + len(data["pubpush"]) + len(data["pubadmin"])
-        privcount = len(data["privpull"]) + len(data["privpush"]) + len(data["privadmin"])
+    REPORT_B = True
+    if REPORT_B:
+        # per-repo report
+        #   - makes it easier to see a user's permissions on each repo
+
+        # NOTES: misses archived repo perms due to the *NAME pattern in datastructure
+        #   TODO: check for archived name or be ok with dropping those perms... seems sort of sane/safe
+
+        # debugging
+        print(userlist)
+
+        # TODO: print header
+        # TODO: add gh org in output?
+
+        # should only be one username...
+        for username, data in userlist.items():
+            for repo in repolist:
+
+                # if
+                # perms = ""?
+                # print f"{user},{repo},{perms}"
+
+                access_string = ""
+                tmp_list = []
+                # print(list_to_str(data))
+
+                # handle role
+                access_level = ""
+                if data["role"] == "member":
+                    access_level = "member"
+                elif data["role"] == "outside":
+                    access_level = "outside"
+                else:
+                    raise "shouldn't be here"
+
+                if repo.name in data["pubpull"]:
+                    tmp_list.append("pubpull")
+                if repo.name in data["pubpush"]:
+                    tmp_list.append("pubpush")
+                if repo.name in data["pubadmin"]:
+                    tmp_list.append("pubadmin")
+                if repo.name in data["privpull"]:
+                    tmp_list.append("privpull")
+                if repo.name in data["privpush"]:
+                    tmp_list.append("privpush")
+                if repo.name in data["privadmin"]:
+                    tmp_list.append("privadmin")
+
+                access_string = ",".join(tmp_list)
+
+                if access_string != "":
+                    print(f'{username},{repo.name},{access_level},"{access_string}"')
+    else:
+        # Print The Things.
+        if args.info:
+            print(file=sys.stderr)
         print(
-            f'{username},{data["role"]},{pubcount},{privcount},"{list_to_str(data["pubpull"])}",'
-            f'"{list_to_str(data["pubpush"])}","{list_to_str(data["pubadmin"])}",'
-            f'"{list_to_str(data["privpull"])}","{list_to_str(data["privpush"])}",'
-            f'"{list_to_str(data["privadmin"])}"'
+            "Username, ORG Role, pub-count, priv-count, pub-pull, pub-push, pub-admin,"
+            " priv-pull, priv-push, priv-admin"
         )
+        for username, data in userlist.items():
+            pubcount = len(data["pubpull"]) + len(data["pubpush"]) + len(data["pubadmin"])
+            privcount = len(data["privpull"]) + len(data["privpush"]) + len(data["privadmin"])
+            print(
+                f'{username},{data["role"]},{pubcount},{privcount},"{list_to_str(data["pubpull"])}",'
+                f'"{list_to_str(data["pubpush"])}","{list_to_str(data["pubadmin"])}",'
+                f'"{list_to_str(data["privpull"])}","{list_to_str(data["privpush"])}",'
+                f'"{list_to_str(data["privadmin"])}"'
+            )
 
 
 if __name__ == "__main__":
