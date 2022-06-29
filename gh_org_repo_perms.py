@@ -43,6 +43,7 @@ def parse_args():
     analyse_group = parser.add_mutually_exclusive_group()
     analyse_group.add_argument("--user", help="Single user to examine in the org")
     analyse_group.add_argument("--repo", help="Single repo to examine in the org")
+    # TODO: still required with alive-progress?
     parser.add_argument(
         "-i",
         action="store_true",
@@ -120,21 +121,28 @@ def main():
 
     # If a repo is specified, just look at that one, otherwise all of them in the org.
     if args.repo is None:
-        # repolist = org.repositories()
         # TESTING
-        repolist = org.repositories(number=100)
+        # repolist = org.repositories(number=100)
+        repolist = org.repositories()
     else:
         repolist = [gh_sess.repository(args.org, args.repo)]
 
-    with alive_progress.alive_bar(title="fetching list of repos") as bar:
+    with alive_progress.alive_bar(1, title="fetching list of repos") as bar:
         # materialize the iterator so we can get a count
+        bar(0.1)
         repolist = list(repolist)
+        bar(1)
 
     # FIXME Should I pull out "-ghsa-" repos - they NEVER find perms right.
     # Alternatively, just silently pass the NotFoundError?  (don't like that at first blush)
-    with alive_progress.alive_bar(len(repolist), title="checking repos") as bar:
+    with alive_progress.alive_bar(
+        len(repolist), dual_line=True, title="getting repo permissions"
+    ) as bar:
         for repo in repolist:
+            bar.text = f"checking {repo.name}..."
             # print(f'DEBUG: repo: {repo.name}', file=sys.stderr)
+            # TODO: have switch that decides iff the * prefix is added
+            #      - messes with report_B(?)
             if repo.archived:
                 repo_name = f"*{repo.name}"
             else:
@@ -189,6 +197,7 @@ def main():
     if REPORT_B:
         # per-repo report
         #   - makes it easier to see a user's permissions on each repo
+        #   - could be used as input to tool that would replicate permissions between users
 
         # NOTES: misses archived repo perms due to the *NAME pattern in datastructure
         #   TODO: check for archived name or be ok with dropping those perms... seems sort of sane/safe
@@ -196,7 +205,9 @@ def main():
         # debugging
         print(userlist)
 
-        # TODO: print header
+        # print header
+        print("user,repo,role,access")
+
         # TODO: add gh org in output?
 
         # should only be one username...
