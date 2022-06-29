@@ -127,7 +127,7 @@ def main():
     else:
         repolist = [gh_sess.repository(args.org, args.repo)]
 
-    with alive_progress.alive_bar(1, title="fetching list of repos") as bar:
+    with alive_progress.alive_bar(manual=True, title="fetching list of repos") as bar:
         # materialize the iterator so we can get a count
         bar(0.1)
         repolist = list(repolist)
@@ -139,7 +139,7 @@ def main():
         len(repolist), dual_line=True, title="getting repo permissions"
     ) as bar:
         for repo in repolist:
-            bar.text = f"checking {repo.name}..."
+            bar.text = f"  - checking {repo.name}..."
             # print(f'DEBUG: repo: {repo.name}', file=sys.stderr)
             # TODO: have switch that decides iff the * prefix is added
             #      - messes with report_B(?)
@@ -211,6 +211,7 @@ def main():
         # TODO: add gh org in output?
 
         # should only be one username...
+        # TODO: complain (earlier) if more than one?
         for username, data in userlist.items():
             for repo in repolist:
 
