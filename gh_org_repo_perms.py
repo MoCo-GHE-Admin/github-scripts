@@ -13,6 +13,7 @@ import argparse
 import sys
 from getpass import getpass
 
+import alive_progress
 from github3 import exceptions as gh_exceptions
 from github3 import login
 
@@ -122,56 +123,65 @@ def main():
         repolist = org.repositories()
     else:
         repolist = [gh_sess.repository(args.org, args.repo)]
+
+    with alive_progress.alive_bar(title="fetching list of repos") as bar:
+        # materialize the iterator so we can get a count
+        repolist = list(repolist)
+
     # FIXME Should I pull out "-ghsa-" repos - they NEVER find perms right.
     # Alternatively, just silently pass the NotFoundError?  (don't like that at first blush)
-    for repo in repolist:
-        # print(f'DEBUG: repo: {repo.name}', file=sys.stderr)
-        if repo.archived:
-            repo_name = f"*{repo.name}"
-        else:
-            repo_name = repo.name
-        try:
-            repocollabs = repo.collaborators()
-            for collaborator in repocollabs:
-                # print(f'collab: {collaborator.login}, repo: {repo.name}, '
-                # f'perms: {collaborator.permissions}', file=sys.stderr)
-                # go through and update their items
-                # External collabs aren't in the list already, so add them
-                if args.user is None or args.user == collaborator.login:
-                    if collaborator.login not in userlist:
-                        userlist[collaborator.login] = {
-                            "role": "outside",
-                            "privpull": [],
-                            "privpush": [],
-                            "privadmin": [],
-                            "pubpull": [],
-                            "pubpush": [],
-                            "pubadmin": [],
-                        }
-                    if repo.private:
-                        if collaborator.permissions["admin"]:
-                            userlist[collaborator.login]["privadmin"].append(repo_name)
-                        if collaborator.permissions["push"]:
-                            userlist[collaborator.login]["privpush"].append(repo_name)
-                        if collaborator.permissions["pull"]:
-                            userlist[collaborator.login]["privpull"].append(repo_name)
-                    else:
-                        if collaborator.permissions["admin"]:
-                            userlist[collaborator.login]["pubadmin"].append(repo_name)
-                        if collaborator.permissions["push"]:
-                            userlist[collaborator.login]["pubpush"].append(repo_name)
-                        if collaborator.permissions["pull"]:
-                            userlist[collaborator.login]["pubpull"].append(repo_name)
-            utils.check_rate_remain(gh_sess, RATE_PER_LOOP, args.info)
-            if args.info:
-                utils.spinner()
-        except gh_exceptions.NotFoundError as err:
-            print(
-                f"In repo {repo.name} and collab {collaborator.login} : {err.message}",
-                file=sys.stderr,
-            )
-        except gh_exceptions.ServerError:
-            print(f"50X error when processing repo: {repo_name} and collab {collaborator.login}")
+    with alive_progress.alive_bar(len(repolist), title="checking repos") as bar:
+        for repo in repolist:
+            # print(f'DEBUG: repo: {repo.name}', file=sys.stderr)
+            if repo.archived:
+                repo_name = f"*{repo.name}"
+            else:
+                repo_name = repo.name
+            try:
+                repocollabs = repo.collaborators()
+                for collaborator in repocollabs:
+                    # print(f'collab: {collaborator.login}, repo: {repo.name}, '
+                    # f'perms: {collaborator.permissions}', file=sys.stderr)
+                    # go through and update their items
+                    # External collabs aren't in the list already, so add them
+                    if args.user is None or args.user == collaborator.login:
+                        if collaborator.login not in userlist:
+                            userlist[collaborator.login] = {
+                                "role": "outside",
+                                "privpull": [],
+                                "privpush": [],
+                                "privadmin": [],
+                                "pubpull": [],
+                                "pubpush": [],
+                                "pubadmin": [],
+                            }
+                        if repo.private:
+                            if collaborator.permissions["admin"]:
+                                userlist[collaborator.login]["privadmin"].append(repo_name)
+                            if collaborator.permissions["push"]:
+                                userlist[collaborator.login]["privpush"].append(repo_name)
+                            if collaborator.permissions["pull"]:
+                                userlist[collaborator.login]["privpull"].append(repo_name)
+                        else:
+                            if collaborator.permissions["admin"]:
+                                userlist[collaborator.login]["pubadmin"].append(repo_name)
+                            if collaborator.permissions["push"]:
+                                userlist[collaborator.login]["pubpush"].append(repo_name)
+                            if collaborator.permissions["pull"]:
+                                userlist[collaborator.login]["pubpull"].append(repo_name)
+                utils.check_rate_remain(gh_sess, RATE_PER_LOOP, args.info)
+                if args.info:
+                    utils.spinner()
+            except gh_exceptions.NotFoundError as err:
+                print(
+                    f"In repo {repo.name} and collab {collaborator.login} : {err.message}",
+                    file=sys.stderr,
+                )
+            except gh_exceptions.ServerError:
+                print(
+                    f"50X error when processing repo: {repo_name} and collab {collaborator.login}"
+                )
+            bar()
 
     # Print The Things.
     if args.info:
