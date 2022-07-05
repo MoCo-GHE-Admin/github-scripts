@@ -193,8 +193,8 @@ def main():
                 )
             bar()
 
-    REPORT_B = True
-    if REPORT_B:
+    # new alternate report format for when using --user
+    if args.user:
         # per-repo report
         #   - makes it easier to see a user's permissions on each repo
         #   - could be used as input to tool that would replicate permissions between users
@@ -213,18 +213,17 @@ def main():
         # should only be one username...
         # TODO: complain (earlier) if more than one?
         for username, data in userlist.items():
+            # figure out different way of iterating...
+            # - need this as way of checking data structure currently
+            # - generate new data structure?
             for repo in repolist:
-
-                # if
-                # perms = ""?
-                # print f"{user},{repo},{perms}"
-
                 access_string = ""
                 tmp_list = []
                 # print(list_to_str(data))
 
                 # handle role
                 access_level = ""
+                # TODO: will role ever be 'admin'?
                 if data["role"] == "member":
                     access_level = "member"
                 elif data["role"] == "outside":
