@@ -76,6 +76,16 @@ def list_to_str(input_list):
     return outstr
 
 
+# checks for "repo" and "*repo" in a list
+# returns match, if no match then None
+def check_if_repo_present(repo, a_list):
+    if f"*{repo}" in a_list:
+        return f"*{repo}"
+    if repo in a_list:
+        return repo
+    return None
+
+
 def main():
     """
     Parse the args, connect to github, get the list of users in the org.
@@ -129,7 +139,6 @@ def main():
 
     with alive_progress.alive_bar(manual=True, title="fetching list of repos") as bar:
         # materialize the iterator so we can get a count
-        bar(0.1)
         repolist = list(repolist)
         bar(1)
 
@@ -141,7 +150,7 @@ def main():
         for repo in repolist:
             bar.text = f"  - checking {repo.name}..."
             # print(f'DEBUG: repo: {repo.name}', file=sys.stderr)
-            # TODO: have switch that decides iff the * prefix is added
+            # TODO: have switch that decides if the * prefix is added
             #      - messes with report_B(?)
             if repo.archived:
                 repo_name = f"*{repo.name}"
@@ -203,6 +212,7 @@ def main():
         #   TODO: check for archived name or be ok with dropping those perms... seems sort of sane/safe
 
         # debugging
+        # TODO: only show if -v or something
         print(userlist)
 
         # print header
@@ -231,17 +241,19 @@ def main():
                 else:
                     raise "shouldn't be here"
 
-                if repo.name in data["pubpull"]:
+                # TODO: don't discard the fact that the repo is archived (if it is)
+                #   - requires data structure tweaks
+                if check_if_repo_present(repo.name, data["pubpull"]):
                     tmp_list.append("pubpull")
-                if repo.name in data["pubpush"]:
+                if check_if_repo_present(repo.name, data["pubpush"]):
                     tmp_list.append("pubpush")
-                if repo.name in data["pubadmin"]:
+                if check_if_repo_present(repo.name, data["pubadmin"]):
                     tmp_list.append("pubadmin")
-                if repo.name in data["privpull"]:
+                if check_if_repo_present(repo.name, data["privpull"]):
                     tmp_list.append("privpull")
-                if repo.name in data["privpush"]:
+                if check_if_repo_present(repo.name, data["privpush"]):
                     tmp_list.append("privpush")
-                if repo.name in data["privadmin"]:
+                if check_if_repo_present(repo.name, data["privadmin"]):
                     tmp_list.append("privadmin")
 
                 access_string = ",".join(tmp_list)
