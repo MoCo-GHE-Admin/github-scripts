@@ -189,8 +189,6 @@ def main():
                             if collaborator.permissions["pull"]:
                                 userlist[collaborator.login]["pubpull"].append(repo_name)
                 utils.check_rate_remain(gh_sess, RATE_PER_LOOP, args.info)
-                if args.info:
-                    utils.spinner()
             except gh_exceptions.NotFoundError as err:
                 print(
                     f"In repo {repo.name} and collab {collaborator.login} : {err.message}",
