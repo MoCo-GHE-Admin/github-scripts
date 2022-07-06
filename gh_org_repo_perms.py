@@ -149,9 +149,7 @@ def main():
     ) as bar:
         for repo in repolist:
             bar.text = f"  - checking {repo.name}..."
-            # print(f'DEBUG: repo: {repo.name}', file=sys.stderr)
-            # TODO: have switch that decides if the * prefix is added
-            #      - messes with report_B(?)
+            # print(f'DEBUG: repo: {repo.name}', file=sys.stderr
             if repo.archived:
                 repo_name = f"*{repo.name}"
             else:
