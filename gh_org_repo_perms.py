@@ -208,17 +208,12 @@ def main():
         #   - makes it easier to see a user's permissions on each repo
         #   - could be used as input to tool that would replicate permissions between users
 
-        # NOTES: misses archived repo perms due to the *NAME pattern in datastructure
-        #   TODO: check for archived name or be ok with dropping those perms... seems sort of sane/safe
-
         # debugging
         # TODO: only show if -v or something
         print(userlist)
 
         # print header
-        print("user,repo,role,access")
-
-        # TODO: add gh org in output?
+        print("user,org,repo,role,access")
 
         # should only be one username...
         # TODO: complain (earlier) if more than one?
@@ -259,7 +254,7 @@ def main():
                 access_string = ",".join(tmp_list)
 
                 if access_string != "":
-                    print(f'{username},{repo.name},{access_level},"{access_string}"')
+                    print(f'{username},{args.org},{repo.name},{access_level},"{access_string}"')
     else:
         # Print The Things.
         if args.info:
