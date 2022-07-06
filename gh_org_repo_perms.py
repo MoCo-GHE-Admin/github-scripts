@@ -208,7 +208,7 @@ def main():
 
         # debugging
         # TODO: only show if -v or something
-        print(userlist)
+        # print(userlist)
 
         # print header
         print("user,org,repo,role,access")
@@ -226,9 +226,10 @@ def main():
 
                 # handle role
                 access_level = ""
-                # TODO: will role ever be 'admin'?
                 if data["role"] == "member":
                     access_level = "member"
+                elif data["role"] == "admin":
+                    access_level = "admin"
                 elif data["role"] == "outside":
                     access_level = "outside"
                 else:
