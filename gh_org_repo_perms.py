@@ -199,6 +199,7 @@ def main():
                     file=sys.stderr,
                 )
             except gh_exceptions.ServerError:
+                # TODO: send to stderr also?
                 print(
                     f"50X error when processing repo: {repo_name} and collab {collaborator.login}"
                 )
