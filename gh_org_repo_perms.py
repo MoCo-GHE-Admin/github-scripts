@@ -10,6 +10,7 @@ belong to.
 """
 
 import argparse
+import os
 import sys
 from getpass import getpass
 
@@ -43,15 +44,6 @@ def parse_args():
     analyse_group = parser.add_mutually_exclusive_group()
     analyse_group.add_argument("--user", help="Single user to examine in the org")
     analyse_group.add_argument("--repo", help="Single repo to examine in the org")
-    # TODO: still required with alive-progress?
-    parser.add_argument(
-        "-i",
-        action="store_true",
-        default=False,
-        dest="info",
-        help="Give visual output of that progress continues - "
-        "useful for long runs redirected to a file",
-    )
     args = parser.parse_args()
     args.token = utils.get_pat_from_file(args.patkey)
     if args.token is None:
@@ -94,6 +86,12 @@ def main():
     leaving team in for now - but not updating it
     """
     args = parse_args()
+
+    # we disable certain output if the terminal isn't interactive
+    session_is_interactive = False
+    if os.isatty(sys.stdout.fileno()):
+        session_is_interactive = True
+
     userlist = {}
     gh_sess = login(token=args.token)
 
@@ -137,7 +135,11 @@ def main():
     else:
         repolist = [gh_sess.repository(args.org, args.repo)]
 
-    with alive_progress.alive_bar(manual=True, title="fetching list of repos") as bar:
+    # the receipt is the summary printed at the end of the bar's run
+    # if not-interactive, disable the receipt
+    with alive_progress.alive_bar(
+        manual=True, title="fetching list of repos", receipt=session_is_interactive
+    ) as bar:
         # materialize the iterator so we can get a count
         repolist = list(repolist)
         bar(1)
@@ -145,7 +147,10 @@ def main():
     # FIXME Should I pull out "-ghsa-" repos - they NEVER find perms right.
     # Alternatively, just silently pass the NotFoundError?  (don't like that at first blush)
     with alive_progress.alive_bar(
-        len(repolist), dual_line=True, title="getting repo permissions"
+        len(repolist),
+        dual_line=True,
+        title="getting repo permissions",
+        receipt=session_is_interactive,
     ) as bar:
         for repo in repolist:
             bar.text = f"  - checking {repo.name}..."
@@ -186,7 +191,8 @@ def main():
                                 userlist[collaborator.login]["pubpush"].append(repo_name)
                             if collaborator.permissions["pull"]:
                                 userlist[collaborator.login]["pubpull"].append(repo_name)
-                utils.check_rate_remain(gh_sess, RATE_PER_LOOP, args.info)
+                # re: update param: print updates about quota if running interactively
+                utils.check_rate_remain(gh_sess, RATE_PER_LOOP, update=session_is_interactive)
             except gh_exceptions.NotFoundError as err:
                 print(
                     f"In repo {repo.name} and collab {collaborator.login} : {err.message}",
@@ -254,8 +260,6 @@ def main():
                     print(f'{username},{args.org},{repo.name},{access_level},"{access_string}"')
     else:
         # Print The Things.
-        if args.info:
-            print(file=sys.stderr)
         print(
             "Username, ORG Role, pub-count, priv-count, pub-pull, pub-push, pub-admin,"
             " priv-pull, priv-push, priv-admin"
