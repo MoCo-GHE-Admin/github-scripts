@@ -39,6 +39,7 @@ def parse_args():
         help="key in .gh_pat.toml of the PAT to use",
     )
     # analyse_group = parser.add_mutually_exclusive_group()
+    # TODO: add verbose to show the raw datastructure?
     parser.add_argument("--repo", help="Single repo to examine in the org")
     args = parser.parse_args()
 
@@ -48,21 +49,21 @@ def parse_args():
     return args
 
 
-def list_to_str(input_list):
-    """
-    Given an input list, return a comma delimited string of the list items
-    :param input_list: The list to work with
-    :result: the comma delimited string
-    """
-    firstcol = True
-    outstr = ""
-    for item in input_list:
-        if firstcol:
-            outstr = str(item)
-            firstcol = False
-        else:
-            outstr += f",{str(item)}"
-    return outstr
+# def list_to_str(input_list):
+#     """
+#     Given an input list, return a comma delimited string of the list items
+#     :param input_list: The list to work with
+#     :result: the comma delimited string
+#     """
+#     firstcol = True
+#     outstr = ""
+#     for item in input_list:
+#         if firstcol:
+#             outstr = str(item)
+#             firstcol = False
+#         else:
+#             outstr += f",{str(item)}"
+#     return outstr
 
 
 # checks for "repo" and "*repo" in a list
