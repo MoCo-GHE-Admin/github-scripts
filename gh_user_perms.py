@@ -68,6 +68,16 @@ def list_to_str(input_list):
     return outstr
 
 
+# checks for "repo" and "*repo" in a list
+# returns match, if no match then None
+def check_if_repo_present(repo, a_list):
+    if f"*{repo}" in a_list:
+        return f"*{repo}"
+    if repo in a_list:
+        return repo
+    return None
+
+
 def main():
     """
     Parse the args, connect to github, get the list of users in the org.
@@ -81,6 +91,15 @@ def main():
     session_is_interactive = False
     if os.isatty(sys.stdout.fileno()):
         session_is_interactive = True
+
+    # with alive_progress.alive_bar(len(range(1, 10)), force_tty=True) as bar:
+    #     import time
+    #     for i in range(1, 10):
+    #         time.sleep(.1)
+    #         print(i)
+    #         bar()
+    #
+    # sys.exit()
 
     userlist = {}
     gh_sess = login(token=args.token)
@@ -192,20 +211,75 @@ def main():
                 )
             bar()
 
-    # Print The Things.
-    print(
-        "Username, ORG Role, pub-count, priv-count, pub-pull, pub-push, pub-admin,"
-        " priv-pull, priv-push, priv-admin"
-    )
-    for username, data in userlist.items():
-        pubcount = len(data["pubpull"]) + len(data["pubpush"]) + len(data["pubadmin"])
-        privcount = len(data["privpull"]) + len(data["privpush"]) + len(data["privadmin"])
+    # new alternate report format for when using --user
+    if args.user:
+        # per-repo report
+        #   - makes it easier to see a user's permissions on each repo
+        #   - could be used as input to tool that would replicate permissions between users
+
+        # debugging
+        # TODO: only show if -v or something
+        # print(userlist)
+
+        # print header
+        print("user,org,repo,role,access")
+
+        # should only be one username...
+        # TODO: complain (earlier) if more than one?
+        for username, data in userlist.items():
+            # figure out different way of iterating...
+            # - need this as way of checking data structure currently
+            # - generate new data structure?
+            for repo in repolist:
+                access_string = ""
+                tmp_list = []
+                # print(list_to_str(data))
+
+                # handle role
+                access_level = ""
+                if data["role"] == "member":
+                    access_level = "member"
+                elif data["role"] == "admin":
+                    access_level = "admin"
+                elif data["role"] == "outside":
+                    access_level = "outside"
+                else:
+                    raise "shouldn't be here"
+
+                # TODO: don't discard the fact that the repo is archived (if it is)
+                #   - requires data structure tweaks
+                if check_if_repo_present(repo.name, data["pubpull"]):
+                    tmp_list.append("pubpull")
+                if check_if_repo_present(repo.name, data["pubpush"]):
+                    tmp_list.append("pubpush")
+                if check_if_repo_present(repo.name, data["pubadmin"]):
+                    tmp_list.append("pubadmin")
+                if check_if_repo_present(repo.name, data["privpull"]):
+                    tmp_list.append("privpull")
+                if check_if_repo_present(repo.name, data["privpush"]):
+                    tmp_list.append("privpush")
+                if check_if_repo_present(repo.name, data["privadmin"]):
+                    tmp_list.append("privadmin")
+
+                access_string = ",".join(tmp_list)
+
+                if access_string != "":
+                    print(f'{username},{args.org},{repo.name},{access_level},"{access_string}"')
+    else:
+        # Print The Things.
         print(
-            f'{username},{data["role"]},{pubcount},{privcount},"{list_to_str(data["pubpull"])}",'
-            f'"{list_to_str(data["pubpush"])}","{list_to_str(data["pubadmin"])}",'
-            f'"{list_to_str(data["privpull"])}","{list_to_str(data["privpush"])}",'
-            f'"{list_to_str(data["privadmin"])}"'
+            "Username, ORG Role, pub-count, priv-count, pub-pull, pub-push, pub-admin,"
+            " priv-pull, priv-push, priv-admin"
         )
+        for username, data in userlist.items():
+            pubcount = len(data["pubpull"]) + len(data["pubpush"]) + len(data["pubadmin"])
+            privcount = len(data["privpull"]) + len(data["privpush"]) + len(data["privadmin"])
+            print(
+                f'{username},{data["role"]},{pubcount},{privcount},"{list_to_str(data["pubpull"])}",'
+                f'"{list_to_str(data["pubpush"])}","{list_to_str(data["pubadmin"])}",'
+                f'"{list_to_str(data["privpull"])}","{list_to_str(data["privpush"])}",'
+                f'"{list_to_str(data["privadmin"])}"'
+            )
 
 
 if __name__ == "__main__":
