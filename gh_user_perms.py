@@ -37,7 +37,6 @@ def parse_args():
         dest="patkey",
         help="key in .gh_pat.toml of the PAT to use",
     )
-    # analyse_group = parser.add_mutually_exclusive_group()
     # TODO: add verbose to show the raw datastructure?
     parser.add_argument("--repo", help="Single repo to examine in the org")
     args = parser.parse_args()
