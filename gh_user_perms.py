@@ -49,23 +49,6 @@ def parse_args():
     return args
 
 
-# def list_to_str(input_list):
-#     """
-#     Given an input list, return a comma delimited string of the list items
-#     :param input_list: The list to work with
-#     :result: the comma delimited string
-#     """
-#     firstcol = True
-#     outstr = ""
-#     for item in input_list:
-#         if firstcol:
-#             outstr = str(item)
-#             firstcol = False
-#         else:
-#             outstr += f",{str(item)}"
-#     return outstr
-
-
 # checks for "repo" and "*repo" in a list
 # returns match, if no match then None
 def check_if_repo_present(repo, a_list):
