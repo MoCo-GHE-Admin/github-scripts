@@ -16,7 +16,6 @@ import alive_progress
 from github3 import login
 
 import utils
-from shared import GHQuery
 
 # Roughly the number of github queries per loop.  Guessing bigger is better
 RATE_PER_LOOP = 20
@@ -77,7 +76,7 @@ def main():
     # function-based code
     gh_sess = login(token=args.token)
     # object-based code
-    ghq = GHQuery()
+    ghq = utils.GHQuery()
     ghq.init_gh_session(token=args.token)
 
     org = gh_sess.organization(args.org)
