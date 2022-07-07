@@ -18,7 +18,7 @@ class GHQuery:
         self.gh_sess = login(token=token)
 
     # takes list of github3.py repo objects
-    def get_perms(
+    def update_userlist_with_permission_data(
         self, userlist, repolist, user=None, session_is_interactive=True, progress_disabled=False
     ):
         with alive_progress.alive_bar(

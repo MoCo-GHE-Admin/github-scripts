@@ -148,7 +148,7 @@ def main():
 
     # FIXME Should I pull out "-ghsa-" repos - they NEVER find perms right.
     # Alternatively, just silently pass the NotFoundError?  (don't like that at first blush)
-    userlist = ghq.get_perms(
+    userlist = ghq.update_userlist_with_permission_data(
         userlist, repolist, user=args.user, session_is_interactive=session_is_interactive
     )
 
