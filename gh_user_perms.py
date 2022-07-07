@@ -89,15 +89,6 @@ def main():
     if os.isatty(sys.stdout.fileno()):
         session_is_interactive = True
 
-    # with alive_progress.alive_bar(len(range(1, 10)), force_tty=True) as bar:
-    #     import time
-    #     for i in range(1, 10):
-    #         time.sleep(.1)
-    #         print(i)
-    #         bar()
-    #
-    # sys.exit()
-
     userlist = {}
     gh_sess = login(token=args.token)
 
