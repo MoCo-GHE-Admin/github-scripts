@@ -120,8 +120,8 @@ def main():
     # If a repo is specified, just look at that one, otherwise all of them in the org.
     if args.repo is None:
         # TESTING
-        repolist = org.repositories(number=100)
-        # repolist = org.repositories()
+        # repolist = org.repositories(number=100)
+        repolist = org.repositories()
     else:
         repolist = [gh_sess.repository(args.org, args.repo)]
 
