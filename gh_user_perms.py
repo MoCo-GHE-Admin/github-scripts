@@ -17,9 +17,6 @@ from github3 import login
 
 import utils
 
-# Roughly the number of github queries per loop.  Guessing bigger is better
-RATE_PER_LOOP = 20
-
 
 def parse_args():
     """
