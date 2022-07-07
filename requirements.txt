@@ -25,4 +25,6 @@ typing_extensions==4.0.1
 uritemplate==3.0.1
 urllib3==1.26.6
 wrapt==1.12.1
-alive_progress==2.4.1
+# alive_progress==2.4.1
+# aerickson's fork of alive_progress 2.4.1 that writes to stderr
+git+https://github.com/aerickson/alive-progress@02e8eb93#egg=alive_progress
