@@ -67,13 +67,13 @@ def main():
     leaving team in for now - but not updating it
     """
     args = parse_args()
-    userlist = {}
 
     # we disable certain output if the terminal isn't interactive
     session_is_interactive = False
     if os.isatty(sys.stdout.fileno()):
         session_is_interactive = True
 
+    userlist = {}
     # function-based code
     gh_sess = login(token=args.token)
     # object-based code
