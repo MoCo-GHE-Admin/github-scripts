@@ -135,10 +135,10 @@ def main():
     else:
         repolist = [gh_sess.repository(args.org, args.repo)]
 
-    # the receipt is the summary printed at the end of the bar's run
-    # if not-interactive, disable the receipt
     with alive_progress.alive_bar(
-        manual=True, title="fetching list of repos", receipt=session_is_interactive
+        manual=True,
+        title="fetching list of repos",
+        force_tty=True,  # force_tty because we are outputting to stderr now
     ) as bar:
         # materialize the iterator so we can get a count
         repolist = list(repolist)
@@ -147,10 +147,7 @@ def main():
     # FIXME Should I pull out "-ghsa-" repos - they NEVER find perms right.
     # Alternatively, just silently pass the NotFoundError?  (don't like that at first blush)
     with alive_progress.alive_bar(
-        len(repolist),
-        dual_line=True,
-        title="getting repo permissions",
-        receipt=session_is_interactive,
+        len(repolist), dual_line=True, title="getting repo permissions", force_tty=True
     ) as bar:
         for repo in repolist:
             bar.text = f"  - checking {repo.name}..."
