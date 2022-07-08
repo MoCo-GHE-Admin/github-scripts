@@ -24,10 +24,22 @@ class GHPermsQuery:
     def init_gh_session(self, token):
         self.gh_sess = login(token=token)
 
-    # takes list of github3.py repo objects
     def update_userlist_with_permission_data(
         self, userlist, repolist, user=None, session_is_interactive=True, progress_disabled=False
     ):
+        """
+        Gather permissions information.
+        :param userlist: Empty datastructure to use.
+        :type userlist: Dict indexed by gh login. Values are dicts with keys that are permission types and values are lists of repos.
+        :param repolist: Repos to check.
+        :type repolist: List of github3.py repo objects.
+        :param user: A specific user to inspect. If none, inspects all.
+        :type user: github3.py user object, optional.
+        :param session_is_interactive: Controls if GH API status messages are displayed.
+        :type session_is_interactive: bool, optional.
+        :param progress_disabled: Don't show progress bar.
+        :type progress_disabled: bool, optional.
+        """
         with alive_progress.alive_bar(
             len(repolist),
             dual_line=True,
