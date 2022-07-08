@@ -86,37 +86,35 @@ def main():
     ghq.init_gh_session(token=args.token)
 
     org = gh_sess.organization(args.org)
+
     # If a user was specified, just do that one, else, list all org members
     if args.user is None:
         memberlist = org.members(role="member")
     else:
         memberlist = [gh_sess.user(args.user)]
+
+    # initialize lists
+    empty_entry_dict = {
+        "role": "UNSET",
+        "privpull": [],
+        "privpush": [],
+        "privadmin": [],
+        "pubpull": [],
+        "pubpush": [],
+        "pubadmin": [],
+    }
+
     for member in memberlist:
-        userlist[member.login] = {
-            "role": "member",
-            "privpull": [],
-            "privpush": [],
-            "privadmin": [],
-            "pubpull": [],
-            "pubpush": [],
-            "pubadmin": [],
-        }
+        userlist[member.login] = empty_entry_dict
+        userlist[member.login]["role"] = "member"
 
     if args.user is None:
         adminlist = org.members(role="admin")
         for admin in adminlist:
-            userlist[admin.login] = {
-                "role": "admin",
-                "privpull": [],
-                "privpush": [],
-                "privadmin": [],
-                "pubpull": [],
-                "pubpush": [],
-                "pubadmin": [],
-            }
+            userlist[admin.login] = empty_entry_dict
+            userlist[admin.login]["role"] = "admin"
 
-    # great, we have initialized our lists - now to go through the repos
-
+    # retrieve list of repos
     # If a repo is specified, just look at that one, otherwise all of them in the org.
     if args.repo is None:
         # TESTING
