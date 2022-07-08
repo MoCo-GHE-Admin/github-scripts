@@ -26,6 +26,6 @@ uritemplate==3.0.1
 urllib3==1.26.6
 wrapt==1.12.1
 # alive_progress==2.4.1
-# MoCo-GHE-Admin's fork of aerickson's fork of alive_progress 2.4.1 that writes to stderr
+# MoCo-GHE-Admin's fork of aerickson's fork of alive_progress 2.4.1 that writes to stderr (vs stdout)
 # - switch back to the released version when https://github.com/rsalmei/alive-progress/issues/177 is resolved
 git+https://github.com/MoCo-GHE-Admin/alive-progress@02e8eb93#egg=alive_progress
