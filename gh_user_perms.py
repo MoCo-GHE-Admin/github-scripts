@@ -72,7 +72,7 @@ def main():
     # function-based code
     gh_sess = login(token=args.token)
     # object-based code
-    ghq = utils.GHQuery()
+    ghq = utils.GHPermsQuery()
     ghq.init_gh_session(token=args.token)
 
     org = gh_sess.organization(args.org)

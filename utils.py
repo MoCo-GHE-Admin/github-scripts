@@ -17,7 +17,7 @@ import utils
 RATE_PER_LOOP = 20
 
 
-class GHQuery:
+class GHPermsQuery:
     def __init__(self):
         self.gh_sess = None
 
