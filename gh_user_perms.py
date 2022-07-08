@@ -76,11 +76,14 @@ def main():
     ghq.init_gh_session(token=args.token)
 
     org = gh_sess.organization(args.org)
+
     # If a user was specified, just do that one, else, list all org members
     if args.user is None:
         memberlist = org.members(role="member")
     else:
         memberlist = [gh_sess.user(args.user)]
+
+    # initialize lists
     for member in memberlist:
         userlist[member.login] = {
             "role": "member",
@@ -105,8 +108,7 @@ def main():
                 "pubadmin": [],
             }
 
-    # great, we have initialized our lists - now to go through the repos
-
+    # retrieve list of repos
     # If a repo is specified, just look at that one, otherwise all of them in the org.
     if args.repo is None:
         # TESTING
@@ -130,11 +132,6 @@ def main():
         userlist, repolist, user=args.user, session_is_interactive=session_is_interactive
     )
 
-    # new alternate report format for when using --user
-    # per-repo report
-    #   - makes it easier to see a user's permissions on each repo
-    #   - could be used as input to tool that would replicate permissions between users
-
     # debugging
     # TODO: only show if -v or something
     # print(userlist)
@@ -151,7 +148,6 @@ def main():
         for repo in repolist:
             access_string = ""
             tmp_list = []
-            # print(list_to_str(data))
 
             # handle role
             access_level = ""
