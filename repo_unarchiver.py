@@ -71,6 +71,7 @@ def handle_issues(repo, quiet):
     :param quiet: if true, we won't print out things.
     return: labelname that was found.
     """
+    do_the_label_remove = True
     if not quiet:
         print("\tFinding if there's a custom label")
 
@@ -86,18 +87,25 @@ def handle_issues(repo, quiet):
     issues = repo.issues(state="closed", labels=labelname)
 
     for issue in issues:
-        issue.edit(state="open")
-        if not quiet:
-            print(f"\tReopening issue/PR {issue.title}")
-    for issue in issues:
-        issue.remove_label(labelname)
-    try:
-        repo.label(labelname).delete()
-    except gh_exceptions.NotFoundError:
-        print(
-            "No ARCHIVED label found, was this archived?  manually remove topics and update description..."
-        )
-        sys.exit()
+        try:
+            issue.edit(state="open")
+            if not quiet:
+                print(f"\tReopening issue/PR {issue.title}")
+        except gh_exceptions.UnprocessableEntity:
+            # Hit an un-reopenable issue
+            do_the_label_remove = False
+            if not quiet:
+                print(f"\t\tUnable to reopen issue {issue.title}")
+    if do_the_label_remove:
+        for issue in issues:
+            issue.remove_label(labelname)
+        try:
+            repo.label(labelname).delete()
+        except gh_exceptions.NotFoundError:
+            print(
+                "No ARCHIVED label found, was this archived?  manually remove topics and update description..."
+            )
+            sys.exit()
     return labelname
 
 
@@ -156,16 +164,17 @@ def main():
     handle_topics(repo=gh_repo, quiet=args.quiet)
 
     customstr = labelname.replace("ARCHIVED - ", "")
-    # Remove the DEPRECATED if it exists.
-    new_desc = gh_repo.description.replace("DEPRECATED - ", "", 1).replace("DEPRECATED", "", 1)
-    # Remove the INACTIVE if it exists.
-    new_desc = new_desc.replace("INACTIVE - ", "", 1).replace("INACTIVE", "", 1)
-    # Remove the custom label if it exists.
-    new_desc = new_desc.replace(customstr + " - ", "", 1).replace(customstr, "", 1)
+    if gh_repo.description is not None:
+        # Remove the DEPRECATED if it exists.
+        new_desc = gh_repo.description.replace("DEPRECATED - ", "", 1).replace("DEPRECATED", "", 1)
+        # Remove the INACTIVE if it exists.
+        new_desc = new_desc.replace("INACTIVE - ", "", 1).replace("INACTIVE", "", 1)
+        # Remove the custom label if it exists.
+        new_desc = new_desc.replace(customstr + " - ", "", 1).replace(customstr, "", 1)
 
-    if not args.quiet:
-        print(f"\tFixing description, completed revert of repo {repo}")
-    gh_repo.edit(name=gh_repo.name, description=new_desc)
+        if not args.quiet:
+            print(f"\tFixing description, completed revert of repo {repo}")
+        gh_repo.edit(name=gh_repo.name, description=new_desc)
 
 
 if __name__ == "__main__":
