@@ -74,7 +74,6 @@ optional arguments:
   --pat-key PATKEY  key in .gh_pat.toml of the PAT to use
   --user USER       Single user to examine in the org
   --repo REPO       Single repo to examine in the org
-  -i                Give visual output of that progress continues - useful for long runs redirected to a file
 ```
 
 ## `gh_pat_owner.py`
@@ -107,6 +106,22 @@ optional arguments:
   --block           should we block the user - default is unblock
   --orgini          use "orglist.ini" with the "orgs" entry with a csv list of all orgs to check
   --pat-key PATKEY  key in .gh_pat.toml of the PAT to use
+```
+
+## `gh_user_perms.py`
+```
+usage: gh_user_perms.py [-h] [--pat-key PATKEY] [--repo REPO] user org
+
+Report on a user's permissions in an org.
+
+positional arguments:
+  user              Single user to examine in the org
+  org               The org to examine
+
+optional arguments:
+  -h, --help        show this help message and exit
+  --pat-key PATKEY  key in .gh_pat.toml of the PAT to use
+  --repo REPO       Single repo to examine in the org
 ```
 
 ## `org_comms_team.py`
