@@ -82,27 +82,31 @@ def main():
         memberlist = org.members(role="member")
     else:
         memberlist = [gh_sess.user(args.user)]
-
-    # initialize lists
-    empty_entry_dict = {
-        "role": "UNSET",
-        "privpull": [],
-        "privpush": [],
-        "privadmin": [],
-        "pubpull": [],
-        "pubpush": [],
-        "pubadmin": [],
-    }
-
     for member in memberlist:
-        userlist[member.login] = empty_entry_dict
-        userlist[member.login]["role"] = "member"
+        userlist[member.login] = {
+            "role": "member",
+            "privpull": [],
+            "privpush": [],
+            "privadmin": [],
+            "pubpull": [],
+            "pubpush": [],
+            "pubadmin": [],
+        }
 
     if args.user is None:
         adminlist = org.members(role="admin")
         for admin in adminlist:
-            userlist[admin.login] = empty_entry_dict
-            userlist[admin.login]["role"] = "admin"
+            userlist[admin.login] = {
+                "role": "admin",
+                "privpull": [],
+                "privpush": [],
+                "privadmin": [],
+                "pubpull": [],
+                "pubpush": [],
+                "pubadmin": [],
+            }
+
+    # great, we have initialized our lists - now to go through the repos
 
     # retrieve list of repos
     # If a repo is specified, just look at that one, otherwise all of them in the org.
