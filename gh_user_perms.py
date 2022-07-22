@@ -1,9 +1,7 @@
 #!/usr/bin/env python
 """
-Script to look at an org, and output every users permissions to
-the repos.  Including outside collab.
-Useful for auditing who has access to what, and pointing out low handing
-fruit for potential cleanup.
+Script to report on user permissions in an org (and optionally a specific repo).
+
 Note - github API reports perms for users as if the team is the user...
 So there's no indication here if the perm is to the user or a team they
 belong to.
@@ -26,10 +24,9 @@ def parse_args():
     :return: Returns the parsed CLI datastructures.
     """
 
-    parser = argparse.ArgumentParser(
-        description="Depending on args, dump all repos in an org, repos for a user or users for a repo, and their user permissions, defaults to all repos and users in an org."
-    )
-    parser.add_argument("org", help="The org to examine", action="store")
+    parser = argparse.ArgumentParser(description="Report on a user's permissions in an org.")
+    parser.add_argument("user", help="Single user to examine in the org")
+    parser.add_argument("org", help="The org to examine")
     parser.add_argument(
         "--pat-key",
         default="admin",
@@ -37,31 +34,24 @@ def parse_args():
         dest="patkey",
         help="key in .gh_pat.toml of the PAT to use",
     )
-    analyse_group = parser.add_mutually_exclusive_group()
-    analyse_group.add_argument("--user", help="Single user to examine in the org")
-    analyse_group.add_argument("--repo", help="Single repo to examine in the org")
+    # TODO: add verbose to show the raw datastructure?
+    parser.add_argument("--repo", help="Single repo to examine in the org")
     args = parser.parse_args()
+
     args.token = utils.get_pat_from_file(args.patkey)
     if args.token is None:
         args.token = getpass("Please enter your GitHub token: ")
     return args
 
 
-def list_to_str(input_list):
-    """
-    Given an input list, return a comma delimited string of the list items
-    :param input_list: The list to work with
-    :result: the comma delimited string
-    """
-    firstcol = True
-    outstr = ""
-    for item in input_list:
-        if firstcol:
-            outstr = str(item)
-            firstcol = False
-        else:
-            outstr += f",{str(item)}"
-    return outstr
+# checks for "repo" and "*repo" in a list
+# returns match, if no match then None
+def check_if_repo_present(repo, a_list):
+    if f"*{repo}" in a_list:
+        return f"*{repo}"
+    if repo in a_list:
+        return repo
+    return None
 
 
 def main():
@@ -142,20 +132,53 @@ def main():
         userlist, repolist, user=args.user, session_is_interactive=session_is_interactive
     )
 
-    # Print The Things.
-    print(
-        "Username, ORG Role, pub-count, priv-count, pub-pull, pub-push, pub-admin,"
-        " priv-pull, priv-push, priv-admin"
-    )
+    # debugging
+    # TODO: only show if -v or something
+    # print(userlist)
+
+    # print header
+    print("user,org,repo,role,access")
+
+    # should only be one username...
+    # TODO: complain (earlier) if more than one?
     for username, data in userlist.items():
-        pubcount = len(data["pubpull"]) + len(data["pubpush"]) + len(data["pubadmin"])
-        privcount = len(data["privpull"]) + len(data["privpush"]) + len(data["privadmin"])
-        print(
-            f'{username},{data["role"]},{pubcount},{privcount},"{list_to_str(data["pubpull"])}",'
-            f'"{list_to_str(data["pubpush"])}","{list_to_str(data["pubadmin"])}",'
-            f'"{list_to_str(data["privpull"])}","{list_to_str(data["privpush"])}",'
-            f'"{list_to_str(data["privadmin"])}"'
-        )
+        # figure out different way of iterating...
+        # - need this as way of checking data structure currently
+        # - generate new data structure?
+        for repo in repolist:
+            access_string = ""
+            tmp_list = []
+
+            # handle role
+            access_level = ""
+            if data["role"] == "member":
+                access_level = "member"
+            elif data["role"] == "admin":
+                access_level = "admin"
+            elif data["role"] == "outside":
+                access_level = "outside"
+            else:
+                raise "shouldn't be here"
+
+            # TODO: don't discard the fact that the repo is archived (if it is)
+            #   - requires data structure tweaks
+            if check_if_repo_present(repo.name, data["pubpull"]):
+                tmp_list.append("pubpull")
+            if check_if_repo_present(repo.name, data["pubpush"]):
+                tmp_list.append("pubpush")
+            if check_if_repo_present(repo.name, data["pubadmin"]):
+                tmp_list.append("pubadmin")
+            if check_if_repo_present(repo.name, data["privpull"]):
+                tmp_list.append("privpull")
+            if check_if_repo_present(repo.name, data["privpush"]):
+                tmp_list.append("privpush")
+            if check_if_repo_present(repo.name, data["privadmin"]):
+                tmp_list.append("privadmin")
+
+            access_string = ",".join(tmp_list)
+
+            if access_string != "":
+                print(f'{username},{args.org},{repo.name},{access_level},"{access_string}"')
 
 
 if __name__ == "__main__":
