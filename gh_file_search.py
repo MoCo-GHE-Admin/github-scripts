@@ -106,10 +106,8 @@ def main():
                     vistext = "Private"
                 else:
                     vistext = "Public"
-                files.append(
-                    f"{result.repository},{vistext}:{result.path}/{result.name},{result.text_matches[0]['fragment']}"
-                )
-            print(f'org: {org} Repo: {",".join(repos)}')
+                files.append(f"{result.repository},{vistext}:{result.path}/{result.name}")
+            print(f'org: {org} Repo list: {",".join(repos)}')
             if args.print_file:
                 print("Files found:")
                 for line in files:
