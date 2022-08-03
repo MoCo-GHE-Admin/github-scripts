@@ -210,6 +210,22 @@ optional arguments:
   -f OUTPUT         File to store CSV to
 ```
 
+## `org_teams.py`
+```
+usage: org_teams.py [-h] [--pat-key PATKEY] [--team TEAM] [--unmark] org
+
+Gets a list of teams and their users for an Org. Users with '*' are maintainers of the team, reports using the team-slug
+
+positional arguments:
+  org               The GH org to query
+
+optional arguments:
+  -h, --help        show this help message and exit
+  --pat-key PATKEY  key in .gh_pat.toml of the PAT to use
+  --team TEAM       The team slug to dump - if specified will ONLY use that team. (slug, NOT name)
+  --unmark          Do not mark maintainers in the list
+```
+
 ## `repo_activity.py`
 
 ```
