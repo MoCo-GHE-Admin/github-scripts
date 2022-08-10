@@ -290,6 +290,25 @@ optional arguments:
   -q                DO NOT print, or request confirmations
 ```
 
+## `repo_close_issues.py`
+```
+usage: repo_close_issues.py [-h] [--close-pr] [--comment COMMENT] [--doit] [--token TOKEN] [--pat-key PATKEY] org repo
+
+Close issues associated with the specified repo. Do not close PRs unless specified, and only do things if specified
+
+positional arguments:
+  org                Org/owner name
+  repo               Name of the repo
+
+optional arguments:
+  -h, --help         show this help message and exit
+  --close-pr         Close the PRs too?
+  --comment COMMENT  A comment to close the issue with
+  --doit             Actually close things
+  --token TOKEN      PAT to access github. Needs Write access to the repos
+  --pat-key PATKEY   key in .gh_pat.toml of the PAT to use
+```
+
 ## `repo_unarchiver.py`
 ```
 usage: repo_unarchiver.py [-h] [--token TOKEN] [--pat-key PATKEY] [-q] repo
