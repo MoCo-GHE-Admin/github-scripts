@@ -41,6 +41,12 @@ def parse_args():
         dest="patkey",
         help="key in .gh_pat.toml of the PAT to use",
     )
+    parser.add_argument(
+        "--delay",
+        default=2,
+        type=float,
+        help="seconds between close requests, to avoid secondary rate limits > 1",
+    )
     args = parser.parse_args()
     args.token = utils.get_pat_from_file(args.patkey)
     if args.token is None:
@@ -95,8 +101,8 @@ def main():
                 close_issue(issue, args.comment)
                 print(" Closed.")
                 # Secondary Rate limit avoidance
-                #
-                time.sleep(1.1)
+                # https://docs.github.com/en/rest/guides/best-practices-for-integrators#dealing-with-secondary-rate-limits
+                time.sleep(args.delay)
             else:
                 print(f'Issue found "{issue.title}", not closing due to dry run')
 
