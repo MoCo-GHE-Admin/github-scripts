@@ -6,6 +6,7 @@ defaults to Dry run - will print out everything that will happen without DOING a
 """
 
 import argparse
+import time
 from getpass import getpass
 
 from github3 import exceptions as gh_exceptions
@@ -60,7 +61,7 @@ def close_issue(issue, comment):
     except gh_exceptions.UnprocessableEntity:
         print(
             f"Got 422 Unproccessable on issue {issue.title},"
-            " continuing.  May need to run --force or manually finish closing."
+            " continuing.  May need to run again, or manually finish closing."
         )
 
 
@@ -93,6 +94,9 @@ def main():
                 print(f'Issue found: "{issue.title}", closing.', end="")
                 close_issue(issue, args.comment)
                 print(" Closed.")
+                # Secondary Rate limit avoidance
+                #
+                time.sleep(1.1)
             else:
                 print(f'Issue found "{issue.title}", not closing due to dry run')
 
