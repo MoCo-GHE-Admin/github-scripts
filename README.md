@@ -292,7 +292,8 @@ optional arguments:
 
 ## `repo_close_issues.py`
 ```
-usage: repo_close_issues.py [-h] [--close-pr] [--comment COMMENT] [--doit] [--token TOKEN] [--pat-key PATKEY] org repo
+usage: repo_close_issues.py [-h] [--close-pr] [--comment COMMENT] [--doit] [--token TOKEN] [--pat-key PATKEY] [--delay DELAY]
+                            org repo
 
 Close issues associated with the specified repo. Do not close PRs unless specified, and only do things if specified
 
@@ -307,6 +308,7 @@ optional arguments:
   --doit             Actually close things
   --token TOKEN      PAT to access github. Needs Write access to the repos
   --pat-key PATKEY   key in .gh_pat.toml of the PAT to use
+  --delay DELAY      seconds between close requests, to avoid secondary rate limits > 1
 ```
 
 ## `repo_unarchiver.py`
