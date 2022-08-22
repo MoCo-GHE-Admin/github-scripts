@@ -198,10 +198,16 @@ def check_rate_remain(gh_sess, loopsize=100, update=True):
 def get_top_perm(perm_string):
     if "privadmin" in perm_string:
         return "privadmin"
+    elif "pubadmin" in perm_string:
+        return "pubadmin"
     elif "privpush" in perm_string:
         return "privpush"
+    elif "pubpush" in perm_string:
+        return "pubpush"
     elif "privpull" in perm_string:
         return "privpull"
+    elif "pubpull" in perm_string:
+        return "pubpull"
     else:
         # TODO: raise?
         return perm_string
