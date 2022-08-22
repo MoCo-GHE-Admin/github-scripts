@@ -16,7 +16,7 @@ import getch
 from github3 import exceptions as gh_exceptions
 from github3 import login
 
-import utils
+from github_scripts import utils
 
 # TODO: CUSTOM LABEL TEXT
 MAX_CUSTOM_LENGTH = 50 - len("ARCHIVED - " + " - ")

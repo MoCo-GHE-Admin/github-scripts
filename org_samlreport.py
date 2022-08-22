@@ -18,7 +18,7 @@ from getpass import getpass
 import requests
 from github3 import login
 
-import utils
+from github_scripts import utils
 
 
 def parse_arguments():

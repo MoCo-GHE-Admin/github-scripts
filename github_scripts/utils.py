@@ -11,8 +11,6 @@ import toml
 from github3 import exceptions as gh_exceptions
 from github3 import login
 
-import utils
-
 # Roughly the number of github queries per loop.  Guessing bigger is better
 RATE_PER_LOOP = 20
 
@@ -87,9 +85,7 @@ class GHPermsQuery:
                                 if collaborator.permissions["pull"]:
                                     userlist[collaborator.login]["pubpull"].append(repo_name)
                     # re: update param: print updates about quota if running interactively
-                    utils.check_rate_remain(
-                        self.gh_sess, RATE_PER_LOOP, update=session_is_interactive
-                    )
+                    check_rate_remain(self.gh_sess, RATE_PER_LOOP, update=session_is_interactive)
                 except gh_exceptions.NotFoundError as err:
                     print(
                         f"In repo {repo.name} and collab {collaborator.login} : {err.message}",
@@ -190,3 +186,22 @@ def check_rate_remain(gh_sess, loopsize=100, update=True):
         if update:
             print(file=sys.stderr)
             print("API timeout reset, continuing", file=sys.stderr)
+
+
+# cknowles description of get_top_perms()
+#
+# So, "privpull,privpush,privadmin" becomes "privadmin"
+# "privpull,privpush" becomes "privpush"
+# and "privpull" stays as it is.
+
+
+def get_top_perm(perm_string):
+    if "privadmin" in perm_string:
+        return "privadmin"
+    elif "privpush" in perm_string:
+        return "privpush"
+    elif "privpull" in perm_string:
+        return "privpull"
+    else:
+        # TODO: raise?
+        return perm_string

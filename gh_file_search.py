@@ -12,7 +12,7 @@ from time import sleep
 from github3 import exceptions as gh_exceptions
 from github3 import login
 
-import utils
+from github_scripts import utils
 
 
 # DONE #TODO: Print repo visibility.

@@ -9,7 +9,7 @@ from getpass import getpass
 
 import requests
 
-import utils
+from github_scripts import utils
 
 
 def parse_arguments():

@@ -17,7 +17,7 @@ from getpass import getpass
 import alive_progress
 from github3 import login
 
-import utils
+from github_scripts import utils
 
 
 def parse_args():
