@@ -17,3 +17,9 @@ def test_get_top_perm_pull():
     expected = "privpull"
     input1 = "privpull"
     assert utils.get_top_perm(input1) == expected
+
+
+def test_get_top_perm_admin_pub():
+    expected = "pubadmin"
+    input1 = "pubpull,pubpush,pubadmin"
+    assert utils.get_top_perm(input1) == expected
