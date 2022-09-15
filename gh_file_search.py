@@ -97,7 +97,7 @@ def main():
     length = len(orglist)  # Used to determine when to pause
     for org in orglist:
         try:
-            search = gh_sess.search_code(f"org:{org} {args.query}", text_match=True)
+            search = gh_sess.search_code(f"org:{org} {args.query}", text_match=False)
             repos = set()
             files = []
             for result in search:
@@ -107,11 +107,15 @@ def main():
                 else:
                     vistext = "Public"
                 files.append(f"{result.repository},{vistext}:{result.path}/{result.name}")
-            print(f'org: {org} Repo list: {",".join(repos)}')
+                sleep(args.time / 20)
+                utils.spinner()
             if args.print_file:
                 print("Files found:")
                 for line in files:
                     print(line)
+            else:
+                print(f'org: {org} Repo list: {",".join(repos)}')
+
         except gh_exceptions.UnprocessableEntity:
             print(f"org: {org} Failed, likely due to lack of repos in the org")
         finally:
