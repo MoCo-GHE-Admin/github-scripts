@@ -109,6 +109,24 @@ optional arguments:
   --pat-key PATKEY  key in .gh_pat.toml of the PAT to use
 ```
 
+## `org_audit_licensefile.py`
+```
+usage: org_audit_licensefile.py [-h] [--archived] [--type {public,private,all}] [--orgini] [--pat-key PATKEY] orgs [orgs ...]
+
+given the org, look through all repos of type, and archive status and report on github detected licenses.
+
+positional arguments:
+  orgs                  The org to work on
+
+optional arguments:
+  -h, --help            show this help message and exit
+  --archived            Include archived repos. Default is unarchived only.
+  --type {public,private,all}
+                        Type of repo: private, public, all (Default).
+  --orgini              use "orglist.ini" with the "orgs" entry with a csv list of all orgs to check
+  --pat-key PATKEY      key in .gh_pat.toml of the PAT to use
+```
+
 ## `org_comms_team.py`
 ```
 usage: org_comms_team.py [-h] [--team-name TEAM_NAME] [--pat-key PATKEY] [--users USERS [USERS ...]] [--remove] org
