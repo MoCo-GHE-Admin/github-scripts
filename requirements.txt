@@ -9,7 +9,7 @@ github3.py==3.0.0
 GitPython==3.1.24
 idna==2.10
 isort==5.7.0
-jwcrypto==0.8
+jwcrypto==1.4
 lazy-object-proxy==1.5.2
 mccabe==0.6.1
 numpy==1.22.1
