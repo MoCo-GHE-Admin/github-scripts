@@ -1,0 +1,8 @@
+title: a title of an issue
+body: |
+    a body of an issue that supports `markdown`
+    Note that multiline is allowed, but must be indented.
+
+    And if you want to preserve newlines, you'll need to add that `|` to the start.
+bodyUID: LIC-2023-01
+comment: If used, a comment to be added to found open issues with this bodyUID in the issue body
