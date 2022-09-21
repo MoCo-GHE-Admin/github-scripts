@@ -5,6 +5,7 @@ Script to perform a search of supplied orgs, and return the list of detected rep
 
 import argparse
 import configparser
+import sys
 from getpass import getpass
 
 from github3 import exceptions as gh_exceptions
@@ -61,6 +62,7 @@ def main():
     print out the org name and the list of repos affected.
     """
     args = parse_arguments()
+    resultlist = []
     # Read in the config if there is one
     orglist = []
     if args.orgini is not None:
@@ -71,7 +73,7 @@ def main():
         orglist = args.orgs
 
     gh_sess = login(token=args.token)
-    print("org/repo, detected license file, license type")
+    resultlist.append("org/repo,detected license file,license type")
     for orgname in orglist:
         org = gh_sess.organization(orgname)
         # Get the list of repos
@@ -88,9 +90,16 @@ def main():
                 try:
                     license = repo.license()
                 except gh_exceptions.NotFoundError:
-                    print(f"{repo.owner}/{repo.name},NO LICENSE DETECTED")
+                    resultlist.append(f"{repo.owner}/{repo.name},,NO LICENSE DETECTED")
                 else:
-                    print(f"{repo.owner}/{repo.name},{license.name},{license.license.name}")
+                    resultlist.append(
+                        f"{repo.owner}/{repo.name},{license.name},{license.license.name}"
+                    )
+            utils.spinner()
+            utils.check_rate_remain(gh_sess)
+    # Time to print things
+    print(file=sys.stderr)
+    print("\n".join(resultlist))
 
 
 if __name__ == "__main__":
