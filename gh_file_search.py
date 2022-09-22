@@ -16,7 +16,6 @@ import utils
 
 
 # DONE #TODO: Print repo visibility.
-# TODO: print out code found
 # TODO: print out hit counts?
 # TODO: limit result report?
 # TODO: Make the output format consistent and at least somewhat readable
@@ -95,26 +94,31 @@ def main():
 
     gh_sess = login(token=args.token)
     length = len(orglist)  # Used to determine when to pause
+    if args.print_file:
+        print("Files found:")
+        print("Repo,Visibility,Filename")
+    else:
+        print("Repos found:")
     for org in orglist:
         try:
             search = gh_sess.search_code(f"org:{org} {args.query}", text_match=False)
             repos = set()
             files = []
             for result in search:
-                repos.add(result.repository.name)
+                repos.add(f"{org}/{result.repository.name}")
                 if result.repository.private:
                     vistext = "Private"
                 else:
                     vistext = "Public"
-                files.append(f"{result.repository},{vistext}:{result.path}/{result.name}")
+                files.append(f"{result.repository},{vistext},{result.path}/{result.name}")
                 sleep(args.time / 20)
                 utils.spinner()
+            print()
             if args.print_file:
-                print("Files found:")
                 for line in files:
                     print(line)
             else:
-                print(f'org: {org} Repo list: {",".join(repos)}')
+                print("\n".join(repos))
 
         except gh_exceptions.UnprocessableEntity:
             print(f"org: {org} Failed, likely due to lack of repos in the org")
