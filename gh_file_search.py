@@ -15,10 +15,6 @@ from github3 import login
 import utils
 
 
-# DONE #TODO: Print repo visibility.
-# TODO: print out hit counts?
-# TODO: limit result report?
-# TODO: Make the output format consistent and at least somewhat readable
 def parse_arguments():
     """
     Look at the first arg and handoff to the arg parser for that specific
@@ -33,6 +29,12 @@ def parse_arguments():
     )
     parser.add_argument(
         "--query", type=str, help="The query to run, without orgs", action="store", required=True
+    )
+    parser.add_argument(
+        "--note-archive",
+        help="if specified, will add archival status of the repo to the output, this will slow things down and use more API calls",
+        action="store_true",
+        dest="note_archive",
     )
     parser.add_argument("orgs", type=str, help="The org to work on", action="store", nargs="*")
     parser.add_argument(
@@ -96,21 +98,37 @@ def main():
     length = len(orglist)  # Used to determine when to pause
     if args.print_file:
         print("Files found:")
-        print("Repo,Visibility,Filename")
+        if args.note_archive:
+            print("Repo,Visibility,Archived,Filename")
+        else:
+            print("Repo,Visibility,Filename")
     else:
-        print("Repos found:")
+        if args.note_archive:
+            print("Repos found: org/repo/is_archived")
+        else:
+            print("Repos found: org/repo")
+
     for org in orglist:
         try:
             search = gh_sess.search_code(f"org:{org} {args.query}", text_match=False)
             repos = set()
             files = []
             for result in search:
-                repos.add(f"{org}/{result.repository.name}")
+                if args.note_archive:
+                    fullrepo = gh_sess.repository(owner=org, repository=result.repository.name)
+                    repos.add(f"{org}/{fullrepo.name}/{fullrepo.archived}")
+                else:
+                    repos.add(f"{org}/{result.repository.name}")
                 if result.repository.private:
                     vistext = "Private"
                 else:
                     vistext = "Public"
-                files.append(f"{result.repository},{vistext},{result.path}/{result.name}")
+                if args.note_archive:
+                    files.append(
+                        f"{result.repository},{vistext},{fullrepo.archived},{result.path}/{result.name}"
+                    )
+                else:
+                    files.append(f"{result.repository},{vistext},{result.path}/{result.name}")
                 sleep(args.time / 20)
                 utils.spinner()
             print()
