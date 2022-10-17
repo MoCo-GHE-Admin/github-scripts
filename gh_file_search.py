@@ -85,6 +85,10 @@ def main():
     print out the org name and the list of repos affected.
     """
     args = parse_arguments()
+    do_search(args)
+
+
+def do_search(args):
     # Read in the config if there is one
     orglist = []
     if args.orgini is not None:
