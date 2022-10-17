@@ -22,6 +22,33 @@ optional arguments:
   --pat-key PATKEY  key in .gh_pat.toml of the PAT to use
 ```
 
+## `gh_dependency_search.py`
+```
+usage: gh_dependency_search.py [-h] --package PACKAGE [--orgini]
+                               [--pat-key PATKEY] [-v] [-f] [-t TIME]
+                               [--language {Python,Javascript}]
+                               [orgs [orgs ...]]
+
+Get file search resuls for a dependency
+
+positional arguments:
+  orgs                  The org to work on
+
+optional arguments:
+  -h, --help            show this help message and exit
+  --package PACKAGE     The package to search for.
+  --orgini              use "orglist.ini" with the "orgs" entry with a csv
+                        list of all orgs to check
+  --pat-key PATKEY      key in .gh_pat.toml of the PAT to use
+  -v                    Verbose - Print out that we're waiting for rate limit
+                        reasons
+  -f                    Print out file level responses rather than repo level
+  -t TIME               Time to sleep between searches, in seconds, should be
+                        10s or more
+  --language {Python,Javascript}
+                        Language to search for dependency, default is Python
+```
+
 ## `gh_file_search.py`
 ```
 usage: gh_file_search.py [-h] --query QUERY [--note-archive] [--orgini] [--pat-key PATKEY] [-v] [-f] [-t TIME] [orgs ...]
