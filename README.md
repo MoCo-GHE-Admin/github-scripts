@@ -151,6 +151,7 @@ optional arguments:
   -h, --help        show this help message and exit
   --pat-key PATKEY  key in .gh_pat.toml of the PAT to use
   --repo REPO       Single repo to examine in the org
+```
 
 ## `org_audit_licensefile.py`
 ```
