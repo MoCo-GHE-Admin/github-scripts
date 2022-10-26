@@ -20,7 +20,7 @@ def parse_arguments():
     Look at the first arg and handoff to the arg parser for that specific
     """
     parser = argparse.ArgumentParser(
-        description="Get file search resuls for an org, returning repo list.  "
+        description="Get file search results for an org, returning repo list.  "
         "e.g. if you want 'org:<ORGNAME> filename:<FILENAME> <CONTENTS>', "
         "then you just need 'filename:<FILENAME> <CONTENTS>' "
         "and then list the orgs to apply it to.  "
@@ -72,7 +72,7 @@ def parse_arguments():
     )
     args = parser.parse_args()
     if args.orgs == [] and args.orgini is None:
-        raise Exception("You must specify either an org or an orgini")
+        raise SystemExit("You must specify either an org or an orgini")
     args.token = utils.get_pat_from_file(args.patkey)
     if args.token is None:
         args.token = getpass("Please enter your GitHub token: ")
@@ -99,6 +99,8 @@ def do_search(args):
         orglist = args.orgs
 
     gh_sess = login(token=args.token)
+    if not gh_sess:
+        raise SystemExit("Failed to get GitHub API session")
     length = len(orglist)  # Used to determine when to pause
     if args.print_file:
         print("Files found:")
@@ -118,9 +120,15 @@ def do_search(args):
             repos = set()
             files = []
             for result in search:
+                repo_fullname = "{org}/{result.repository.name}"
+                archived = "<unknown>"
                 if args.note_archive:
                     fullrepo = gh_sess.repository(owner=org, repository=result.repository.name)
-                    repos.add(f"{org}/{fullrepo.name}/{fullrepo.archived}")
+                    if fullrepo:
+                        archived = fullrepo.archived
+                    else:
+                        print("Couldn't get archive status for {repo_fullname}", file=sys.stderr)
+                    repos.add(f"{repo_fullname}/{archived}")
                 else:
                     repos.add(f"{org}/{result.repository.name}")
                 if result.repository.private:
@@ -128,22 +136,23 @@ def do_search(args):
                 else:
                     vistext = "Public"
                 if args.note_archive:
-                    files.append(
-                        f"{result.repository},{vistext},{fullrepo.archived},{result.path}/{result.name}"
-                    )
+                    files.append(f"{result.repository},{vistext},{archived},{result.path}")
                 else:
-                    files.append(f"{result.repository},{vistext},{result.path}/{result.name}")
+                    files.append(f"{result.repository},{vistext},{result.path}")
+                utils.spinner(org)
                 sleep(args.time / 20)
-                utils.spinner()
-            print()
-            if args.print_file:
+            utils.spinner(org, end_spinner=True)
+            if args.print_file and files:
                 for line in files:
-                    print(line)
-            else:
+                    print("fred", line)
+            elif repos:
                 print("\n".join(repos))
 
         except gh_exceptions.UnprocessableEntity:
-            print(f"org: {org} Failed, likely due to lack of repos in the org")
+            print(
+                f"org: {org} Failed, likely due to lack of repos in the org",
+                file=sys.stderr,
+            )
         finally:
             length -= 1
             if length > 0:

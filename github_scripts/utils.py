@@ -146,15 +146,26 @@ def _create_char_spinner():
 
 
 _spinner = _create_char_spinner()
+_last_label = None
 
 
-def spinner(label=""):
+def spinner(label="", end_spinner=False):
     """
     Prints label with a spinner.
     When called repeatedly from inside a loop this prints
     a one line CLI spinner.
     """
+    global _last_label
+    if _last_label != label:
+        if _last_label is not None:
+            sys.stderr.write("\n")
+        _last_label = label
     sys.stderr.write("\r%s %s" % (label, next(_spinner)))
+    if end_spinner:
+        # we're done with the spinner, ensure that further output goes
+        # to a new line
+        sys.stderr.write("\n")
+        _last_label = None
     sys.stderr.flush()
 
 
