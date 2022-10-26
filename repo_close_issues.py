@@ -9,10 +9,9 @@ import argparse
 import time
 from getpass import getpass
 
+import utils
 from github3 import exceptions as gh_exceptions
 from github3 import login
-
-import utils
 
 
 def parse_args():

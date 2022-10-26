@@ -6,9 +6,8 @@ Script to a list of teams in an org, with user lists
 import argparse
 from getpass import getpass
 
-from github3 import login
-
 import utils
+from github3 import login
 
 
 def parse_args():
