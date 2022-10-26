@@ -18,7 +18,7 @@ from git import exc as git_exceptions
 from github3 import exceptions as gh_exceptions
 from github3 import login
 
-import utils
+from github_scripts import utils
 
 # Some repos that have LOTS of traffic (mozilla/gecko-dev) will ALWAYS fail on getting the stats
 # This is the number of retries, otherwise, just report the problem in the output and move along

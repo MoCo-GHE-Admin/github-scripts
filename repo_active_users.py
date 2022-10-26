@@ -12,7 +12,7 @@ from getpass import getpass
 
 from git import Repo
 
-import utils
+from github_scripts import utils
 
 
 def parse_args():
