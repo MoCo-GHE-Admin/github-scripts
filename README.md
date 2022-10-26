@@ -22,9 +22,36 @@ optional arguments:
   --pat-key PATKEY  key in .gh_pat.toml of the PAT to use
 ```
 
+## `gh_dependency_search.py`
+```
+usage: gh_dependency_search.py [-h] --package PACKAGE [--orgini]
+                               [--pat-key PATKEY] [-v] [-f] [-t TIME]
+                               [--language {Python,Javascript}]
+                               [orgs [orgs ...]]
+
+Get file search resuls for a dependency
+
+positional arguments:
+  orgs                  The org to work on
+
+optional arguments:
+  -h, --help            show this help message and exit
+  --package PACKAGE     The package to search for.
+  --orgini              use "orglist.ini" with the "orgs" entry with a csv
+                        list of all orgs to check
+  --pat-key PATKEY      key in .gh_pat.toml of the PAT to use
+  -v                    Verbose - Print out that we're waiting for rate limit
+                        reasons
+  -f                    Print out file level responses rather than repo level
+  -t TIME               Time to sleep between searches, in seconds, should be
+                        10s or more
+  --language {Python,Javascript}
+                        Language to search for dependency, default is Python
+```
+
 ## `gh_file_search.py`
 ```
-usage: gh_file_search.py [-h] --query QUERY [--orgini] [--pat-key PATKEY] [-v] [-f] [-t TIME] [orgs ...]
+usage: gh_file_search.py [-h] --query QUERY [--note-archive] [--orgini] [--pat-key PATKEY] [-v] [-f] [-t TIME] [orgs ...]
 
 Get file search resuls for an org, returning repo list. e.g. if you want 'org:<ORGNAME> filename:<FILENAME> <CONTENTS>', then you
 just need 'filename:<FILENAME> <CONTENTS>' and then list the orgs to apply it to. Note: There's a pause of ~10 seconds between org
@@ -36,6 +63,8 @@ positional arguments:
 optional arguments:
   -h, --help        show this help message and exit
   --query QUERY     The query to run, without orgs
+  --note-archive    if specified, will add archival status of the repo to the output, this will slow things down and use more API
+                    calls
   --orgini          use "orglist.ini" with the "orgs" entry with a csv list of all orgs to check
   --pat-key PATKEY  key in .gh_pat.toml of the PAT to use
   -v                Verbose - Print out that we're waiting for rate limit reasons
@@ -122,6 +151,25 @@ optional arguments:
   -h, --help        show this help message and exit
   --pat-key PATKEY  key in .gh_pat.toml of the PAT to use
   --repo REPO       Single repo to examine in the org
+
+## `org_audit_licensefile.py`
+```
+usage: org_audit_licensefile.py [-h] [--archived] [--type {public,private,all}] [--include-URL] [--orgini] [--pat-key PATKEY]
+                                [orgs ...]
+
+given the org, look through all repos of type, and archive status and report on github detected licenses.
+
+positional arguments:
+  orgs                  The org to work on
+
+optional arguments:
+  -h, --help            show this help message and exit
+  --archived            Include archived repos. Default is unarchived only.
+  --type {public,private,all}
+                        Type of repo: private, public, all (Default).
+  --include-URL         Include the URL to the repo as a help for people analyzing things
+  --orgini              use "orglist.ini" with the "orgs" entry with a csv list of all orgs to check
+  --pat-key PATKEY      key in .gh_pat.toml of the PAT to use
 ```
 
 ## `org_comms_team.py`
@@ -225,6 +273,22 @@ optional arguments:
   -f OUTPUT         File to store CSV to
 ```
 
+## `org_teams.py`
+```
+usage: org_teams.py [-h] [--pat-key PATKEY] [--team TEAM] [--unmark] org
+
+Gets a list of teams and their users for an Org. Users with '*' are maintainers of the team, reports using the team-slug
+
+positional arguments:
+  org               The GH org to query
+
+optional arguments:
+  -h, --help        show this help message and exit
+  --pat-key PATKEY  key in .gh_pat.toml of the PAT to use
+  --team TEAM       The team slug to dump - if specified will ONLY use that team. (slug, NOT name)
+  --unmark          Do not mark maintainers in the list
+```
+
 ## `repo_activity.py`
 
 ```
@@ -287,6 +351,27 @@ optional arguments:
   --force           Don't stop if you detect previous archivers
   --pause           Pause upon detecting anomalies that might need fixing, but aren't blockers
   -q                DO NOT print, or request confirmations
+```
+
+## `repo_close_issues.py`
+```
+usage: repo_close_issues.py [-h] [--close-pr] [--comment COMMENT] [--doit] [--token TOKEN] [--pat-key PATKEY] [--delay DELAY]
+                            org repo
+
+Close issues associated with the specified repo. Do not close PRs unless specified, and only do things if specified
+
+positional arguments:
+  org                Org/owner name
+  repo               Name of the repo
+
+optional arguments:
+  -h, --help         show this help message and exit
+  --close-pr         Close the PRs too?
+  --comment COMMENT  A comment to close the issue with
+  --doit             Actually close things
+  --token TOKEN      PAT to access github. Needs Write access to the repos
+  --pat-key PATKEY   key in .gh_pat.toml of the PAT to use
+  --delay DELAY      seconds between close requests, to avoid secondary rate limits > 1
 ```
 
 ## `repo_unarchiver.py`
