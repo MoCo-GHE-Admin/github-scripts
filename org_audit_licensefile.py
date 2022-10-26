@@ -9,9 +9,10 @@ import sys
 from datetime import datetime
 from getpass import getpass
 
-import utils
 from github3 import exceptions as gh_exceptions
 from github3 import login
+
+from github_scripts import utils
 
 
 def parse_arguments():

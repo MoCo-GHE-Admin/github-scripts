@@ -7,9 +7,8 @@ that return positives for a dependency of the specified language
 import argparse
 from getpass import getpass
 
-import utils
-
 from gh_file_search import do_search
+from github_scripts import utils
 
 # data
 language_default = "Python"
