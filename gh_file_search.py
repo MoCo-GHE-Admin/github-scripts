@@ -144,7 +144,7 @@ def do_search(args):
             utils.spinner(org, end_spinner=True)
             if args.print_file and files:
                 for line in files:
-                    print("fred", line)
+                    print(line)
             elif repos:
                 print("\n".join(repos))
 
