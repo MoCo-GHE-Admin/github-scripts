@@ -34,3 +34,6 @@ jobs:
     - name: Run pre-commit
       run: |
         pre-commit run -av
+    - name: test executable help output
+      run: |
+        ./tests/test_binaries_help_output.sh
