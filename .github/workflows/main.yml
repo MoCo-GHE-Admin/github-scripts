@@ -37,3 +37,6 @@ jobs:
     - name: test executable help output
       run: |
         ./tests/test_binaries_help_output.sh
+    - name: run pytest
+      run: |
+        pytest -vv
