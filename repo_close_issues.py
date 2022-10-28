@@ -5,9 +5,7 @@ PR's are "special" issues - flag for including those if desired.
 defaults to Dry run - will print out everything that will happen without DOING anything.
 """
 
-import argparse
 import time
-from getpass import getpass
 
 from github3 import exceptions as gh_exceptions
 from github3 import login
@@ -21,7 +19,7 @@ def parse_args():
     If no token is specified prompt for it.
     :return: Returns the parsed CLI datastructures.
     """
-    parser = argparse.ArgumentParser(
+    parser = utils.GH_ArgParser(
         description="Close issues associated with the specified repo.  Do not close PRs unless specified, and only do things if specified"
     )
     parser.add_argument("org", help="Org/owner name")
@@ -32,25 +30,12 @@ def parse_args():
     parser.add_argument("--comment", help="A comment to close the issue with")
     parser.add_argument("--doit", help="Actually close things", action="store_true")
     parser.add_argument(
-        "--token", help="PAT to access github.  Needs Write access to the repos", action="store"
-    )
-    parser.add_argument(
-        "--pat-key",
-        default="admin",
-        action="store",
-        dest="patkey",
-        help="key in .gh_pat.toml of the PAT to use",
-    )
-    parser.add_argument(
         "--delay",
         default=2,
         type=float,
         help="seconds between close requests, to avoid secondary rate limits > 1",
     )
     args = parser.parse_args()
-    args.token = utils.get_pat_from_file(args.patkey)
-    if args.token is None:
-        args.token = getpass("Please enter your GitHub token: ")
     return args
 
 

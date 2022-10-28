@@ -10,10 +10,8 @@ search for OutsideCollaboratorIterator on this page:
 https://github.com/mozilla/github-org-scripts/blob/main/notebooks/UserSearchPy3.ipynb
 """
 
-import argparse
 import datetime
 import sys
-from getpass import getpass
 
 import requests
 from github3 import login
@@ -25,7 +23,7 @@ def parse_arguments():
     """
     Look at the first arg and handoff to the arg parser for that specific
     """
-    parser = argparse.ArgumentParser(description="Get SAML account mappings out of a GitHub org")
+    parser = utils.GH_ArgParser(description="Get SAML account mappings out of a GitHub org")
     parser.add_argument("org", type=str, help="The org to work on", action="store")
     parser.add_argument(
         "--url",
@@ -35,19 +33,9 @@ def parse_arguments():
         default="https://api.github.com/graphql",
     )
     parser.add_argument(
-        "--pat-key",
-        default="admin",
-        action="store",
-        dest="patkey",
-        help="key in .gh_pat.toml of the PAT to use",
-    )
-    parser.add_argument(
         "-f", type=str, help="File to store CSV to", action="store", default=None, dest="output"
     )
     args = parser.parse_args()
-    args.token = utils.get_pat_from_file(args.patkey)
-    if args.token is None:
-        args.token = getpass("Please enter your GitHub token: ")
     return args
 
 
@@ -142,8 +130,6 @@ def main():
     Query github org and return the mapping of the SAML to GH login
     """
     args = parse_arguments()
-    if args.token is None:
-        args.token = getpass("Enter your PAT: ")
 
     headers = {"content-type": "application/json", "Authorization": "Bearer " + args.token}
 

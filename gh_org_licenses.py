@@ -8,9 +8,7 @@ Outside collaborators with ANY access (even just read) to a private repo take a 
 
 """
 
-import argparse
 import configparser
-from getpass import getpass
 
 from github3 import exceptions as gh_exceptions
 from github3 import login
@@ -23,7 +21,7 @@ def parse_arguments():
     Get a list of orgs (either in CLI or in INI file)
     Get the PAT (either via command line or toml file)
     """
-    parser = argparse.ArgumentParser(
+    parser = utils.GH_ArgParser(
         description="Provided a list of orgs, output how many GHE licenses are required."
     )
     parser.add_argument("orgs", type=str, help="The org to work on", action="store", nargs="*")
@@ -34,19 +32,9 @@ def parse_arguments():
         action="store_const",
         const="orglist.ini",
     )
-    parser.add_argument(
-        "--pat-key",
-        default="admin",
-        action="store",
-        dest="patkey",
-        help="key in .gh_pat.toml of the PAT to use",
-    )
     args = parser.parse_args()
     if args.orgs == [] and args.orgini is None:
         raise Exception("You must specify either an org or an orgini")
-    args.token = utils.get_pat_from_file(args.patkey)
-    if args.token is None:
-        args.token = getpass("Please enter your GitHub token: ")
     return args
 
 

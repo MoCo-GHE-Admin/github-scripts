@@ -3,9 +3,7 @@
 Check remaining API calls, and time of next reset
 """
 
-import argparse
 from datetime import datetime
-from getpass import getpass
 
 from github3 import login
 
@@ -17,20 +15,10 @@ def parse_args():
     Parse the args - need either the username adn token, or the config to exist
     return the parsed args.
     """
-    parser = argparse.ArgumentParser(
+    parser = utils.GH_ArgParser(
         description="Print out the remaining API limits, and the time of the reset"
     )
-    parser.add_argument(
-        "--pat-key",
-        default="admin",
-        action="store",
-        dest="patkey",
-        help="key in .gh_pat.toml of the PAT to use",
-    )
     args = parser.parse_args()
-    args.token = utils.get_pat_from_file(args.patkey)
-    if args.token is None:
-        args.token = getpass("Please enter your GitHub token: ")
     return args
 
 

@@ -3,10 +3,8 @@
 Script to perform a search of supplied orgs, returning the repo list that return positives
 """
 
-import argparse
 import configparser
 import sys
-from getpass import getpass
 from time import sleep
 
 from github3 import exceptions as gh_exceptions
@@ -19,7 +17,7 @@ def parse_arguments():
     """
     Look at the first arg and handoff to the arg parser for that specific
     """
-    parser = argparse.ArgumentParser(
+    parser = utils.GH_ArgParser(
         description="Get file search results for an org, returning repo list.  "
         "e.g. if you want 'org:<ORGNAME> filename:<FILENAME> <CONTENTS>', "
         "then you just need 'filename:<FILENAME> <CONTENTS>' "
@@ -44,13 +42,6 @@ def parse_arguments():
         const="orglist.ini",
     )
     parser.add_argument(
-        "--pat-key",
-        default="admin",
-        action="store",
-        dest="patkey",
-        help="key in .gh_pat.toml of the PAT to use",
-    )
-    parser.add_argument(
         "-v",
         dest="verbose",
         help="Verbose - Print out that we're waiting for rate limit reasons",
@@ -73,9 +64,6 @@ def parse_arguments():
     args = parser.parse_args()
     if args.orgs == [] and args.orgini is None:
         raise SystemExit("You must specify either an org or an orgini")
-    args.token = utils.get_pat_from_file(args.patkey)
-    if args.token is None:
-        args.token = getpass("Please enter your GitHub token: ")
     return args
 
 

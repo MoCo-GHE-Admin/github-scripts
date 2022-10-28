@@ -3,9 +3,6 @@
 Script to pull out any existing security alerts
 """
 
-import argparse
-from getpass import getpass
-
 import requests
 
 from github_scripts import utils
@@ -15,22 +12,12 @@ def parse_arguments():
     """
     Look at the first arg and handoff to the arg parser for that specific
     """
-    parser = argparse.ArgumentParser(
+    parser = utils.GH_ArgParser(
         description="examine org for open security alerts from secret scanning, outputting csv data to pursue the alerts"
     )
     parser.add_argument("org", type=str, help="The org that the repos are in")
 
-    parser.add_argument(
-        "--pat-key",
-        default="admin",
-        action="store",
-        dest="patkey",
-        help="key in .gh_pat.toml of the PAT to use",
-    )
     args = parser.parse_args()
-    args.token = utils.get_pat_from_file(args.patkey)
-    if args.token is None:
-        args.token = getpass("Please enter your GitHub token: ")
     return args
 
 

@@ -7,14 +7,14 @@ and then go through the repos, and remove them as outside collaborators.
 
 # TODO: Look at making it able to take multiple usernames on the command line
 
-import argparse
 import configparser
-from getpass import getpass
 
 # from github3 import exceptions as gh_exceptions
 from github3 import login
 
 from github_scripts import utils
+
+# TODO: add progress bars
 
 
 def parse_args():
@@ -23,19 +23,12 @@ def parse_args():
     If no token is specified prompt for it.
     :return: Returns the parsed CLI datastructures.
     """
-    parser = argparse.ArgumentParser(
+    parser = utils.GH_ArgParser(
         description="Given a username - go through all orgs in the orglist.ini file and see "
         "what they need to be removed from"
     )
     parser.add_argument("username", help="User to remove")
     parser.add_argument("orgs", type=str, help="The org to work on", action="store", nargs="*")
-    parser.add_argument(
-        "--pat-key",
-        default="admin",
-        action="store",
-        dest="patkey",
-        help="key in .gh_pat.toml of the PAT to use",
-    )
     parser.add_argument(
         "--orgfile",
         help='use an ini file with the "orgs" '
@@ -55,9 +48,6 @@ def parse_args():
     args = parser.parse_args()
     if args.orgs == [] and args.orgfile is None:
         raise Exception("You must specify either an org or an orgfile")
-    args.token = utils.get_pat_from_file(args.patkey)
-    if args.token is None:
-        args.token = getpass("Please enter your GitHub token: ")
     return args
 
 

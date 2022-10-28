@@ -6,11 +6,9 @@ Also look to see if there's a wiki, and check for activity there.
 Used to help determination for archiving/moving repos that aren't active
 """
 
-import argparse
 import sys
 import tempfile
 from datetime import datetime
-from getpass import getpass
 
 import pytz
 from git import Repo
@@ -36,7 +34,7 @@ def parse_args():
     :return: Returns the parsed CLI datastructures.
     """
 
-    parser = argparse.ArgumentParser(
+    parser = utils.GH_ArgParser(
         description="Gets a latest activity for a repo or list of repos.  "
         "Also checks wiki for activity, and can be told to check for issues activity."
     )
@@ -45,13 +43,6 @@ def parse_args():
         help="list of repos to examine - or use --file for file base input",
         action="store",
         nargs="*",
-    )
-    parser.add_argument(
-        "--pat-key",
-        default="admin",
-        action="store",
-        dest="patkey",
-        help="key in .gh_pat.toml of the PAT to use",
     )
     parser.add_argument(
         "--issues",
@@ -70,9 +61,6 @@ def parse_args():
     args = parser.parse_args()
     if args.repos is None and args.file is None:
         raise Exception("Must have either a list of repos, OR a file to read repos from")
-    args.token = utils.get_pat_from_file(args.patkey)
-    if args.token is None:
-        args.token = getpass("Please enter your GitHub token: ")
     return args
 
 

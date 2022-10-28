@@ -7,9 +7,6 @@ Mainly used prior to SAML enable/enforcement - so there's chances that
 SAML will be in a splitbrain mode
 """
 
-import argparse
-from getpass import getpass
-
 from github3 import exceptions as gh_exceptions
 from github3 import login
 
@@ -22,7 +19,7 @@ def parse_args():
     If no token is specified prompt for it.
     :return: Returns the parsed CLI datastructures.
     """
-    parser = argparse.ArgumentParser(
+    parser = utils.GH_ArgParser(
         description="Go into an org, create a team named for the --team-name and add all members to it, OR if --users is specified - add that list of users.  Specify --remove to invert the operation"
     )
     parser.add_argument("org", help="organization to do this to", action="store")
@@ -33,13 +30,6 @@ def parse_args():
         action="store",
         default="everybody-temp-comms",
     )
-    parser.add_argument(
-        "--pat-key",
-        default="admin",
-        action="store",
-        dest="patkey",
-        help="key in .gh_pat.toml of the PAT to use",
-    )
     parser.add_argument("--users", nargs="+", help="List of users to add to the team")
     parser.add_argument(
         "--remove",
@@ -47,9 +37,6 @@ def parse_args():
         action="store_true",
     )
     args = parser.parse_args()
-    args.token = utils.get_pat_from_file(args.patkey)
-    if args.token is None:
-        args.token = getpass("Please enter your GitHub token: ")
     return args
 
 
