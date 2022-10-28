@@ -4,9 +4,7 @@ Script to get the dependency information for a repo.
 Source doc : https://til.simonwillison.net/github/dependencies-graphql-api
 """
 
-import argparse
 import pprint
-from getpass import getpass
 
 import requests
 from github3 import login
@@ -20,7 +18,7 @@ def parse_arguments():
     """
     Look at the first arg and handoff to the arg parser for that specific
     """
-    parser = argparse.ArgumentParser(description="Get the dependency for repos in an org")
+    parser = utils.GH_ArgParser(description="Get the dependency for repos in an org")
     parser.add_argument("org", type=str, help="The 'org' to work on", action="store")
     parser.add_argument("package", type=str, help="Package name to look for", action="store")
     parser.add_argument(
@@ -30,17 +28,7 @@ def parse_arguments():
         action="store",
         default="https://api.github.com/graphql",
     )
-    parser.add_argument(
-        "--pat-key",
-        default="admin",
-        action="store",
-        dest="patkey",
-        help="key in .gh_pat.toml of the PAT to use",
-    )
     args = parser.parse_args()
-    args.token = utils.get_pat_from_file(args.patkey)
-    if args.token is None:
-        args.token = getpass("Please enter your GitHub token: ")
     return args
 
 
@@ -157,8 +145,6 @@ def main():
     Query github org and return the mapping of the SAML to GH login
     """
     args = parse_arguments()
-    if args.token is None:
-        args.token = getpass("Enter your PAT: ")
 
     headers = {
         "content-type": "application/json",
