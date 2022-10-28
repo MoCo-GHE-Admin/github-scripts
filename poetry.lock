@@ -499,7 +499,7 @@ watchmedo = ["PyYAML (>=3.10)"]
 [metadata]
 lock-version = "1.1"
 python-versions = "^3.9"
-content-hash = "ac4dfb7086a7e6ff04af57b98687c1d6c96089a060f289b40db11e1fe6f5f658"
+content-hash = "46dffd48b22ea181bf95a8978fe82d0d92d50e12f68af9eb570c4e5883434d95"
 
 [metadata.files]
 about-time = [
