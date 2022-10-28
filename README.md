@@ -139,7 +139,7 @@ optional arguments:
 
 ## `gh_user_perms.py`
 ```
-usage: gh_user_perms.py [-h] [--pat-key PATKEY] [--repo REPO] user org
+usage: gh_user_perms.py [-h] [--no-archive] [--pat-key PATKEY] [--repo REPO] user org
 
 Report on a user's permissions in an org.
 
@@ -149,6 +149,7 @@ positional arguments:
 
 optional arguments:
   -h, --help        show this help message and exit
+  --no-archive      Omit archived repos from the response
   --pat-key PATKEY  key in .gh_pat.toml of the PAT to use
   --repo REPO       Single repo to examine in the org
 ```
