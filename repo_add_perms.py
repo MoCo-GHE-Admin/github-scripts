@@ -4,9 +4,7 @@ Script to add user or team to a list of repos
 If adding a user, if the user is a member, adds the member, else invites as an OC.
 """
 
-import argparse
 import json
-from getpass import getpass
 from logging import exception
 
 import requests
@@ -19,7 +17,7 @@ def parse_arguments():
     """
     Parse the command line
     """
-    parser = argparse.ArgumentParser(
+    parser = utils.GH_ArgParser(
         description="invite member or team to specified repos at specified level. If adding a user, if the user is a member, adds the member, else invites as an OC."
     )
     parser.add_argument(
@@ -38,18 +36,7 @@ def parse_arguments():
         help="API host to connect to - default api.github.com",
         default="api.github.com",
     )
-
-    parser.add_argument(
-        "--pat-key",
-        default="admin",
-        action="store",
-        dest="patkey",
-        help="key in .gh_pat.toml of the PAT to use",
-    )
     args = parser.parse_args()
-    args.token = utils.get_pat_from_file(args.patkey)
-    if args.token is None:
-        args.token = getpass("Please enter your GitHub token: ")
     return args
 
 

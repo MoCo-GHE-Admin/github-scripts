@@ -5,9 +5,6 @@ Used primarily as input to repo related scripts - allowing action on all or a su
 (poor person's rate limiting)
 """
 
-import argparse
-from getpass import getpass
-
 from github3 import login
 
 from github_scripts import utils
@@ -20,15 +17,8 @@ def parse_args():
     :return: Returns the parsed CLI datastructures.
     """
 
-    parser = argparse.ArgumentParser(description="Gets a list of Repos for an Org.")
+    parser = utils.GH_ArgParser(description="Gets a list of Repos for an Org.")
     parser.add_argument("org", help="The GH org to query", action="store", type=str)
-    parser.add_argument(
-        "--pat-key",
-        default="admin",
-        action="store",
-        dest="patkey",
-        help="key in .gh_pat.toml of the PAT to use",
-    )
     parser.add_argument(
         "--without-org",
         help="Include the org in the name, 'org/repo-name'",
@@ -49,9 +39,6 @@ def parse_args():
         choices=["public", "private", "all"],
     )
     args = parser.parse_args()
-    args.token = utils.get_pat_from_file(args.patkey)
-    if args.token is None:
-        args.token = getpass("Please enter your GitHub token: ")
     return args
 
 

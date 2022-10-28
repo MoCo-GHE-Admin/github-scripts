@@ -3,11 +3,9 @@
 Script to perform a search of supplied orgs, and return the list of detected repo licenses.
 """
 
-import argparse
 import configparser
 import sys
 from datetime import datetime
-from getpass import getpass
 
 from github3 import exceptions as gh_exceptions
 from github3 import login
@@ -19,7 +17,7 @@ def parse_arguments():
     """
     Look at the first arg and handoff to the arg parser for that specific
     """
-    parser = argparse.ArgumentParser(
+    parser = utils.GH_ArgParser(
         description="given the org, look through all repos of type, and archive status and report on github detected licenses."
     )
     parser.add_argument("orgs", type=str, help="The org to work on", action="store", nargs="*")
@@ -47,19 +45,9 @@ def parse_arguments():
         action="store_const",
         const="orglist.ini",
     )
-    parser.add_argument(
-        "--pat-key",
-        default="admin",
-        action="store",
-        dest="patkey",
-        help="key in .gh_pat.toml of the PAT to use",
-    )
     args = parser.parse_args()
     if args.orgs == [] and args.orgini is None:
         raise Exception("You must specify either an org or an orgini")
-    args.token = utils.get_pat_from_file(args.patkey)
-    if args.token is None:
-        args.token = getpass("Please enter your GitHub token: ")
     return args
 
 

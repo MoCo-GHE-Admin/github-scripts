@@ -8,9 +8,7 @@ prepends "DEPRECATED - " to the description
 Archives the repo
 """
 
-import argparse
 import sys
-from getpass import getpass
 
 import getch
 from github3 import exceptions as gh_exceptions
@@ -28,22 +26,12 @@ def parse_args():
     If no token is specified prompt for it.
     :return: Returns the parsed CLI datastructures.
     """
-    parser = argparse.ArgumentParser(
+    parser = utils.GH_ArgParser(
         description="Archive the specified repo, labelling and then closing out issues and PRs, "
         "per GitHub best practices.  Closed issues/PRs, and description/topic changes "
         "can be completely reversed using the repo_unarchiver script."
     )
     parser.add_argument("repos", help="owner/repo to archive", nargs="*", action="store")
-    parser.add_argument(
-        "--token", help="PAT to access github.  Needs Write access to the repos", action="store"
-    )
-    parser.add_argument(
-        "--pat-key",
-        default="admin",
-        action="store",
-        dest="patkey",
-        help="key in .gh_pat.toml of the PAT to use",
-    )
     parser.add_argument(
         "--inactive",
         help="Change the 'abandoned' and 'deprecated' wording to 'inactive'",
@@ -78,9 +66,6 @@ def parse_args():
         raise Exception("Must have either a list of repos, OR a file to read repos from")
     if args.custom is not None and len(args.custom) > MAX_CUSTOM_LENGTH:
         raise Exception(f"Custom string must be less than {MAX_CUSTOM_LENGTH} characters")
-    args.token = utils.get_pat_from_file(args.patkey)
-    if args.token is None:
-        args.token = getpass("Please enter your GitHub token: ")
     return args
 
 

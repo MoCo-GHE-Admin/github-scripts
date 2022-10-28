@@ -4,9 +4,6 @@ Script to perform a search of supplied orgs, returning the repo list
 that return positives for a dependency of the specified language
 """
 
-import argparse
-from getpass import getpass
-
 from gh_file_search import do_search
 from github_scripts import utils
 
@@ -28,7 +25,7 @@ def parse_arguments():
     """
     Look at the first arg and handoff to the arg parser for that specific
     """
-    parser = argparse.ArgumentParser(description="Get file search resuls for a dependency")
+    parser = utils.GH_ArgParser(description="Get file search resuls for a dependency")
     parser.add_argument(
         "--package", type=str, help="The package to search for.", action="store", required=True
     )
@@ -38,13 +35,6 @@ def parse_arguments():
         help='use "orglist.ini" with the "orgs" ' "entry with a csv list of all orgs to check",
         action="store_const",
         const="orglist.ini",
-    )
-    parser.add_argument(
-        "--pat-key",
-        default="admin",
-        action="store",
-        dest="patkey",
-        help="key in .gh_pat.toml of the PAT to use",
     )
     parser.add_argument(
         "-v",
@@ -75,9 +65,6 @@ def parse_arguments():
     args = parser.parse_args()
     if args.orgs == [] and args.orgini is None:
         raise Exception("You must specify either an org or an orgini")
-    args.token = utils.get_pat_from_file(args.patkey)
-    if args.token is None:
-        args.token = getpass("Please enter your GitHub token: ")
     return args
 
 

@@ -3,9 +3,7 @@
 Script to manually poke the blocks/unblocks for orgs.
 """
 
-import argparse
 import configparser
-from getpass import getpass
 
 import requests
 
@@ -16,7 +14,7 @@ def parse_arguments():
     """
     Look at the first arg and handoff to the arg parser for that specific
     """
-    parser = argparse.ArgumentParser(
+    parser = utils.GH_ArgParser(
         description="Look at orgs, and either block or " "unblock the specified username"
     )
     parser.add_argument("username", type=str, help="The GH user name to block/unblock")
@@ -30,19 +28,9 @@ def parse_arguments():
         action="store_const",
         const="orglist.ini",
     )
-    parser.add_argument(
-        "--pat-key",
-        default="admin",
-        action="store",
-        dest="patkey",
-        help="key in .gh_pat.toml of the PAT to use",
-    )
     args = parser.parse_args()
     if args.orgs == [] and args.orgini is None:
         raise Exception("You must specify either an org or an orgini")
-    args.token = utils.get_pat_from_file(args.patkey)
-    if args.token is None:
-        args.token = getpass("Please enter your GitHub token: ")
     return args
 
 

@@ -5,10 +5,8 @@ Given a list of repos, and a timefame, check out the reop
 and return the list of unique users in that repo
 """
 
-import argparse
 import sys
 import tempfile
-from getpass import getpass
 
 from git import Repo
 
@@ -22,7 +20,7 @@ def parse_args():
     Timeframe to look over.  Default to 30 days.
     """
 
-    parser = argparse.ArgumentParser(
+    parser = utils.GH_ArgParser(
         description="Gets a list of active users for a list of repos"
         "Also checks wiki for activity, and can be told to check for issues activity."
     )
@@ -44,18 +42,8 @@ def parse_args():
         help="Use the author rather than committer email, if you're concerned about people with permissions, committer is what you want",
         action="store_true",
     )
-    parser.add_argument(
-        "--pat-key",
-        default="admin",
-        action="store",
-        dest="patkey",
-        help="key in .gh_pat.toml of the PAT to use",
-    )
     parser.add_argument("--debug", action="store_true")
     args = parser.parse_args()
-    args.token = utils.get_pat_from_file(args.patkey)
-    if args.token is None:
-        args.token = getpass("Please enter your GitHub token: ")
     return args
 
 

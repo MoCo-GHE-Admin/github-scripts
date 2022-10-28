@@ -16,9 +16,7 @@ https://docs.github.com/en/rest/reference/repos#update-a-repository
 Note: You cannot unarchive repositories through the API.
 """
 
-import argparse
 import sys
-from getpass import getpass
 
 from github3 import exceptions as gh_exceptions
 from github3 import login
@@ -34,21 +32,11 @@ def parse_args():
     If no token is specified prompt for it.
     :return: Returns the parsed CLI datastructures.
     """
-    parser = argparse.ArgumentParser(
+    parser = utils.GH_ArgParser(
         description="Reverse archival closing of issues of the specified repo, Note, repo "
         "MUST be manually unarchived before this script"
     )
     parser.add_argument("repo", help="owner/repo to unarchive", action="store")
-    parser.add_argument(
-        "--token", help="PAT to access github.  Needs Write access to the repos", action="store"
-    )
-    parser.add_argument(
-        "--pat-key",
-        default="admin",
-        action="store",
-        dest="patkey",
-        help="key in .gh_pat.toml of the PAT to use, default: 'admin'",
-    )
     parser.add_argument(
         "-q",
         help="DO NOT print, or request confirmations",
@@ -57,9 +45,6 @@ def parse_args():
         default=False,
     )
     args = parser.parse_args()
-    args.token = utils.get_pat_from_file(args.patkey)
-    if args.token is None:
-        args.token = getpass("Please enter your GitHub token: ")
     return args
 
 

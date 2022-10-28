@@ -9,10 +9,8 @@ So there's no indication here if the perm is to the user or a team they
 belong to.
 """
 
-import argparse
 import os
 import sys
-from getpass import getpass
 
 import alive_progress
 from github3 import login
@@ -26,24 +24,14 @@ def parse_args():
     :return: Returns the parsed CLI datastructures.
     """
 
-    parser = argparse.ArgumentParser(
+    parser = utils.GH_ArgParser(
         description="Depending on args, dump all repos in an org, repos for a user or users for a repo, and their user permissions, defaults to all repos and users in an org."
     )
     parser.add_argument("org", help="The org to examine", action="store")
-    parser.add_argument(
-        "--pat-key",
-        default="admin",
-        action="store",
-        dest="patkey",
-        help="key in .gh_pat.toml of the PAT to use",
-    )
     analyse_group = parser.add_mutually_exclusive_group()
     analyse_group.add_argument("--user", help="Single user to examine in the org")
     analyse_group.add_argument("--repo", help="Single repo to examine in the org")
     args = parser.parse_args()
-    args.token = utils.get_pat_from_file(args.patkey)
-    if args.token is None:
-        args.token = getpass("Please enter your GitHub token: ")
     return args
 
 
