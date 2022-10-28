@@ -1,9 +1,11 @@
 """
 Helper file for code reuse throughout the github-scripts
 """
+import argparse
 import os
 import sys
 from datetime import datetime
+from getpass import getpass
 from time import sleep
 
 import alive_progress
@@ -98,6 +100,33 @@ class GHPermsQuery:
                     )
                 bar()
         return userlist
+
+
+class GH_ArgParser(argparse.ArgumentParser):
+    """
+    Used to have some "Normal" things made standard across all github-scripts - token management being the first.
+    """
+
+    def __init__(self, *args, **kwargs):
+        argparse.ArgumentParser.__init__(self, *args, **kwargs)
+        self.add_argument(
+            "--pat-key",
+            default="admin",
+            action="store",
+            dest="patkey",
+            help="key in .gh_pat.toml of the PAT to use",
+        )
+        self.add_argument("--token", help="use this PAT to access resources")
+
+    def parse_args(self):
+        args = super().parse_args()
+        file_token = get_pat_from_file(args.patkey)
+        if args.token is None:
+            if file_token is None:
+                args.token = getpass("Please enter your GitHub token: ")
+            else:
+                args.token = file_token
+        return args
 
 
 def get_pat_from_file(key_name="admin"):
