@@ -28,6 +28,12 @@ def parse_args():
     parser.add_argument("user", help="Single user to examine in the org")
     parser.add_argument("org", help="The org to examine")
     parser.add_argument(
+        "--no-archive",
+        help="Omit archived repos from the response",
+        action="store_true",
+        dest="omit_archive",
+    )
+    parser.add_argument(
         "--pat-key",
         default="admin",
         action="store",
@@ -146,6 +152,8 @@ def main():
         # - need this as way of checking data structure currently
         # - generate new data structure?
         for repo in repolist:
+            if repo.archived and args.omit_archive:
+                continue  # Skip this repo
             access_string = ""
             tmp_list = []
 
