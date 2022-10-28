@@ -1,2 +1,28 @@
 [tool.black]
 line-length = 100
+
+[tool.poetry]
+name = "github-scripts"
+version = "0.1.0"
+description = ""
+authors = ["Chris Knowles <cknowles@mozilla.com>"]
+readme = "README.md"
+packages = [{include = "github_scripts"}]
+
+[tool.poetry.dependencies]
+python = "^3.9"
+github3-py = "^3.2.0"
+# pinned at a master sha1 commit, waiting for release of aerickson's feature
+alive-progress = {git = "https://github.com/rsalmei/alive-progress.git", rev = "2152ce1bbb503013fdf435c67133a065fc3bbcce"}
+# `getch` has installation issues with poetry
+py-getch = "^1.0.1"
+toml = "^0.10.2"
+
+[tool.poetry.group.dev.dependencies]
+pre-commit = "^2.20.0"
+pytest = "^7.2.0"
+pytest-watch = "^4.2.0"
+
+[build-system]
+requires = ["poetry-core"]
+build-backend = "poetry.core.masonry.api"
