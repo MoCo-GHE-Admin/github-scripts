@@ -3,7 +3,18 @@
 A set of scripts for working with/analysis of github orgs/repos
 
 ## Requirements
-[github3.py](https://github3py.readthedocs.io/en/master/index.html)
+
+Requirements are managed with Poetry (https://python-poetry.org/).
+
+Once poetry is installed, you can set up the repo.
+
+```bash
+# sources the virtualenv
+poetry shell
+
+# install dependencies
+poetry install
+```
 
 ## Naming
 Starts with:
