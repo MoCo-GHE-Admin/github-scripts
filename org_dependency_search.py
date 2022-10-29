@@ -4,14 +4,11 @@ Script to get the dependency information for a repo.
 Source doc : https://til.simonwillison.net/github/dependencies-graphql-api
 """
 
-import pprint
-
+import alive_progress
 import requests
 from github3 import login
 
 from github_scripts import utils
-
-pp = pprint.PrettyPrinter(indent=2)
 
 
 def parse_arguments():
@@ -157,32 +154,42 @@ def main():
     org_obj = gh_sess.organization(args.org)
 
     package_list = []
-    for repo in org_obj.repositories(type="all"):
-        utils.spinner()
-        utils.check_rate_remain(gh_sess)
-        if repo.archived:
-            break  # Do not process archived
-        dependency_dict = run_query(org_obj.login, repo.name, headers, args.url)
+    repolist = org_obj.repositories(type="all")
+    with alive_progress.alive_bar(
+        manual=True,
+        title="fetching list of repos",
+        force_tty=True,  # force_tty because we are outputting to stderr now
+    ) as bar:
+        # materialize the iterator so we can get a count
+        repolist = list(repolist)
+        bar(1)
 
-        for cursor in dependency_dict:
-            #        pp.pprint(dependency_dict[cursor]['edges']['node']['dependencies']['totalCount'])
-            for reponode in dependency_dict[cursor]["edges"]:
-                # pp.pprint(reponode['node']['dependencies'])
-                # count = reponode["node"]["dependencies"]["totalCount"]
-                # print(f"{count=}")
-                for dep in reponode["node"]["dependencies"]["nodes"]:
-                    if dep["packageName"] == args.package:
-                        package_list.append(
-                            {
-                                "org": org_obj.login,
-                                "repo": repo.name,
-                                "name": dep["packageName"],
-                                "ver": dep["requirements"],
-                            }
-                        )
-                    # pp.pprint(dep)
-                # for dependency in reponode['node']:
-                #     pp.pprint(dependency)
+    with alive_progress.alive_bar(
+        dual_line=True,
+        title="getting dependencies",
+        force_tty=True,
+        disable=False,
+    ) as bar:
+        for repo in repolist:
+            bar.text = f"  - checking {repo.name}..."
+            utils.check_rate_remain(gh_sess)
+            if repo.archived:
+                continue  # Do not process archived
+            dependency_dict = run_query(org_obj.login, repo.name, headers, args.url)
+
+            for cursor in dependency_dict:
+                for reponode in dependency_dict[cursor]["edges"]:
+                    for dep in reponode["node"]["dependencies"]["nodes"]:
+                        if dep["packageName"] == args.package:
+                            package_list.append(
+                                {
+                                    "org": org_obj.login,
+                                    "repo": repo.name,
+                                    "name": dep["packageName"],
+                                    "ver": dep["requirements"],
+                                }
+                            )
+            bar()
 
     # output time!
     print()

@@ -212,6 +212,23 @@ optional arguments:
   --remove              Remove the specified users from the team rather than add
 ```
 
+## `org_dependency_search.py`
+```
+usage: org_dependency_search.py [-h] [--pat-key PATKEY] [--token TOKEN] [--url URL] org package
+
+Get the dependency for repos in an org
+
+positional arguments:
+  org               The 'org' to work on
+  package           Package name to look for
+
+options:
+  -h, --help        show this help message and exit
+  --pat-key PATKEY  key in .gh_pat.toml of the PAT to use
+  --token TOKEN     use this PAT to access resources
+  --url URL         the graphql URL
+```
+
 ## `org_owners.py`
 ```
 usage: org_owners.py [-h] [--pat-key PATKEY] [--token TOKEN] [--orgini] [orgs ...]
