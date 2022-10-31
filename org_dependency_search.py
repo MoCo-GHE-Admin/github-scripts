@@ -17,7 +17,15 @@ def parse_arguments():
     """
     parser = utils.GH_ArgParser(description="Get the dependency for repos in an org")
     parser.add_argument("org", type=str, help="The 'org' to work on", action="store")
-    parser.add_argument("package", type=str, help="Package name to look for", action="store")
+    parser.add_argument(
+        "package",
+        type=str,
+        help="Package name to look for - must be the precise package name.",
+        action="store",
+    )
+    parser.add_argument(
+        "--archived", action="store_false", dest="unarchived", help="Include archived repos"
+    )
     parser.add_argument(
         "--url",
         type=str,
@@ -173,8 +181,8 @@ def main():
         for repo in repolist:
             bar.text = f"  - checking {repo.name}..."
             utils.check_rate_remain(gh_sess)
-            if repo.archived:
-                continue  # Do not process archived
+            if args.unarchived and repo.archived:
+                continue
             dependency_dict = run_query(org_obj.login, repo.name, headers, args.url)
 
             for cursor in dependency_dict:
