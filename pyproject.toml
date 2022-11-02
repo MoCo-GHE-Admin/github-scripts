@@ -12,8 +12,8 @@ packages = [{include = "github_scripts"}]
 [tool.poetry.dependencies]
 python = "^3.9"
 github3-py = "^3.2.0"
-# pinned at a master sha1 commit, waiting for release of aerickson's feature
-alive-progress = {git = "https://github.com/rsalmei/alive-progress.git", rev = "2152ce1bbb503013fdf435c67133a065fc3bbcce"}
+# pinned to aerickson's stderr change, waiting for release of feature (https://github.com/rsalmei/alive-progress/issues/177)
+alive-progress = {git = "https://github.com/MoCo-GHE-Admin/alive-progress.git", rev = "02e8eb93b75a96830deb641a4609015b5c9023a4"}
 # `getch` has installation issues with poetry
 py-getch = "^1.0.1"
 toml = "^0.10.2"
