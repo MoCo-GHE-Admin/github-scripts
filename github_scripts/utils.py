@@ -198,13 +198,14 @@ def spinner(label="", end_spinner=False):
     sys.stderr.flush()
 
 
-def check_rate_remain(gh_sess, loopsize=100, update=True):
+def check_rate_remain(gh_sess, loopsize=100, update=True, bar=None):
     """
     Given the session, and the size of the rate eaten by the loop,
     and if not enough remains, sleep until it is.
     :param gh_sess: The github session
     :param loopsize: The amount of rate eaten by a run through things
     :param update: should we print things letting you know what we're doing?
+    :param bar: Are we using a progress bar?
     Note, we always print the "sleeping for XXX seconds"
     """
     # TODO: Look at making the naptime show that you're still making progress
@@ -214,18 +215,31 @@ def check_rate_remain(gh_sess, loopsize=100, update=True):
         refreshtime = datetime.fromtimestamp(gh_sess.rate_limit()["resources"]["core"]["reset"])
         now = datetime.now()
         naptime = (refreshtime - now).seconds + 120
-        print(
-            f"API limits exhausted - sleeping for {naptime} seconds from {datetime.now().strftime('%Y-%m-%d %H:%M:%S')} "
-            f"until {refreshtime.strftime('%Y-%m-%d %H:%M:%S')}",
-            file=sys.stderr,
-        )
+        if bar is None:
+            print(
+                f"API limits exhausted - sleeping for {naptime} seconds from {datetime.now().strftime('%Y-%m-%d %H:%M:%S')} "
+                f"until {refreshtime.strftime('%Y-%m-%d %H:%M:%S')}",
+                file=sys.stderr,
+            )
+        else:
+            oldtitle = bar.text
+            bar.text = (
+                f"API limits exhausted - sleeping until {refreshtime.strftime('%Y-%m-%d %H:%M:%S')}"
+            )
         for timer in range(naptime):
             sleep(1)
             if update:
-                spinner()
+                if bar is None:
+                    spinner()
+                else:
+                    bar()
         if update:
-            print(file=sys.stderr)
-            print("API timeout reset, continuing", file=sys.stderr)
+            if bar is None:
+                print(file=sys.stderr)
+                print("API timeout reset, continuing", file=sys.stderr)
+                spinner(end_spinner=True)
+            else:
+                bar.text = oldtitle
 
 
 # cknowles description of get_top_perms()
