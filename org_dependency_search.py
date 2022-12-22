@@ -183,6 +183,7 @@ def main():
             utils.check_rate_remain(gh_sess)
             if args.unarchived and repo.archived:
                 continue
+            utils.check_rate_remain(gh_sess=gh_sess, bar=bar)
             dependency_dict = run_query(org_obj.login, repo.name, headers, args.url)
 
             for cursor in dependency_dict:
