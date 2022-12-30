@@ -214,18 +214,19 @@ optional arguments:
 
 ## `org_dependency_search.py`
 ```
-usage: org_dependency_search.py [-h] [--pat-key PATKEY] [--token TOKEN] [--url URL] org package
+usage: org_dependency_search.py [-h] [--pat-key PATKEY] [--token TOKEN] [--archived] [--url URL] org package
 
 Get the dependency for repos in an org
 
 positional arguments:
   org               The 'org' to work on
-  package           Package name to look for
+  package           Package name to look for - must be the precise package name.
 
 options:
   -h, --help        show this help message and exit
   --pat-key PATKEY  key in .gh_pat.toml of the PAT to use
   --token TOKEN     use this PAT to access resources
+  --archived        Include archived repos
   --url URL         the graphql URL
 ```
 
