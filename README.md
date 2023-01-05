@@ -382,12 +382,12 @@ positional arguments:
   {team,member}         team or member - specify type of perm
   name                  Name of the member or team to add
 
-optional arguments:
+options:
   -h, --help            show this help message and exit
   --pat-key PATKEY      key in .gh_pat.toml of the PAT to use
   --token TOKEN         use this PAT to access resources
-  --perm PERM           String of the role name, defaults are 'read', 'write', 'triage', 'maintain', 'admin' - but others can be set
-                        by the repo admin
+  --perm PERM           String of the role name, defaults are 'pull'(read), 'push'(write), 'triage', 'maintain', 'admin' - but others
+                        can be set by the repo admin. If set wrongly, you'll get a 422 error
   --org ORG             Organization/owner that the repos belong to
   --repos REPOS [REPOS ...]
                         list of repo names
