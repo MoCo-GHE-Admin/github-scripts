@@ -26,7 +26,7 @@ def parse_arguments():
     parser.add_argument("name", help="Name of the member or team to add")
     parser.add_argument(
         "--perm",
-        help="String of the role name, defaults are 'read', 'write', 'triage', 'maintain', 'admin' - but others can be set by the repo admin",
+        help="String of the role name, defaults are 'pull'(read), 'push'(write), 'triage', 'maintain', 'admin' - but others can be set by the repo admin.  If set wrongly, you'll get a 422 error",
         required=True,
     )
     parser.add_argument("--org", help="Organization/owner that the repos belong to", required=True)
