@@ -44,6 +44,9 @@ def analyze_pat(pat, hostname):
         json = result.json()
         return {"json": json, "headers": result.headers}
         # return f"{json['login']},{json['node_id']},\"{result.headers['X-OAuth-Scopes']}\""
+    elif result.status_code == 401:
+        print("Query failed with 401 - likely the user or PAT does not exist")
+        exit()
     else:
         raise Exception(f"Query failed to run by returning code of {result.status_code}. {query}")
 
