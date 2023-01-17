@@ -4,6 +4,8 @@ Script to get the dependency information for a repo.
 Source doc : https://til.simonwillison.net/github/dependencies-graphql-api
 """
 
+import sys
+
 import alive_progress
 import requests
 from github3 import login
@@ -166,6 +168,7 @@ def main():
     with alive_progress.alive_bar(
         manual=True,
         title="fetching list of repos",
+        file=sys.stderr,
         force_tty=True,  # force_tty because we are outputting to stderr now
     ) as bar:
         # materialize the iterator so we can get a count
@@ -175,6 +178,7 @@ def main():
     with alive_progress.alive_bar(
         dual_line=True,
         title="getting dependencies",
+        file=sys.stderr,
         force_tty=True,
         disable=False,
     ) as bar:
