@@ -45,6 +45,7 @@ class GHPermsQuery:
             dual_line=True,
             title="getting repo permissions",
             force_tty=True,
+            file=sys.stderr,
             disable=progress_disabled,
         ) as bar:
             for repo in repolist:
