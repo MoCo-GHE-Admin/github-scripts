@@ -118,6 +118,7 @@ def main():
     with alive_progress.alive_bar(
         manual=True,
         title="fetching list of repos",
+        file=sys.stderr,
         force_tty=True,  # force_tty because we are outputting to stderr now
     ) as bar:
         # materialize the iterator so we can get a count
