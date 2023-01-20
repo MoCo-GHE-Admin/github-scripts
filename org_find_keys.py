@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 """
-Script to search for webhooks in repos in an org.
+Script to search for keys in repos in an org.
 """
 
 import sys
@@ -16,7 +16,7 @@ def parse_arguments():
     """
     Parse the command line
     """
-    parser = utils.GH_ArgParser(description="Search through an org for repos with webhooks")
+    parser = utils.GH_ArgParser(description="Search through an org for repos with keys")
     parser.add_argument("orgs", help="List of organizations that the repos belong to", nargs="+")
     parser.add_argument("--archived", help="Include archived repos", action="store_true")
     parser.add_argument(
@@ -31,9 +31,9 @@ def parse_arguments():
     return args
 
 
-def find_webhooks_in_org(gh_sess, org, repo_type, archived, bar):
+def find_keys_in_org(gh_sess, org, repo_type, archived, bar):
     """
-    Given an organization, return a list of found webhooks
+    Given an organization, return a list of found keys
     :param gh_sess: Active github session
     :param org: initialized org object
     :param repo_type: "all", "private", "public" for repo filtering
@@ -47,39 +47,40 @@ def find_webhooks_in_org(gh_sess, org, repo_type, archived, bar):
     bar()
     repolist = org.repositories(type=repo_type)
     for repo in repolist:
-        bar.text = f"  - Checking {repo.name}..."
-        bar()
+        bar.text = f"  - checking {repo.name}..."
         if archived or not repo.archived:
-            for hook in repo.hooks():
-                foundhookslist.append(f"{org.name},{repo.name},{hook.config['url']},{hook.active}")
+            bar()
+            for key in repo.keys():
+                foundhookslist.append(
+                    f"{org.name},{repo.name},{key.title},{key.created_at},{key.last_used}"
+                )
                 utils.check_rate_remain(gh_sess=gh_sess, bar=bar)
     return foundhookslist
 
 
 def main():
     """
-    Search through the indicated org and repo types and report all webhooks found
+    Search through the indicated org and repo types and report all repo keys found
     """
     args = parse_arguments()
 
     gh_sess = login(token=args.token)
 
-    header_str = "Org,Repo,Hook URL,Hook Active"
-    foundhookslist = []
+    header_str = "Org,Repo,Key title,created,last_used"
+    foundkeyslist = []
 
     for orgname in args.orgs:
         try:
             organization = gh_sess.organization(orgname)
-
             with alive_progress.alive_bar(
                 dual_line=True,
-                title=f"Searching for webhooks in {orgname}",
+                title=f"Searching for keys in {orgname}",
                 file=sys.stderr,
                 length=20,
-                force_tty=True,  # force_tty because we are outputting to stderr now
+                force_tty=True,
             ) as bar:
-                foundhookslist.extend(
-                    find_webhooks_in_org(
+                foundkeyslist.extend(
+                    find_keys_in_org(
                         gh_sess=gh_sess,
                         org=organization,
                         repo_type=args.repo_type,
@@ -94,7 +95,7 @@ def main():
             )
 
     print(header_str)
-    print("\n".join(foundhookslist))
+    print("\n".join(foundkeyslist))
 
 
 if __name__ == "__main__":
