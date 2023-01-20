@@ -230,6 +230,24 @@ options:
   --url URL         the graphql URL
 ```
 
+## `org_find_hooks.py`
+```
+usage: org_find_hooks.py [-h] [--pat-key PATKEY] [--token TOKEN] [--archived] [--type {all,public,private}] orgs [orgs ...]
+
+Search through an org for repos with webhooks
+
+positional arguments:
+  orgs                  List of organizations that the repos belong to
+
+options:
+  -h, --help            show this help message and exit
+  --pat-key PATKEY      key in .gh_pat.toml of the PAT to use
+  --token TOKEN         use this PAT to access resources
+  --archived            Include archived repos
+  --type {all,public,private}
+                        Type of repo, all (default), public, private
+```
+
 ## `org_owners.py`
 ```
 usage: org_owners.py [-h] [--pat-key PATKEY] [--token TOKEN] [--orgini] [orgs ...]
