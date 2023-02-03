@@ -168,7 +168,6 @@ def main():
             if not args.quiet:
                 print(f"repo {org}/{repo} is already archived, skipping")
         else:
-
             if not args.quiet:
                 print(f"working with repo: {org}/{repo}")
 
