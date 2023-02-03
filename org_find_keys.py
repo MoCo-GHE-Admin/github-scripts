@@ -41,7 +41,7 @@ def find_keys_in_org(gh_sess, org, repo_type, archived, bar):
     :param bar: initialized progress bar.
     :result: a list of strings with the hook information
     """
-    foundhookslist = []
+    foundkeyslist = []
 
     bar.text = "  - Getting repositories"
     bar()
@@ -50,12 +50,18 @@ def find_keys_in_org(gh_sess, org, repo_type, archived, bar):
         bar.text = f"  - checking {repo.name}..."
         if archived or not repo.archived:
             bar()
-            for key in repo.keys():
-                foundhookslist.append(
-                    f"{org.name},{repo.name},{key.title},{key.created_at},{key.last_used}"
-                )
-                utils.check_rate_remain(gh_sess=gh_sess, bar=bar)
-    return foundhookslist
+            try:
+                for key in repo.keys():
+                    foundkeyslist.append(
+                        f"{org.name},{repo.name},{key.title},{key.created_at},{key.last_used}"
+                    )
+                    utils.check_rate_remain(gh_sess=gh_sess, bar=bar)
+            except gh_exceptions.NotFoundError:
+                # ghsa repos do not have the keys endpoint.
+                if repo.name.find("-ghsa-") == -1:
+                    raise gh_exceptions.NotFoundError()
+
+    return foundkeyslist
 
 
 def main():
@@ -93,9 +99,9 @@ def main():
                 f"Organization {orgname} not found - check spelling?  Continuing to next org if there is one.",
                 file=sys.stderr,
             )
-
-    print(header_str)
-    print("\n".join(foundkeyslist))
+        finally:
+            print(header_str)
+            print("\n".join(foundkeyslist))
 
 
 if __name__ == "__main__":

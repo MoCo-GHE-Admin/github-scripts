@@ -50,9 +50,17 @@ def find_webhooks_in_org(gh_sess, org, repo_type, archived, bar):
         bar.text = f"  - Checking {repo.name}..."
         bar()
         if archived or not repo.archived:
-            for hook in repo.hooks():
-                foundhookslist.append(f"{org.name},{repo.name},{hook.config['url']},{hook.active}")
-                utils.check_rate_remain(gh_sess=gh_sess, bar=bar)
+            try:
+                for hook in repo.hooks():
+                    foundhookslist.append(
+                        f"{org.name},{repo.name},{hook.config['url']},{hook.active}"
+                    )
+                    utils.check_rate_remain(gh_sess=gh_sess, bar=bar)
+            except gh_exceptions.NotFoundError:
+                # ghsa repos do not have the hooks endpoint.
+                if repo.name.find("-ghsa-") == -1:
+                    raise gh_exceptions.NotFoundError()
+
     return foundhookslist
 
 
@@ -92,9 +100,9 @@ def main():
                 f"Organization {orgname} not found - check spelling?  Continuing to next org if there is one.",
                 file=sys.stderr,
             )
-
-    print(header_str)
-    print("\n".join(foundhookslist))
+        finally:
+            print(header_str)
+            print("\n".join(foundhookslist))
 
 
 if __name__ == "__main__":
