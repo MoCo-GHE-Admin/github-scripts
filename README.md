@@ -429,25 +429,31 @@ options:
 
 ## `repo_archiver.py`
 ```
-usage: repo_archiver.py [-h] [--pat-key PATKEY] [--token TOKEN] [--inactive] [--custom CUSTOM] [--file FILE] [--force] [--pause] [-q]
+usage: repo_archiver.py [-h] [--pat-key PATKEY] [--token TOKEN] [--inactive] [--custom CUSTOM] [--file FILE] [--hooks {ignore,disable}]
+                        [--keys {ignore,delete}] [--ignore-issue-label] [--pause] [-q]
                         [repos ...]
 
-Archive the specified repo, labelling and then closing out issues and PRs, per GitHub best practices. Closed issues/PRs, and
-description/topic changes can be completely reversed using the repo_unarchiver script.
+Archive the specified repo, labelling and then closing out issues and PRs, per GitHub best practices. Closed issues/PRs, and description/topic
+changes can be completely reversed using the repo_unarchiver script. Also, based on experience, will stop the archive process if there's existing
+hooks or keys in the repo
 
 positional arguments:
-  repos             owner/repo to archive
+  repos                 owner/repo to archive
 
-optional arguments:
-  -h, --help        show this help message and exit
-  --pat-key PATKEY  key in .gh_pat.toml of the PAT to use
-  --token TOKEN     use this PAT to access resources
-  --inactive        Change the 'abandoned' and 'deprecated' wording to 'inactive'
-  --custom CUSTOM   Custom text to add to issue/PR label, and description, less than 36 char long
-  --file FILE       File with "owner/repo" one per line to archive
-  --force           Don't stop if you detect previous archivers
-  --pause           Pause upon detecting anomalies that might need fixing, but aren't blockers
-  -q                DO NOT print, or request confirmations
+options:
+  -h, --help            show this help message and exit
+  --pat-key PATKEY      key in .gh_pat.toml of the PAT to use
+  --token TOKEN         use this PAT to access resources
+  --inactive            Change the 'abandoned' and 'deprecated' wording to 'inactive'
+  --custom CUSTOM       Custom text to add to issue/PR label, and description, less than 36 char long
+  --file FILE           File with "owner/repo" one per line to archive
+  --hooks {ignore,disable}
+                        ignore or disable hooks, else will not archive on finding hooks
+  --keys {ignore,delete}
+                        ignore or delete keys, else will not archive on finding keys
+  --ignore-issue-label  Ignore the existence of the ARCHIVED issue label
+  --pause               Pause upon detecting anomalies that might need fixing, but aren't blockers
+  -q                    DO NOT print, or request confirmations
 ```
 
 ## `repo_close_issues.py`
