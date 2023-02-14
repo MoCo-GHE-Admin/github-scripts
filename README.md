@@ -474,6 +474,25 @@ optional arguments:
   --delay DELAY      seconds between close requests, to avoid secondary rate limits > 1
 ```
 
+## `repo_issue_create.py`
+```
+usage: repo_issue_create.py [-h] [--pat-key PATKEY] [--token TOKEN] --conf CONF [--reopen] [--always-comment] repos [repos ...]
+
+Given a list of org/repos, open an issue in each based on the settings in the conf yaml file. If update is specified, will reopen
+closed issues, and add a comment to any found issues of the same bodyUID field
+
+positional arguments:
+  repos             The repos to work on as org/repo space delimited
+
+options:
+  -h, --help        show this help message and exit
+  --pat-key PATKEY  key in .gh_pat.toml of the PAT to use
+  --token TOKEN     use this PAT to access resources
+  --conf CONF       The yaml file to use - see issueconf.yaml.example
+  --reopen          Should we reopen closed issues?
+  --always-comment  Always add the comment, even if it already exists.
+```
+
 ## `repo_unarchiver.py`
 ```
 usage: repo_unarchiver.py [-h] [--pat-key PATKEY] [--token TOKEN] [-q] repo
