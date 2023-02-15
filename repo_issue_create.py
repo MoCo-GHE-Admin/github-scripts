@@ -176,7 +176,8 @@ def main():
         else:
             print(f'\tCreating issue "{args.title}"')
             issue_body = args.body + "\n" + args.body_uid
-            gh_repo.create_issue(title=args.title, body=issue_body)
+            my_issue = gh_repo.create_issue(title=args.title, body=issue_body)
+            print(f"\tissue created,{orgrepo},{my_issue.html_url}")
 
 
 if __name__ == "__main__":
