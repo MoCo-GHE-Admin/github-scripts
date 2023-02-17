@@ -493,6 +493,24 @@ options:
   --always-comment  Always add the comment, even if it already exists.
 ```
 
+## `repo_team_singleton_audit.py`
+```
+usage: repo_team_singleton_audit.py [-h] [--pat-key PATKEY] [--token TOKEN] --repos REPOS [REPOS ...] [--url URL] org
+
+Look through repos for permissions given not by a team (a singleton)
+
+positional arguments:
+  org                   The org to work with
+
+options:
+  -h, --help            show this help message and exit
+  --pat-key PATKEY      key in .gh_pat.toml of the PAT to use
+  --token TOKEN         use this PAT to access resources
+  --repos REPOS [REPOS ...]
+                        The repos to work on in the specified org
+  --url URL             the graphql URL
+```
+
 ## `repo_unarchiver.py`
 ```
 usage: repo_unarchiver.py [-h] [--pat-key PATKEY] [--token TOKEN] [-q] repo
