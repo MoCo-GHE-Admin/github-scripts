@@ -27,13 +27,13 @@ for file in python_files:
     result = subprocess.run(
         cmd,
         shell=True,
-        stdout=subprocess.PIPE,
-        stderr=subprocess.STDOUT,
+        # stdout=subprocess.PIPE,
+        # stderr=subprocess.STDOUT,
         capture_output=True,
         text=True,
     )
     return_code = result.returncode
-    print()
+    print(result.stdout)
 
     # check if the return code is 0
     if return_code != 0:
