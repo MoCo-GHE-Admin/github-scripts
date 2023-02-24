@@ -9,6 +9,7 @@ from getpass import getpass
 from time import sleep
 
 import alive_progress
+import requests
 import toml
 from github3 import exceptions as gh_exceptions
 from github3 import login
@@ -227,6 +228,65 @@ def check_rate_remain(gh_sess, loopsize=100, update=True, bar=None):
             bar.text = (
                 f"API limits exhausted - sleeping until {refreshtime.strftime('%Y-%m-%d %H:%M:%S')}"
             )
+        for timer in range(naptime):
+            sleep(1)
+            if update:
+                if bar is None:
+                    spinner()
+                else:
+                    bar()
+        if update:
+            if bar is None:
+                print(file=sys.stderr)
+                print("API timeout reset, continuing", file=sys.stderr)
+                spinner(end_spinner=True)
+            else:
+                bar.text = oldtitle
+
+
+def check_graphql_rate_remain(
+    token, loopsize=100, update=True, bar=None, url="https://api.github.com/graphql"
+):
+    """
+    Given the token, and the size of the rate eaten by the loop, find the remaining graphql limits
+    and if not enough remains, sleep until it is.
+    :param token: The token to auth with
+    :param loopsize: The amount of rate eaten by a run through things
+    :param update: should we print things letting you know what we're doing?
+    :param bar: Are we using a progress bar?
+    :param url: the graphql URL to hit
+    Note, we always print the "sleeping for XXX seconds"
+    """
+
+    query = """
+{
+    rateLimit {
+        limit
+        remaining
+        resetAt
+    }
+}
+    """
+    headers = {"content-type": "application/json", "Authorization": "Bearer " + token}
+    result = requests.post(url=url, json={"query": query}, headers=headers)
+    remaining = result.json()["data"]["rateLimit"]["remaining"]
+    timestring = result.json()["data"]["rateLimit"]["resetAt"].replace("Z", "+00:00")
+    reset_time = datetime.fromisoformat(timestring)
+    # reset_time = result.json()['data']['rateLimit']['resetAt']
+
+    if remaining < loopsize:
+        # Now we sleep
+        now = datetime.now().astimezone()
+        naptime = (reset_time - now).seconds + 10
+        if bar is None:
+            print(
+                f"API limits exhausted - sleeping for {naptime} seconds from {datetime.now().astimezone().strftime('%Y-%m-%d %H:%M:%S')} "
+                f"until {reset_time.astimezone().strftime('%Y-%m-%d %H:%M:%S')}",
+                file=sys.stderr,
+            )
+        else:
+            oldtitle = bar.text
+            bar.text = f"API limits exhausted - sleeping until {reset_time.astimezone().strftime('%Y-%m-%d %H:%M:%S')}"
         for timer in range(naptime):
             sleep(1)
             if update:

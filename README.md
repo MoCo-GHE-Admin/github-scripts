@@ -300,6 +300,23 @@ optional arguments:
   --do-it           Actually do the removal - Otherwise just report on what you found
 ```
 
+## `org_repo_perms`
+```
+usage: org_repo_perms.py [-h] [--pat-key PATKEY] [--token TOKEN] [--repo REPO] [--url URL] org
+
+Report all permissions given to repos to individuals (not by a team)
+
+positional arguments:
+  org               The org to work with
+
+options:
+  -h, --help        show this help message and exit
+  --pat-key PATKEY  key in .gh_pat.toml of the PAT to use
+  --token TOKEN     use this PAT to access resources
+  --repo REPO       Specify a single repo to work on in the specified org if desired
+  --url URL         the graphql URL
+```
+
 ## `org_repos.py`
 ```
 usage: org_repos.py [-h] [--pat-key PATKEY] [--token TOKEN] [--without-org] [--archived] [--type {public,private,all}] org
@@ -349,6 +366,22 @@ optional arguments:
   -h, --help        show this help message and exit
   --pat-key PATKEY  key in .gh_pat.toml of the PAT to use
   --token TOKEN     use this PAT to access resources
+```
+
+## `org_team_perms.py`
+```
+usage: org_team_perms.py [-h] [--pat-key PATKEY] [--token TOKEN] [--url URL] org
+
+Look through org and report all repos associated with teams and their permission levels
+
+positional arguments:
+  org               The org to work with
+
+options:
+  -h, --help        show this help message and exit
+  --pat-key PATKEY  key in .gh_pat.toml of the PAT to use
+  --token TOKEN     use this PAT to access resources
+  --url URL         the graphql URL
 ```
 
 ## `org_teams.py`
