@@ -24,7 +24,14 @@ for file in python_files:
     print()
 
     # run the command and capture the return code
-    result = subprocess.run(cmd, shell=True, stderr=subprocess.STDOUT)
+    result = subprocess.run(
+        cmd,
+        shell=True,
+        stdout=subprocess.PIPE,
+        stderr=subprocess.STDOUT,
+        capture_output=True,
+        text=True,
+    )
     return_code = result.returncode
     print()
 
