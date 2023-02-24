@@ -4,6 +4,9 @@ import os
 import subprocess
 import sys
 
+# SUMMARY: gets a list of executable python files and runs them with -h and
+#          ensures they all exit 0.
+
 # get a list of all python executable files in the current directory
 python_files = [
     f for f in os.listdir(".") if os.path.isfile(f) and f.endswith(".py") and os.access(f, os.X_OK)
@@ -27,8 +30,6 @@ for file in python_files:
     result = subprocess.run(
         cmd,
         shell=True,
-        # stdout=subprocess.PIPE,
-        # stderr=subprocess.STDOUT,
         capture_output=True,
         text=True,
     )
