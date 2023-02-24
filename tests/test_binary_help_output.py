@@ -47,7 +47,7 @@ for file in python_files:
     cmd = f"./{file} -h"
 
     print()
-    print(f"*** {counter}/{total} running '{cmd}'...")
+    print(f"*** {counter}/{total}: running '{cmd}'...")
     print()
 
     # run the command and capture the return code
