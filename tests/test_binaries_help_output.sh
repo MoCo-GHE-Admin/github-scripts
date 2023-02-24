@@ -9,11 +9,11 @@ OS="$(uname)"
 
 cd "$SCRIPT_DIR/.."
 if [[ "$OS" == "Linux" ]]; then
-        # ...
-        find *.py -type f -executable -exec ./{} -h \;
+        # use xargs to check result code of each command
+        find *.py -type f -executable -print0 | xargs -0 -n1 -I {} bash -c ./{} -h
+# Mac OSX
 elif [[ "$OS" == "Darwin" ]]; then
-        # Mac OSX
-        find *.py -type f -perm +111 -exec ./{} -h \;
+        find *.py -type f -perm +111 -print0 | xargs -0 -n1 -I {} bash -c ./{} -h
 else
         # Unknown.
         echo "ERROR: Unknown OS!"
