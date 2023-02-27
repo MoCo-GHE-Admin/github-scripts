@@ -1,6 +1,6 @@
 name: main
 
-on: [push]
+on: [push, pull_request]
 
 jobs:
   main:
@@ -33,7 +33,7 @@ jobs:
         poetry run pre-commit run -av
     - name: test executable help output
       run: |
-        ./tests/test_binaries_help_output.sh
+        poetry run ./tests/test_binary_help_output.py
 #    - name: run pytest
 #      run: |
 #        poetry run pytest -vv
