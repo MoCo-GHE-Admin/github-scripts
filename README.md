@@ -100,24 +100,6 @@ optional arguments:
   --orgini          use "orglist.ini" with the "orgs" entry with a csv list of all orgs to check
 ```
 
-## `gh_org_repo_perms.py`
-```
-usage: gh_org_repo_perms.py [-h] [--pat-key PATKEY] [--token TOKEN] [--user USER | --repo REPO] org
-
-Depending on args, dump all repos in an org, repos for a user or users for a repo, and their user permissions, defaults to all repos
-and users in an org.
-
-positional arguments:
-  org               The org to examine
-
-optional arguments:
-  -h, --help        show this help message and exit
-  --pat-key PATKEY  key in .gh_pat.toml of the PAT to use
-  --token TOKEN     use this PAT to access resources
-  --user USER       Single user to examine in the org
-  --repo REPO       Single repo to examine in the org
-```
-
 ## `gh_pat_owner.py`
 ```
 usage: gh_pat_owner.py [-h] [--apihost APIHOST] [--raw] pat
@@ -149,24 +131,6 @@ optional arguments:
   --token TOKEN     use this PAT to access resources
   --block           should we block the user - default is unblock
   --orgini          use "orglist.ini" with the "orgs" entry with a csv list of all orgs to check
-```
-
-## `gh_user_perms.py`
-```
-usage: gh_user_perms.py [-h] [--pat-key PATKEY] [--token TOKEN] [--no-archive] [--repo REPO] user org
-
-Report on a user's permissions in an org.
-
-positional arguments:
-  user              Single user to examine in the org
-  org               The org to examine
-
-optional arguments:
-  -h, --help        show this help message and exit
-  --pat-key PATKEY  key in .gh_pat.toml of the PAT to use
-  --token TOKEN     use this PAT to access resources
-  --no-archive      Omit archived repos from the response
-  --repo REPO       Single repo to examine in the org
 ```
 
 ## `org_audit_licensefile.py`
