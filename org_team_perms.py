@@ -18,9 +18,12 @@ def parse_arguments():
     Look at the first arg and handoff to the arg parser for that specific
     """
     parser = utils.GH_ArgParser(
-        description="Look through org and report all repos associated with teams and their permission levels"
+        description="Look through org and report all repos associated with teams and their permission levels, or just one team in the org"
     )
     parser.add_argument("org", type=str, help="The org to work with", action="store")
+    parser.add_argument(
+        "--team", help="If desired, single team to work with in the org.  Uses team slug only"
+    )
     parser.add_argument(
         "--url",
         type=str,
@@ -66,33 +69,6 @@ def make_query(org, team, usercursor=None):
     return query
 
 
-def parse_user_data(userdata):
-    """
-    Go through the user data looking for collaborators that get their perms from a singleton entry and report
-    Note that we do not report org owners
-    param: userdata - the json data from the graphql query
-    result: Dict of '<PERMLEVEL>':[SINGLETONUSERLIST]
-    """
-    result = {}
-    for user in userdata:
-        perm = user["permission"]
-        for source in user["permissionSources"]:
-            if (
-                source["source"]["permissionSource"] == "Organization"
-                and source["sourcePermission"] == perm
-                and perm == "ADMIN"
-            ):
-                # print("Ignore, as it's from the org that they get admin")
-                break
-            if source["source"]["permissionSource"] == "Repository":
-                # print("OMG, REPO!")
-                if perm in result.keys():
-                    result[perm].append(user["node"]["login"])
-                else:
-                    result[perm] = [user["node"]["login"]]
-    return result
-
-
 def parse_repo_data(repodata):
     """
     Go through the repo data getting repos and their perm levels
@@ -116,7 +92,12 @@ def main():
     args = parse_arguments()
     gh_sess = github3.login(token=args.token)
     org = gh_sess.organization(args.org)
-    teamlist = {x.slug for x in org.teams()}
+    if args.team is None:
+        teamlist = {x.slug for x in org.teams()}
+    else:
+        teamlist = [args.team]
+
+    print(f"{teamlist=}")
 
     headers = {"content-type": "application/json", "Authorization": "Bearer " + args.token}
 
@@ -165,7 +146,7 @@ def main():
         for perms in resultdict[team].keys():
             line = line + f"{perms}:{':'.join(resultdict[team][perms])},"
         outputlist.append(line)
-    print("RepoName, PermissionsColumns")
+    print("TeamName, RepoPermissionsColumns")
     print("\n".join(outputlist))
 
 
