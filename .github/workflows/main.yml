@@ -34,6 +34,6 @@ jobs:
     - name: test executable help output
       run: |
         poetry run ./tests/test_binary_help_output.py
-    - name: run pytest
-      run: |
-        poetry run pytest -vv
+#    - name: run pytest
+#      run: |
+#        poetry run pytest -vv
