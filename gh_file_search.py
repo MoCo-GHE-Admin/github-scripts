@@ -7,6 +7,7 @@ import configparser
 import sys
 from time import sleep
 
+import alive_progress
 from github3 import exceptions as gh_exceptions
 from github3 import login
 
@@ -90,67 +91,78 @@ def do_search(args):
     if not gh_sess:
         raise SystemExit("Failed to get GitHub API session")
     length = len(orglist)  # Used to determine when to pause
+    output_string = []
     if args.print_file:
-        print("Files found:")
         if args.note_archive:
-            print("Repo,Visibility,Archived,Filename")
+            output_string.append("Repo,Visibility,Archived,Filename")
         else:
-            print("Repo,Visibility,Filename")
+            output_string.append("Repo,Visibility,Filename")
     else:
         if args.note_archive:
-            print("Repos found: org/repo/is_archived")
+            output_string.append("Repos found: org/repo/is_archived")
         else:
-            print("Repos found: org/repo")
+            output_string.append("Repos found: org/repo")
 
-    for org in orglist:
-        try:
-            search = gh_sess.search_code(f"org:{org} {args.query}", text_match=False)
-            repos = set()
-            files = []
-            for result in search:
-                repo_fullname = "{org}/{result.repository.name}"
-                archived = "<unknown>"
-                if args.note_archive:
-                    fullrepo = gh_sess.repository(owner=org, repository=result.repository.name)
-                    if fullrepo:
-                        archived = fullrepo.archived
+    with alive_progress.alive_bar(
+        dual_line=True,
+        title="Getting Perms",
+        file=sys.stderr,
+        length=20,
+        force_tty=True,
+        disable=False,
+    ) as bar:
+        for org in orglist:
+            try:
+                bar.text(f"\t- {org}")
+                search = gh_sess.search_code(f"org:{org} {args.query}", text_match=False)
+                repos = set()
+                files = []
+                for result in search:
+                    repo_fullname = "{org}/{result.repository.name}"
+                    archived = "<unknown>"
+                    if args.note_archive:
+                        fullrepo = gh_sess.repository(owner=org, repository=result.repository.name)
+                        if fullrepo:
+                            archived = fullrepo.archived
+                        else:
+                            print(
+                                "Couldn't get archive status for {repo_fullname}", file=sys.stderr
+                            )
+                        repos.add(f"{repo_fullname}/{archived}")
                     else:
-                        print("Couldn't get archive status for {repo_fullname}", file=sys.stderr)
-                    repos.add(f"{repo_fullname}/{archived}")
-                else:
-                    repos.add(f"{org}/{result.repository.name}")
-                if result.repository.private:
-                    vistext = "Private"
-                else:
-                    vistext = "Public"
-                if args.note_archive:
-                    files.append(f"{result.repository},{vistext},{archived},{result.path}")
-                else:
-                    files.append(f"{result.repository},{vistext},{result.path}")
-                utils.spinner(org)
-                sleep(args.time / 20)
-            utils.spinner(org, end_spinner=True)
-            if args.print_file and files:
-                for line in files:
-                    print(line)
-            elif repos:
-                print("\n".join(repos))
+                        repos.add(f"{org}/{result.repository.name}")
+                    if result.repository.private:
+                        vistext = "Private"
+                    else:
+                        vistext = "Public"
+                    if args.note_archive:
+                        files.append(f"{result.repository},{vistext},{archived},{result.path}")
+                    else:
+                        files.append(f"{result.repository},{vistext},{result.path}")
+                    bar()
+                    sleep(args.time / 20)
+                if args.print_file and files:
+                    for line in files:
+                        output_string.append(line)
+                elif repos:
+                    output_string.append("\n".join(repos))
 
-        except gh_exceptions.UnprocessableEntity:
-            print(
-                f"org: {org} Failed, likely due to lack of repos in the org",
-                file=sys.stderr,
-            )
-        finally:
-            length -= 1
-            if length > 0:
-                if args.verbose:
-                    print(
-                        f"Sleeping {args.time} seconds per GitHub's secondary rate limits",
-                        file=sys.stderr,
-                    )
-                # per https://docs.github.com/en/rest/guides/best-practices-for-integrators#dealing-with-secondary-rate-limits
-                sleep(args.time)
+            except gh_exceptions.UnprocessableEntity:
+                print(
+                    f"org: {org} Failed, likely due to lack of repos in the org",
+                    file=sys.stderr,
+                )
+            finally:
+                length -= 1
+                if length > 0:
+                    if args.verbose:
+                        print(
+                            f"Sleeping {args.time} seconds per GitHub's secondary rate limits",
+                            file=sys.stderr,
+                        )
+                    # per https://docs.github.com/en/rest/guides/best-practices-for-integrators#dealing-with-secondary-rate-limits
+                    sleep(args.time)
+    print("\n".join(output_string))
 
 
 if __name__ == "__main__":

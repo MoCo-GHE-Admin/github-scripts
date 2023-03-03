@@ -7,6 +7,7 @@ import configparser
 import sys
 from datetime import datetime
 
+import alive_progress
 from github3 import exceptions as gh_exceptions
 from github3 import login
 
@@ -89,44 +90,53 @@ def main():
     if args.url:
         linedict["url"] = "URL"
     resultlist.append(linedict)
-    for orgname in orglist:
-        org = gh_sess.organization(orgname)
-        # Get the list of repos
-        if args.type == "all":
-            repolist = org.repositories()
-        elif args.type == "public":
-            repolist = org.repositories(type="public")
-        elif args.type == "private":
-            repolist = org.repositories(type="private")
-        else:
-            raise Exception(f"{args.type} not a known repository visibility type")
-        for repo in repolist:
-            datestr = munge_date(repo.created_at)
-            if (repo.archived and args.archived) or not repo.archived:
-                try:
-                    license = repo.license()
-                except gh_exceptions.NotFoundError:
-                    linedict = {
-                        "org": f"{repo.owner}",
-                        "repo": f"{repo.name}",
-                        "created": datestr,
-                        "file": "",
-                        "type": "NO LICENSE DETECTED",
-                    }
-                else:
-                    linedict = {
-                        "org": f"{repo.owner}",
-                        "repo": f"{repo.name}",
-                        "created": datestr,
-                        "file": license.name,
-                        "type": license.license.name,
-                    }
-                if args.url:
-                    linedict["url"] = f"{repo.html_url}"
-                resultlist.append(linedict)
-            utils.spinner()
-            utils.check_rate_remain(gh_sess)
-    # Time to print things
+    with alive_progress.alive_bar(
+        dual_line=True,
+        title="Getting Perms",
+        file=sys.stderr,
+        length=20,
+        force_tty=True,
+        disable=False,
+    ) as bar:
+        for orgname in orglist:
+            bar.text(f"\t- {orgname}")
+            org = gh_sess.organization(orgname)
+            # Get the list of repos
+            if args.type == "all":
+                repolist = org.repositories()
+            elif args.type == "public":
+                repolist = org.repositories(type="public")
+            elif args.type == "private":
+                repolist = org.repositories(type="private")
+            else:
+                raise Exception(f"{args.type} not a known repository visibility type")
+            for repo in repolist:
+                datestr = munge_date(repo.created_at)
+                if (repo.archived and args.archived) or not repo.archived:
+                    try:
+                        license = repo.license()
+                    except gh_exceptions.NotFoundError:
+                        linedict = {
+                            "org": f"{repo.owner}",
+                            "repo": f"{repo.name}",
+                            "created": datestr,
+                            "file": "",
+                            "type": "NO LICENSE DETECTED",
+                        }
+                    else:
+                        linedict = {
+                            "org": f"{repo.owner}",
+                            "repo": f"{repo.name}",
+                            "created": datestr,
+                            "file": license.name,
+                            "type": license.license.name,
+                        }
+                    if args.url:
+                        linedict["url"] = f"{repo.html_url}"
+                    resultlist.append(linedict)
+                bar()
+                utils.check_rate_remain(gh_sess, bar=bar)
+        # Time to print things
     print(file=sys.stderr)
 
     for line in resultlist:
