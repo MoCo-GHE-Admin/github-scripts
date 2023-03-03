@@ -78,39 +78,6 @@ def get_pat_from_file(key_name="admin"):
         return None
 
 
-def _create_char_spinner():
-    """
-    Creates a generator yielding a char based spinner.
-    """
-    while True:
-        for char in "|/-\\":
-            yield char
-
-
-_spinner = _create_char_spinner()
-_last_label = None
-
-
-def spinner(label="", end_spinner=False):
-    """
-    Prints label with a spinner.
-    When called repeatedly from inside a loop this prints
-    a one line CLI spinner.
-    """
-    global _last_label
-    if _last_label != label:
-        if _last_label is not None:
-            sys.stderr.write("\n")
-        _last_label = label
-    sys.stderr.write("\r%s %s" % (label, next(_spinner)))
-    if end_spinner:
-        # we're done with the spinner, ensure that further output goes
-        # to a new line
-        sys.stderr.write("\n")
-        _last_label = None
-    sys.stderr.flush()
-
-
 def check_rate_remain(gh_sess, loopsize=100, update=True, bar=None):
     """
     Given the session, and the size of the rate eaten by the loop,
@@ -142,15 +109,12 @@ def check_rate_remain(gh_sess, loopsize=100, update=True, bar=None):
         for timer in range(naptime):
             sleep(1)
             if update:
-                if bar is None:
-                    spinner()
-                else:
+                if bar is not None:
                     bar()
         if update:
             if bar is None:
                 print(file=sys.stderr)
                 print("API timeout reset, continuing", file=sys.stderr)
-                spinner(end_spinner=True)
             else:
                 bar.text = oldtitle
 
@@ -201,14 +165,11 @@ def check_graphql_rate_remain(
         for timer in range(naptime):
             sleep(1)
             if update:
-                if bar is None:
-                    spinner()
-                else:
+                if bar is not None:
                     bar()
         if update:
             if bar is None:
                 print(file=sys.stderr)
                 print("API timeout reset, continuing", file=sys.stderr)
-                spinner(end_spinner=True)
             else:
                 bar.text = oldtitle
