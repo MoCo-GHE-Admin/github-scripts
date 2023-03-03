@@ -388,20 +388,19 @@ optional arguments:
 
 ## `repo_activity.py`
 ```
-usage: repo_activity.py [-h] [--pat-key PATKEY] [--token TOKEN] [--issues] [--file FILE] [-i] [repos ...]
+usage: repo_activity.py [-h] [--pat-key PATKEY] [--token TOKEN] [--issues] [--file FILE] [repos ...]
 
 Gets a latest activity for a repo or list of repos. Also checks wiki for activity, and can be told to check for issues activity.
 
 positional arguments:
   repos             list of repos to examine - or use --file for file base input
 
-optional arguments:
+options:
   -h, --help        show this help message and exit
   --pat-key PATKEY  key in .gh_pat.toml of the PAT to use
   --token TOKEN     use this PAT to access resources
   --issues          Check the issues to set a date of activity if more recent than code
   --file FILE       File of 'owner/repo' names, 1 per line
-  -i                Give visual output of that progress continues - useful for long runs redirected to a file
 ```
 
 ## `repo_add_perms.py`
