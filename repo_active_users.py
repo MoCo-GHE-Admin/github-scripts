@@ -1,13 +1,15 @@
 #!/usr/bin/env python
 """
 Script to determine the activity of users in a repo
-Given a list of repos, and a timefame, check out the reop
+Given a list of repos, and a timefame, check out the repo
 and return the list of unique users in that repo
 """
 
 import sys
 import tempfile
 
+import alive_progress
+import github3
 from git import Repo
 
 from github_scripts import utils
@@ -55,25 +57,32 @@ def main():
         format = "%ae"
     else:
         format = "%ce"
-    for repo in args.repos:
-        # Get the repo, look at users
-        if args.debug:
-            print(f"working on repo: {repo}", file=sys.stderr)
-        url = f"https://{args.token}:x-oauth-basic@github.com/{args.org}/{repo}.git"
-        localpath = tempfile.TemporaryDirectory()
-        workingset = set()
-        try:
-            clone = Repo.clone_from(url, localpath)
-            emailstr = clone.git.log(since=f"{args.days} days ago", pretty=f"tformat:{format}")
-            if emailstr != "":
-                emaillist = emailstr.split("\n")
-                workingset = set(emaillist)
-            if args.debug:
-                print(f"\t\tEmailSTR: {emailstr}", file=sys.stderr)
-        finally:
-            localpath.cleanup()
-            utils.spinner()
-        userset |= workingset
+    gh_sess = github3.login(token=args.token)
+    with alive_progress.alive_bar(
+        dual_line=True,
+        title="Getting Perms",
+        file=sys.stderr,
+        length=20,
+        force_tty=True,
+        disable=False,
+    ) as bar:
+        for repo in args.repos:
+            bar.text(f"working on repo: {repo}")
+            url = f"https://{args.token}:x-oauth-basic@github.com/{args.org}/{repo}.git"
+            localpath = tempfile.TemporaryDirectory()
+            workingset = set()
+            try:
+                clone = Repo.clone_from(url, localpath)
+                emailstr = clone.git.log(since=f"{args.days} days ago", pretty=f"tformat:{format}")
+                if emailstr != "":
+                    emaillist = emailstr.split("\n")
+                    workingset = set(emaillist)
+                if args.debug:
+                    print(f"\t\tEmailSTR: {emailstr}", file=sys.stderr)
+            finally:
+                localpath.cleanup()
+            utils.check_rate_remain(gh_sess, bar=bar)
+            userset |= workingset
     print(f"Unique author emails found in the org {args.org} org and the repos you asked about:")
     for item in userset:
         print(item)
