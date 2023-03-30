@@ -165,7 +165,7 @@ def main():
 
     with alive_progress.alive_bar(
         dual_line=True,
-        title="Getting Perms",
+        title="Getting repos",
         file=sys.stderr,
         length=20,
         force_tty=True,

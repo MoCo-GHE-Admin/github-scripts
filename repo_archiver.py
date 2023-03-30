@@ -19,9 +19,6 @@ from github_scripts import utils
 # TODO: CUSTOM LABEL TEXT
 MAX_CUSTOM_LENGTH = 50 - len("ARCHIVED - " + " - ")
 
-# TODO: setup a dry-run flag
-# TODO: remove teh remove hooks code, simply report on key's and hooks
-
 
 def parse_args():
     """
@@ -336,17 +333,16 @@ def main():
                     gh_repo.edit(name=gh_repo.name, description=description, archived=True)
                     if not args.quiet:
                         print(f"\tUpdated description and archived the repo {org}/{repo}")
-            else:
+            elif True:
                 if args.do_it:
                     gh_repo.edit(name=gh_repo.name, description=description)
                     print(
                         f"\tUpdated description, but there was a problem with issues in repo "
                         f"https://github.com/{org}/{repo}, pausing so you can fix, and then "
-                        f"I'll archive for you.  (Press N to not archive)"
+                        f"I'll archive for you.  (Press enter to archive, N and enter to skip)"
                     )
-                char = getch.getch()
-                if char not in ("n", "N"):
-                    if args.do_it:
+                    char = input()
+                    if char not in ("n", "N"):
                         gh_repo.edit(name=gh_repo.name, archived=True)
                         if not args.quiet:
                             print(f"\tArchived repo {org}/{repo}")
