@@ -333,7 +333,7 @@ def main():
                     gh_repo.edit(name=gh_repo.name, description=description, archived=True)
                     if not args.quiet:
                         print(f"\tUpdated description and archived the repo {org}/{repo}")
-            elif True:
+            else:
                 if args.do_it:
                     gh_repo.edit(name=gh_repo.name, description=description)
                     print(
