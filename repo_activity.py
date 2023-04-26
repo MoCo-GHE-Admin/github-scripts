@@ -50,6 +50,9 @@ def parse_args():
         help="Check the issues to set a date of activity if more recent than code",
         action="store_true",
     )
+    parser.add_argument(
+        "--ignore-wiki", dest="ignore_wiki", action="store_true", help="Don't do the wiki analysis"
+    )
     parser.add_argument("--file", help="File of 'owner/repo' names, 1 per line", action="store")
     args = parser.parse_args()
     if args.repos is None and args.file is None:
@@ -81,7 +84,7 @@ def get_wiki_date(reponame, token):
     return date
 
 
-def mini_repo_activity(gh_sess, orgstr, repostr, token, issues, bar):
+def mini_repo_activity(gh_sess, orgstr, repostr, token, issues, ignore_wiki, bar):
     """
     Print out only the top level repo data without looking at the last years commits.
     :param gh_sess: an initialized GH session
@@ -89,6 +92,7 @@ def mini_repo_activity(gh_sess, orgstr, repostr, token, issues, bar):
     :param repostr: string of the repo
     :param token: PAT needed for wiki analysis
     :param issues: booolean about whether to look at issues
+    :param ignore_wiki: boolean - should we ignore the wiki
     :param bar: the progress bar
     :result: returns a list of strings of the results
     """
@@ -98,7 +102,7 @@ def mini_repo_activity(gh_sess, orgstr, repostr, token, issues, bar):
         repo = short_repo.refresh()
         # This gets us the commit date (pushed_at) but ignores the wiki
         pushed_date = repo.pushed_at
-        if repo.has_wiki:
+        if repo.has_wiki and not ignore_wiki:
             # print(f"Found a Wiki: {repo.full_name}", file=sys.stderr)
             wikidate = get_wiki_date(repo.full_name, token)
             if wikidate > pushed_date:
@@ -124,13 +128,13 @@ def mini_repo_activity(gh_sess, orgstr, repostr, token, issues, bar):
             result_string = (
                 f"{orgstr}/{repo.name}{issue_whacky},{repo.created_at.strftime('%Y-%m-%d')},"
                 f"{pushed_date.strftime('%Y-%m-%d')},{repo.updated_at.strftime('%Y-%m-%d')},"
-                f"{repo.private},{repo.archived},{issuecount}"
+                f"{repo.private},{repo.archived},{repo.fork},{issuecount}"
             )
         else:
             result_string = (
                 f"{orgstr}/{repo.name}{issue_whacky},{repo.created_at.strftime('%Y-%m-%d')},"
                 f"{pushed_date.strftime('%Y-%m-%d')},{repo.updated_at.strftime('%Y-%m-%d')},"
-                f"{repo.private},{repo.archived}"
+                f"{repo.private},{repo.archived},{repo.fork}"
             )
     except gh_exceptions.ConnectionError:
         print(f"Timeout error, 'CLOUD' on repo {orgstr}/{repostr}", file=sys.stderr)
@@ -158,14 +162,14 @@ def main():
     # Print out the header.
     if args.issues:
         output_str.append(
-            "Org/Repo, Created, Updated, Admin_update, Private, Archive_status, Issue_Count"
+            "Org/Repo,Created,Updated,Admin_update,Private,Archive_status,IsFork,Issue_Count"
         )
     else:
-        output_str.append("Org/Repo, Created, Updated, Admin_update, Private, Archive_status")
+        output_str.append("Org/Repo,Created,Updated,Admin_update,Private,Archive_status,IsFork")
 
     with alive_progress.alive_bar(
         dual_line=True,
-        title="Getting Perms",
+        title="Getting activity",
         file=sys.stderr,
         length=20,
         force_tty=True,
@@ -177,7 +181,15 @@ def main():
             # ignore ghsa repos --- they only lead to heartache when automated things interact
             if repo.find("-ghsa-") == -1:
                 output_str.append(
-                    mini_repo_activity(gh_sess, org, repo, args.token, issues=args.issues, bar=bar)
+                    mini_repo_activity(
+                        gh_sess,
+                        org,
+                        repo,
+                        args.token,
+                        issues=args.issues,
+                        ignore_wiki=args.ignore_wiki,
+                        bar=bar,
+                    )
                 )
             bar()
     print("\n".join(output_str))
