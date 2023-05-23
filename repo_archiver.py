@@ -29,7 +29,9 @@ def parse_args():
     parser = utils.GH_ArgParser(
         description="Archive the specified repo, labelling and then closing out issues and PRs, "
         "per GitHub best practices.  Closed issues/PRs, and description/topic changes "
-        "can be completely reversed using the repo_unarchiver script."
+        "can be completely reversed using the repo_unarchiver script.  "
+        "DEFAULTS to dry-run and will not modify things until --do-it flag is applied.  "
+        "Also, will report on any existing hooks or keys in the repos so that cleanup in related systems can occur"
     )
     parser.add_argument("repos", help="owner/repo to archive", nargs="*", action="store")
     parser.add_argument(
@@ -47,7 +49,16 @@ def parse_args():
         "--file", help='File with "owner/repo" one per line to archive', action="store"
     )
     parser.add_argument(
-        "--force", help="Don't stop if you detect previous archivers", action="store_true"
+        "--disable-report",
+        help="Disable the hook/keys report at the end of the process.",
+        action="store_false",
+        dest="show_report",
+    )
+    parser.add_argument(
+        "--ignore-issue-label",
+        help="Ignore the existence of the ARCHIVED issue label",
+        action="store_true",
+        dest="ignore_issue_label",
     )
     parser.add_argument(
         "--pause",
@@ -61,20 +72,28 @@ def parse_args():
         action="store_true",
         default=False,
     )
+    parser.add_argument(
+        "--do-it",
+        help="Actually perform the archiving steps",
+        action="store_true",
+        dest="do_it",
+    )
     args = parser.parse_args()
     if args.repos is None and args.file is None:
         raise Exception("Must have either a list of repos, OR a file to read repos from")
     if args.custom is not None and len(args.custom) > MAX_CUSTOM_LENGTH:
         raise Exception(f"Custom string must be less than {MAX_CUSTOM_LENGTH} characters")
+
     return args
 
 
-def handle_issues(repo, custom, force=False, quiet=False):
+def handle_issues(repo, custom, ignore_label=False, do_it=False, quiet=False):
     """
     Handle labelling the issues and closing them out reversibly
     :param repo: the initialized repo object
     :param custom: additional custom text for label
-    :param force: if we run into a label conflict, do we barrel through?
+    :param ignore_label: if we run into a label conflict, do we barrel through?
+    :param do_it: If true, we actually touch things.
     :param quiet: should we talk out loud?
     :return: True is all is well, False if there was an exception that we handled
     """
@@ -96,14 +115,14 @@ def handle_issues(repo, custom, force=False, quiet=False):
     for label in labellist:
         if label.name.find(labelname) != -1:
             need_flag = False
-            if not force:
+            if not ignore_label:
                 print(
                     "Uh oh.  ARCHIVED label already exists?  Closing out so I don"
                     "t "
                     "step on other processes"
                 )
                 sys.exit()
-    if need_flag:
+    if need_flag and do_it:
         repo.create_label(
             name=labelname, color="#c41a1a", description="CLOSED at time of archiving"
         )
@@ -113,18 +132,118 @@ def handle_issues(repo, custom, force=False, quiet=False):
     # Need to do two passes - if we do one pass, the closure erases the label
     for issue in issues:
         # update label
-        issue.add_labels(labelname)
+        if do_it:
+            issue.add_labels(labelname)
     for issue in issues:
         try:
-            issue.close()
+            if do_it:
+                issue.close()
             if not quiet:
                 print(f"\tLabeled and closed issue: {issue.title}")
         except gh_exceptions.UnprocessableEntity:
             result = False
             print(
                 f"Got 422 Unproccessable on issue {issue.title},"
-                " continuing.  May need to run --force or manually finish closing."
+                " continuing.  May need to manually finish closing."
             )
+    return result
+
+
+def handle_topics(gh_repo, topic_inactive, do_it=False, quiet=False):
+    """
+    Given a repo, update the topics to indicate its inactivity - either the default ABANDONED language or INACTIVE if desired.
+    :param gh_repo: the initialized repo object
+    :param topic_inactive: boolean, should we use the milder language
+    :param do_it: If true, we actually touch things.
+    :param quiet: do we output anything?
+    No return value
+    """
+    topics = gh_repo.topics().names
+    if do_it:
+        if topic_inactive:
+            topics.append("inactive")
+        else:
+            topics.append("abandoned")
+        topics.append("unmaintained")
+        gh_repo.replace_topics(topics)
+    if not quiet:
+        print("\tUpdated topics")
+
+
+def handle_hooks(gh_repo, ignore_hooks=False, disable_hooks=False):
+    """
+    Given an initialized repo, look for hooks.
+    If hooks are found, disable them if asked to
+    Return bool if there are any hooks still enabled, unless ignore is set
+    :param gh_repo: initialized repo object
+    :param ignore_hooks: just pretend everything is fine
+    :param disable_hooks: disable existing hooks
+    return: True if there are any hooks
+    """
+    # are there hooks
+    hooklist = list(gh_repo.hooks())
+    if len(hooklist) > 0:
+        hooks_exist = True
+    else:
+        hooks_exist = False
+    hooksdisabled = True
+    if disable_hooks:
+        for hook in hooklist:
+            if not hook.edit(active=False):
+                hooksdisabled = False  # Something went wrong trying to disable.
+    if ignore_hooks:
+        return False
+    else:
+        return hooks_exist and not hooksdisabled
+
+
+def handle_keys(gh_repo, ignore_keys=False, delete_keys=False):
+    """
+    Given an initialized repo, look for keys.
+    If keys are found, delete them if asked to
+    Return bool if there are any keys existing, unless ignore is set
+    :param gh_repo: initialized repo object
+    :param ignore_keys: just pretend everything is fine
+    :param delete_keys: delete existing keys
+    return: True if there are any keys
+    """
+    keylist = list(gh_repo.keys())
+    if len(keylist) > 0:
+        keys_exist = True
+    else:
+        keys_exist = False
+    if delete_keys:
+        for key in keylist:
+            key.delete()
+    if ignore_keys:
+        return False
+    else:
+        return keys_exist and not delete_keys
+
+
+def report_on_hooks(repo):
+    """
+    Return a list of strings, "org,repo,hookURL,boolEnabled" for each hook found
+    :param: the initialized repo object
+    :result: a list of strings
+    """
+    result = []
+    for hook in repo.hooks():
+        result.append(f"{repo.owner.login},{repo.name},{hook.config['url']},{hook.active}")
+    return result
+
+
+def report_on_keys(repo):
+    """
+    Return a list of strings, "org,repo,keyTitle,keycreated,keylastused" for each key found
+    :param: the initialized repo object
+    :result: a list of strings
+    """
+    result = []
+    for key in repo.keys():
+        result.append(
+            f"{repo.owner.login},{repo.name},{key.title},{key.created_at},{key.last_used}"
+        )
     return result
 
 
@@ -134,6 +253,8 @@ def main():
     """
     args = parse_args()
     gh_sess = login(token=args.token)
+    key_report_list = ["org,repo,key"]
+    hook_report_list = ["org,repo,hookURL,status"]
 
     repolist = []
     if args.repos != []:
@@ -181,20 +302,20 @@ def main():
                 else:
                     print("\tNOTE: Repo has gh_pages")
 
+            # Look for keys and hooks, and report on them at the end
+            if args.show_report:
+                key_report_list.extend(report_on_keys(gh_repo))
+                hook_report_list.extend(report_on_hooks(gh_repo))
+
             # Deal with issues
 
-            handled = handle_issues(gh_repo, args.custom, args.force, args.quiet)
+            handled = handle_issues(
+                gh_repo, args.custom, args.ignore_issue_label, args.do_it, args.quiet
+            )
             # Handle the overall repo marking:
 
-            topics = gh_repo.topics().names
-            if args.inactive:
-                topics.append("inactive")
-            else:
-                topics.append("abandoned")
-            topics.append("unmaintained")
-            gh_repo.replace_topics(topics)
-            if not args.quiet:
-                print("\tUpdated topics")
+            handle_topics(gh_repo, args.inactive, args.do_it, args.quiet)
+
             description = gh_repo.description
             if args.inactive:
                 preamble = "INACTIVE"
@@ -206,25 +327,34 @@ def main():
                 description = preamble + " - " + description
             else:
                 description = preamble
+
             if handled:
-                gh_repo.edit(name=gh_repo.name, description=description, archived=True)
-                if not args.quiet:
-                    print(f"\tUpdated description and archived the repo {org}/{repo}")
-            else:
-                gh_repo.edit(name=gh_repo.name, description=description)
-                print(
-                    f"\tUpdated description, but there was a problem with issues in repo "
-                    f"https://github.com/{org}/{repo}, pausing so you can fix, and then "
-                    f"I'll archive for you.  (Press N to not archive)"
-                )
-                char = getch.getch()
-                if char not in ("n", "N"):
-                    gh_repo.edit(name=gh_repo.name, archived=True)
+                if args.do_it:
+                    gh_repo.edit(name=gh_repo.name, description=description, archived=True)
                     if not args.quiet:
-                        print(f"\tArchived repo {org}/{repo}")
+                        print(f"\tUpdated description and archived the repo {org}/{repo}")
+            elif True:
+                if args.do_it:
+                    gh_repo.edit(name=gh_repo.name, description=description)
+                    print(
+                        f"\tUpdated description, but there was a problem with issues in repo "
+                        f"https://github.com/{org}/{repo}, pausing so you can fix, and then "
+                        f"I'll archive for you.  (Press enter to archive, N and enter to skip)"
+                    )
+                    char = input()
+                    if char not in ("n", "N"):
+                        gh_repo.edit(name=gh_repo.name, archived=True)
+                        if not args.quiet:
+                            print(f"\tArchived repo {org}/{repo}")
                 else:
                     if not args.quiet:
                         print(f"\tDid NOT archive {org}/{repo}")
+    if args.show_report:
+        print()
+        print("\n".join(hook_report_list))
+        print("---------------")
+        print("\n".join(key_report_list))
+        print("---------------")
 
 
 if __name__ == "__main__":
