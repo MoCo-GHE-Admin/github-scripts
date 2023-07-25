@@ -133,6 +133,26 @@ optional arguments:
   --orgini          use "orglist.ini" with the "orgs" entry with a csv list of all orgs to check
 ```
 
+## `org_add_user.py`
+```
+usage: org_add_user.py [-h] [--pat-key PATKEY] [--token TOKEN] [--teams TEAMS [TEAMS ...]] [--owner] org username
+
+Give a username, an org, and a team list and add the user to the org. NOTE: if the org is SAML'd you'll probably need to provision
+the user in your IdP system(s)
+
+positional arguments:
+  org                   The org to work with
+  username              GH user ID to add
+
+options:
+  -h, --help            show this help message and exit
+  --pat-key PATKEY      key in .gh_pat.toml of the PAT to use
+  --token TOKEN         use this PAT to access resources
+  --teams TEAMS [TEAMS ...]
+                        list of team slugs
+  --owner               Should they be an owner
+```
+
 ## `org_audit_licensefile.py`
 ```
 usage: org_audit_licensefile.py [-h] [--pat-key PATKEY] [--token TOKEN] [--archived] [--type {public,private,all}] [--include-URL]
