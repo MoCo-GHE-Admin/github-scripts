@@ -135,19 +135,17 @@ optional arguments:
 
 ## `org_add_user.py`
 ```
-usage: org_add_user.py [-h] [--pat-key PATKEY] [--token TOKEN] [--teams TEAMS [TEAMS ...]] [--owner] org username
+usage: org_add_user.py [-h] [--pat-key PATKEY] [--token TOKEN] [--org ORG] [--user USERNAME] [--teams TEAMS [TEAMS ...]] [--owner]
 
 Give a username, an org, and a team list and add the user to the org. NOTE: if the org is SAML'd you'll probably need to provision
 the user in your IdP system(s)
-
-positional arguments:
-  org                   The org to work with
-  username              GH user ID to add
 
 options:
   -h, --help            show this help message and exit
   --pat-key PATKEY      key in .gh_pat.toml of the PAT to use
   --token TOKEN         use this PAT to access resources
+  --org ORG             The org to work with
+  --user USERNAME       GH user ID to add
   --teams TEAMS [TEAMS ...]
                         list of team slugs
   --owner               Should they be an owner
