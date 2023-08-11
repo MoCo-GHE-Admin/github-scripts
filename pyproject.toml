@@ -17,7 +17,7 @@ alive-progress = "^3.0.1"
 py-getch = "^1.0.1"
 toml = "^0.10.2"
 pytz = "^2022.5"
-gitpython = "^3.1.29"
+gitpython = "^3.1.32"
 requests = "^2.31.0"
 
 [tool.poetry.group.dev.dependencies]
