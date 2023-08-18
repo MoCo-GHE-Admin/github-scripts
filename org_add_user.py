@@ -76,7 +76,12 @@ def main():
         print(f"An exception on creation occurred: {error}")
         exit(1)
     else:
-        print(f"Invited user {args.username} to org {args.org}.")
+        if args.teams is None:
+            print(f"Invited user {args.username} to org {args.org}.")
+        else:
+            print(
+                f"Invited user {args.username} to org {args.org} and teams {', '.join(args.teams)}"
+            )
 
 
 if __name__ == "__main__":
