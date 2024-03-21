@@ -38,13 +38,35 @@ def get_secret_alerts(org, token, page=1, url="api.github.com"):
     return result
 
 
+def get_secret_comment(orgrepo, alert, token, url="api.github.com"):
+    """
+    Get the comment for an alert.  Works only if there's just one page of alert - which is what should be.
+    :param orgrepo: org/repo name
+    :param alert: the nubmer of the alert
+    :param url: host to connect to
+    :result: comma delimited data of interest.  (date closed, closer, status of closure, comment)
+    """
+    headers = {"content-type": "application/json", "Authorization": "token " + token}
+    query = f"https://{url}/repos/{orgrepo}/secret-scanning/alerts/{alert}"
+    # print(f"{query=}")
+    data = requests.get(headers=headers, url=query)
+    jsondata = data.json()
+    # Have to check to see if things are None before doing things.
+    if jsondata["resolved_by"] is None:
+        name = "None"
+    else:
+        name = jsondata["resolved_by"]["login"]
+    result_str = f"{jsondata['resolved_at']},{name},{jsondata['resolution']},{jsondata['resolution_comment']}"
+    return result_str
+
+
 def main():
     """
     Setup the lists, and loop through, handling pagination, and then printing the results at the end.
     """
     args = parse_arguments()
 
-    print("Created At,Repo,State,Secret Type,URL")
+    print("Created At,Repo,State,Secret Type,URL,Date Closed,Closer,Status,Comment")
 
     done = False
     page = 1
@@ -60,9 +82,11 @@ def main():
                 state = jsondata[item]["state"]
                 secret_type = jsondata[item]["secret_type_display_name"]
                 created_at = jsondata[item]["created_at"]
+                number = jsondata[item]["number"]
                 url = jsondata[item]["html_url"]
                 # url = f'=HYPERLINK("{jsondata[item]["html_url"]}")'
-                print(f"{created_at},{repo},{state},{secret_type},{url}")
+                commentdata = get_secret_comment(repo, number, args.token)
+                print(f"{created_at},{repo},{state},{secret_type},{url},{commentdata}")
             # print(f"{keys=}")
             page += 1
         elif data.status_code == 404:
