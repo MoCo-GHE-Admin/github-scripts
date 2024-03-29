@@ -7,14 +7,14 @@ Then extract and report the permissions that the user has.
 """
 
 
-# from github3 import exceptions as gh_exceptions
+import sys
+
+import alive_progress
 from github3 import login
 from github3.structs import GitHubIterator
 from github3.users import ShortUser
 
 from github_scripts import utils
-
-# TODO: add progress bars
 
 
 def parse_args():
@@ -26,12 +26,19 @@ def parse_args():
     parser = utils.GH_ArgParser(
         description="Given a username - go through all orgs the caller has access to, to see what the username has access to."
     )
-    parser.add_argument("username", help="User to remove")
+    parser.add_argument("username", help="User to examine")
     parser.add_argument(
-        "--dumpmembership",
+        "--members",
         help="Should I look at membership in orgs, and not just collaborator status?",
         action="store_true",
-        dest="membership",
+    )
+    parser.add_argument(
+        "--orgs", nargs="+", help="List of orgs to check, else will look in orgs you belong to"
+    )
+    parser.add_argument(
+        "--lineperorg",
+        action="store_true",
+        help="Instead of one repo per line, report one org per line",
     )
     args = parser.parse_args()
     return args
@@ -62,28 +69,77 @@ def get_collabs(gh_sess, org):
     return result
 
 
-def remove_from_org_repos(gh_sess, org, user, verbose=True, dry_run=True):
+def look_for_user_in_org(gh_sess, org, username, bar):
     """
-    Remove the user from the repos in the org
-    Cycle through all repos, looking for outside collabs - noting or
-    removing them as desired.
-    :param gh_sess: the github session
-    :param org: Initialized org object
-    :param user: The GHID of the user
-    :param verbose: Print out what we're doing
-    :return boolean: True if we found someone.  False if no removal
+    Given and org and a username, output a dictionary of all repos that the user has perms to
+    :param gh_sess: initialized github api sesssion
+    :param org: an initialized org entry
+    :param username: the GHid as a string
+    :param bar: Progress bar to update
+    :result: A dictionary of all initialized repos that the user belongs to
+    Form of dict: (see below for initialization)
     """
-    if verbose:
-        print(f"Looking for OCs in repos in {org.login}")
-    found = False
-    utils.check_rate_remain(gh_sess)
-    if user in get_collabs(gh_sess, org):
-        if verbose:
-            print(f"\t**Found user {user} as collaborator in org {org.login}")
-        found = True
-    if verbose and not found:
-        print(f"\t\tDid not find user {user} as an OC of any repo in {org.login}")
-    return found
+    # Note that if there are custom levels, they will map to the closest one above it afaict.
+    # i.e. if there's a form with all the READ, but a bit more, it will be LISTED as triage.
+    resultdict = {"admin": [], "maintain": [], "push": [], "triage": [], "pull": []}
+    if org.is_member(username):
+        resultdict["member"] = True
+    else:
+        resultdict["member"] = False
+
+    for repo in org.repositories():
+        utils.check_rate_remain(gh_sess)
+        bar.text(f"\t- {org.login}, {repo.name}")
+        if repo.is_collaborator(username):
+            for collab in repo.collaborators():
+                utils.check_rate_remain(gh_sess)
+                bar()
+                if collab.login == username:
+                    if collab.permissions["admin"]:
+                        resultdict["admin"].append(repo.name)
+                    elif collab.permissions["maintain"]:
+                        resultdict["maintain"].append(repo.name)
+                    elif collab.permissions["push"]:
+                        resultdict["push"].append(repo.name)
+                    elif collab.permissions["triage"]:
+                        resultdict["triage"].append(repo.name)
+                    else:
+                        resultdict["pull"].append(repo.name)
+    return resultdict
+
+
+def output_org_based(permsdict):
+    """
+    Print out the perms in a nice CSV form
+    :param permsdict: the dictionary of org:permission
+    :result: printed CSV
+    """
+    # Note the change in output of "PUSH" -> "Write", and "PULL" -> "READ"
+    print("Org,Member,Admin,Maintain,Write,Triage,Read")
+    for org in permsdict.keys():
+        print(
+            f'"{org}", "{permsdict[org]["member"]}", "{",".join(permsdict[org]["admin"])}", "{",".join(permsdict[org]["maintain"])}", "{",".join(permsdict[org]["push"])}", "{",".join(permsdict[org]["triage"])}", "{",".join(permsdict[org]["pull"])}"'
+        )
+
+
+def output_repo_based(permsdict):
+    """
+    Print out the perms in a nice CSV form, based on one repo per line
+    :param permsdict: the dictionary of org:permission
+    :result: printed CSV
+    """
+    print("Org,Repo,Admin,Maintain,Write,Triage,Read")
+    for org in permsdict.keys():
+        for repo in permsdict[org]["admin"]:
+            print(f"{org},{repo},TRUE,,,,")  # noqa: E231
+        for repo in permsdict[org]["maintain"]:
+            print(f"{org},{repo},,TRUE,,,")  # noqa: E231
+        for repo in permsdict[org]["push"]:
+            print(f"{org},{repo},,,TRUE,,")  # noqa: E231
+        for repo in permsdict[org]["triage"]:
+            print(f"{org},{repo},,,,TRUE,")  # noqa: E231
+        for repo in permsdict[org]["pull"]:
+            print(f"{org},{repo},,,,,TRUE")  # noqa: E231
 
 
 def main():
@@ -97,18 +153,42 @@ def main():
     gh_sess = login(token=args.token)
     utils.check_rate_remain(gh_sess)
 
-    for org in gh_sess.organizations():
-        checkit = False  # Should we check this org for specific repo perms?
-        print(f"{org.login=}")
-        if org.is_member(args.username):
-            print("\tFound as a member!")
-            if args.membership:
+    orglist = []
+    if args.orgs is not None:
+        for orgname in args.orgs:
+            orglist.append(gh_sess.organization(orgname))
+    else:
+        for org in gh_sess.organizations():
+            orglist.append(org)
+
+    with alive_progress.alive_bar(
+        dual_line=True,
+        title="Getting Perms",
+        file=sys.stderr,
+        length=20,
+        force_tty=True,
+        disable=False,
+    ) as bar:
+        permsdict = {}
+        for org in orglist:
+            utils.check_rate_remain(gh_sess)
+
+            checkit = False  # Should we check this org for specific repo perms?
+            bar.text(f"\t- {org.login}")
+            bar()
+            if org.is_member(args.username):
+                if args.members:
+                    checkit = True
+            elif args.username in get_collabs(gh_sess, org):
                 checkit = True
-        elif args.username in get_collabs(gh_sess, org):
-            print("\tFound user collab!")
-            checkit = True
-        if checkit:
-            print(f"Checking {org.login} for permissions for user {args.username}")
+            if checkit:
+                permsdict[org.login] = look_for_user_in_org(gh_sess, org, args.username, bar)
+
+    # output(permsdict=permsdict)
+    if args.lineperorg:
+        output_org_based(permsdict=permsdict)
+    else:
+        output_repo_based(permsdict=permsdict)
 
 
 if __name__ == "__main__":
