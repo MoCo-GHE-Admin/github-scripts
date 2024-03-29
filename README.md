@@ -545,6 +545,26 @@ optional arguments:
   --token TOKEN     use this PAT to access resources
   -q                DO NOT print, or request confirmations
 ```
+
+## `user_repo_query.py`
+```
+usage: user_repo_query.py [-h] [--pat-key PATKEY] [--token TOKEN] [--members] [--orgs ORGS [ORGS ...]] [--lineperorg] username
+
+Given a username - go through all orgs the caller has access to, to see what the username has access to.
+
+positional arguments:
+  username              User to examine
+
+options:
+  -h, --help            show this help message and exit
+  --pat-key PATKEY      key in .gh_pat.toml of the PAT to use
+  --token TOKEN         use this PAT to access resources
+  --members             Should I look at membership in orgs, and not just collaborator status?
+  --orgs ORGS [ORGS ...]
+                        List of orgs to check, else will look in orgs you belong to
+  --lineperorg          Instead of one repo per line, report one org per line
+```
+
 # Supporting files
 
 ## `orglist.ini`
