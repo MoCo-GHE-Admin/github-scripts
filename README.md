@@ -85,20 +85,21 @@ optional arguments:
 
 ## `gh_org_licenses.py`
 ```
-usage: gh_org_licenses.py [-h] [--pat-key PATKEY] [--token TOKEN] [--pending] [--orgini] [orgs ...]
+usage: gh_org_licenses.py [-h] [--pat-key PATKEY] [--token TOKEN] [--pending] [--verbose] [--orgini] [orgs ...]
 
 Provided a list of orgs, output how many GHE licenses are required.
 
 positional arguments:
   orgs              The org to work on
 
-optional arguments:
+options:
   -h, --help        show this help message and exit
   --pat-key PATKEY  key in .gh_pat.toml of the PAT to use
   --token TOKEN     use this PAT to access resources
   --pending         Include Pending requests?
+  --verbose         Output lists of members and ocs that are using license
   --orgini          use "orglist.ini" with the "orgs" entry with a csv list of all orgs to check
-```
+  ```
 
 ## `gh_pat_owner.py`
 ```
