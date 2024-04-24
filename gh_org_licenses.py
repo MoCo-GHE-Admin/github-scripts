@@ -27,6 +27,11 @@ def parse_arguments():
     parser.add_argument("orgs", type=str, help="The org to work on", action="store", nargs="*")
     parser.add_argument("--pending", help="Include Pending requests?", action="store_true")
     parser.add_argument(
+        "--verbose",
+        help="Output lists of members and ocs that are using license",
+        action="store_true",
+    )
+    parser.add_argument(
         "--orgini",
         help='use "orglist.ini" with the "orgs" ' "entry with a csv list of all orgs to check",
         action="store_const",
@@ -107,6 +112,8 @@ def main():
     We're gonna use sets to make things easy, seeing as how they dedupe themselves.
     """
     overallset = set()
+    overall_ocset = set()
+    overall_memberset = set()
     args = parse_arguments()
     # Read in the config if there is one
     orglist = []
@@ -132,8 +139,17 @@ def main():
 
         # union of overallset with the org_set and oc_set
         overallset |= org_set | oc_set
+        overall_ocset |= oc_set
+        overall_memberset |= org_set
         print(f"Current overall license count: {len(overallset)}")
     print(f"Final count: {len(overallset)}")
+    if args.verbose:
+        print("Type,GH Login")
+        for member in overall_memberset:
+            print(f"Member,{member}")  # noqa: E231
+        for oc in overall_ocset:
+            if oc not in overall_memberset:
+                print(f"OC,{oc}")  # noqa: E231
 
 
 if __name__ == "__main__":
