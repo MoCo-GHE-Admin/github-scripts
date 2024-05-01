@@ -3,6 +3,7 @@
 Script to look at repos in an org, and dump the permissions for all singleton permissions (i.e. not owner or team based)
 owners have access to EVERYTHING, so not interesting
 Teams are covered by org_teams.py which gives membershipm, and org_teams_perms.py which gives the permission of that membership.
+But sometimes we just need a dump of everything - so add a flag to look for more than singles
 """
 
 import sys
@@ -12,6 +13,8 @@ import github3
 import requests
 
 from github_scripts import utils
+
+# noqa: E231
 
 
 def parse_arguments():
@@ -27,6 +30,11 @@ def parse_arguments():
         type=str,
         help="Specify a single repo to work on in the specified org if desired",
         action="store",
+    )
+    parser.add_argument(
+        "--all",
+        help="Dump ALL (Well, not owners) permissions, not just non-team singletons",
+        action="store_true",
     )
     parser.add_argument(
         "--url",
@@ -85,16 +93,17 @@ def make_query(org, repo, usercursor=None):
     }}
   }}
 }}
-"""
+"""  # noqa: E231, E202
     query = query.replace("USERAFTER", f'"{usercursor}"' if usercursor is not None else "null")
     return query
 
 
-def parse_user_data(userdata):
+def parse_user_data(userdata, report_all):
     """
     Go through the user data looking for collaborators that get their perms from a singleton entry and report
     Note that we do not report org owners
     param: userdata - the json data from the graphql query
+    param: report_all - report team based as well
     result: Dict of '<PERMLEVEL>':[SINGLETONUSERLIST]
     """
     result = {}
@@ -108,12 +117,11 @@ def parse_user_data(userdata):
             ):
                 # print("Ignore, as it's from the org that they get admin")
                 break
-            if source["source"]["permissionSource"] == "Repository":
-                # print("OMG, REPO!")
+            if report_all or (source["source"]["permissionSource"] == "Repository"):
                 if perm in result.keys():
-                    result[perm].append(user["node"]["login"])
+                    result[perm].add(user["node"]["login"])
                 else:
-                    result[perm] = [user["node"]["login"]]
+                    result[perm] = {user["node"]["login"]}
     return result
 
 
@@ -143,7 +151,7 @@ def main():
     ) as bar:
         for repo in repolist:
             # print(f"{repo=}")
-            bar.text = f"  - checking {repo}..."
+            bar.text = f" - checking {repo}..."
             done = False
             cursor = None
             bar()
@@ -157,7 +165,9 @@ def main():
                         f" {result.status_code}. {query}"
                     )
                 resultdict[repo].update(
-                    parse_user_data(result.json()["data"]["repository"]["collaborators"]["edges"])
+                    parse_user_data(
+                        result.json()["data"]["repository"]["collaborators"]["edges"], args.all
+                    )
                 )
                 if result.json()["data"]["repository"]["collaborators"]["pageInfo"]["hasNextPage"]:
                     print(
@@ -171,9 +181,9 @@ def main():
                 utils.check_graphql_rate_remain(args.token, bar=bar)
     outputlist = []
     for repo in resultdict.keys():
-        line = f"{repo},"
+        line = f"{repo},"  # noqa: E231
         for perms in resultdict[repo].keys():
-            line = line + f"{perms}:{':'.join(resultdict[repo][perms])},"
+            line = line + f"{perms}:{':'.join(resultdict[repo][perms])},"  # noqa: E231
         outputlist.append(line)
     print("RepoName, PermissionsColumns")
     print("\n".join(outputlist))
