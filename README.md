@@ -408,7 +408,7 @@ optional arguments:
 
 ## `repo_activity.py`
 ```
-usage: repo_activity.py [-h] [--pat-key PATKEY] [--token TOKEN] [--issues] [--ignore-wiki] [--file FILE] [repos ...]
+usage: repo_activity.py [-h] [--pat-key PATKEY] [--token TOKEN] [--org ORG] [--date DATE] [--issues] [--ignore-wiki] [--archived] [--file FILE] [repos ...]
 
 Gets a latest activity for a repo or list of repos. Also checks wiki for activity, and can be told to check for issues activity.
 
@@ -419,9 +419,13 @@ options:
   -h, --help        show this help message and exit
   --pat-key PATKEY  key in .gh_pat.toml of the PAT to use
   --token TOKEN     use this PAT to access resources
+  --org ORG         Look at all the repos in the org, will ignore archived repos by default
+  --date DATE       YYYYMMDD, ignore anything with update date after this date.
   --issues          Check the issues to set a date of activity if more recent than code
   --ignore-wiki     Don't do the wiki analysis
-  --file FILE       File of 'owner/repo' names, 1 per line```
+  --archived        if doing org level, should we include archived repos?
+  --file FILE       File of 'owner/repo' names, 1 per line
+```
 
 ## `repo_add_perms.py`
 ```

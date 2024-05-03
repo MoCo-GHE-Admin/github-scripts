@@ -8,7 +8,7 @@ Used to help determination for archiving/moving repos that aren't active
 
 import sys
 import tempfile
-from datetime import datetime
+from datetime import date, datetime
 
 import alive_progress
 import pytz
@@ -46,12 +46,28 @@ def parse_args():
         nargs="*",
     )
     parser.add_argument(
+        "--org",
+        help="Look at all the repos in the org, will ignore archived repos by default",
+        action="store",
+    )
+    parser.add_argument(
+        "--date",
+        help="YYYYMMDD, ignore anything with update date after this date.",
+        action="store",
+        type=date.fromisoformat,
+    )
+    parser.add_argument(
         "--issues",
         help="Check the issues to set a date of activity if more recent than code",
         action="store_true",
     )
     parser.add_argument(
         "--ignore-wiki", dest="ignore_wiki", action="store_true", help="Don't do the wiki analysis"
+    )
+    parser.add_argument(
+        "--archived",
+        help="if doing org level, should we include archived repos?",
+        action="store_true",
     )
     parser.add_argument("--file", help="File of 'owner/repo' names, 1 per line", action="store")
     args = parser.parse_args()
@@ -68,7 +84,7 @@ def get_wiki_date(reponame, token):
     :result: datetime of the last commit to the wiki
     """
     # Setup the URL/paths
-    remoteURL = f"https://{token}:x-oauth-basic@github.com/{reponame}.wiki.git"
+    remoteURL = f"https://{token}:x-oauth-basic@github.com/{reponame}.wiki.git"  # noqa: E231
     localpath = tempfile.TemporaryDirectory()
     try:
         # Checkout the repo
@@ -84,7 +100,7 @@ def get_wiki_date(reponame, token):
     return date
 
 
-def mini_repo_activity(gh_sess, orgstr, repostr, token, issues, ignore_wiki, bar):
+def mini_repo_activity(gh_sess, orgstr, repostr, token, issues, ignore_wiki, filterdate, bar):
     """
     Print out only the top level repo data without looking at the last years commits.
     :param gh_sess: an initialized GH session
@@ -93,6 +109,7 @@ def mini_repo_activity(gh_sess, orgstr, repostr, token, issues, ignore_wiki, bar
     :param token: PAT needed for wiki analysis
     :param issues: booolean about whether to look at issues
     :param ignore_wiki: boolean - should we ignore the wiki
+    :param filterdate: date - If pushed is > filter_date, ignore this repo
     :param bar: the progress bar
     :result: returns a list of strings of the results
     """
@@ -124,18 +141,22 @@ def mini_repo_activity(gh_sess, orgstr, repostr, token, issues, ignore_wiki, bar
                     if issuedate > pushed_date:
                         pushed_date = issuedate
 
-        if issues:
-            result_string = (
-                f"{orgstr}/{repo.name}{issue_whacky},{repo.created_at.strftime('%Y-%m-%d')},"
-                f"{pushed_date.strftime('%Y-%m-%d')},{repo.updated_at.strftime('%Y-%m-%d')},"
-                f"{repo.private},{repo.archived},{repo.fork},{issuecount}"
-            )
+        # Break out if we're on a repo that doesn't meet the date.
+        if filterdate is not None and filterdate < datetime.date(pushed_date):
+            result_string = None
         else:
-            result_string = (
-                f"{orgstr}/{repo.name}{issue_whacky},{repo.created_at.strftime('%Y-%m-%d')},"
-                f"{pushed_date.strftime('%Y-%m-%d')},{repo.updated_at.strftime('%Y-%m-%d')},"
-                f"{repo.private},{repo.archived},{repo.fork}"
-            )
+            if issues:
+                result_string = (
+                    f"{orgstr}/{repo.name}{issue_whacky},{repo.created_at.strftime('%Y-%m-%d')},"  # noqa: E231
+                    f"{pushed_date.strftime('%Y-%m-%d')},{repo.updated_at.strftime('%Y-%m-%d')},"  # noqa: E231
+                    f"{repo.private},{repo.archived},{repo.fork},{issuecount}"  # noqa: E231
+                )
+            else:
+                result_string = (
+                    f"{orgstr}/{repo.name}{issue_whacky},{repo.created_at.strftime('%Y-%m-%d')},"  # noqa: E231
+                    f"{pushed_date.strftime('%Y-%m-%d')},{repo.updated_at.strftime('%Y-%m-%d')},"  # noqa: E231
+                    f"{repo.private},{repo.archived},{repo.fork}"  # noqa: E231
+                )
     except gh_exceptions.ConnectionError:
         print(f"Timeout error, 'CLOUD' on repo {orgstr}/{repostr}", file=sys.stderr)
     return result_string
@@ -148,16 +169,21 @@ def main():
 
     args = parse_args()
 
+    gh_sess = login(token=args.token)
+
     repolist = []
     if args.repos != []:
         repolist = args.repos
+    elif args.org is not None:
+        for repo in gh_sess.organization(args.org).repositories():
+            if args.archived or not repo.archived:
+                repolist.append(repo.full_name)
     else:
         # Rip open the file, make a list
         txtfile = open(args.file, "r")
         repolist = txtfile.readlines()
         txtfile.close()
 
-    gh_sess = login(token=args.token)
     output_str = []
     # Print out the header.
     if args.issues:
@@ -180,17 +206,18 @@ def main():
             repo = orgrepo.split("/")[1].strip()
             # ignore ghsa repos --- they only lead to heartache when automated things interact
             if repo.find("-ghsa-") == -1:
-                output_str.append(
-                    mini_repo_activity(
-                        gh_sess,
-                        org,
-                        repo,
-                        args.token,
-                        issues=args.issues,
-                        ignore_wiki=args.ignore_wiki,
-                        bar=bar,
-                    )
+                repostr = mini_repo_activity(
+                    gh_sess,
+                    org,
+                    repo,
+                    args.token,
+                    issues=args.issues,
+                    ignore_wiki=args.ignore_wiki,
+                    filterdate=args.date,
+                    bar=bar,
                 )
+                if repostr is not None:
+                    output_str.append(repostr)
             bar()
     print("\n".join(output_str))
 
