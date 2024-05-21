@@ -6,6 +6,8 @@ Teams are covered by org_teams.py which gives membershipm, and org_teams_perms.p
 But sometimes we just need a dump of everything - so add a flag to look for more than singles
 """
 
+# TODO: Output only perms of ADMIN
+
 import sys
 
 import alive_progress
@@ -36,6 +38,7 @@ def parse_arguments():
         help="Dump ALL (Well, not owners) permissions, not just non-team singletons",
         action="store_true",
     )
+    parser.add_argument("--admin", help="Only output admins of the repo", action="store_true")
     parser.add_argument(
         "--url",
         type=str,
@@ -182,9 +185,15 @@ def main():
     outputlist = []
     for repo in resultdict.keys():
         line = f"{repo},"  # noqa: E231
-        for perms in resultdict[repo].keys():
-            line = line + f"{perms}:{':'.join(resultdict[repo][perms])},"  # noqa: E231
-        outputlist.append(line)
+        if args.admin:
+            # print(f"keys = {resultdict[repo].keys()}, {'ADMIN' in resultdict[repo].keys()}")
+            if "ADMIN" in resultdict[repo].keys():
+                line = line + f"{'ADMIN'}:{':'.join(resultdict[repo]['ADMIN'])},"  # noqa: E231
+            outputlist.append(line)
+        else:
+            for perms in resultdict[repo].keys():
+                line = line + f"{perms}:{':'.join(resultdict[repo][perms])},"  # noqa: E231
+            outputlist.append(line)
     print("RepoName, PermissionsColumns")
     print("\n".join(outputlist))
 

@@ -285,7 +285,9 @@ optional arguments:
 
 ## `org_repo_perms`
 ```
-usage: org_repo_perms.py [-h] [--pat-key PATKEY] [--token TOKEN] [--repo REPO] [--url URL] org
+usage: org_repo_perms.py [-h] [--pat-key PATKEY] [--token TOKEN] [--repo REPO]
+                         [--all] [--admin] [--url URL]
+                         org
 
 Report all permissions given to repos to individuals (not by a team)
 
@@ -296,7 +298,11 @@ options:
   -h, --help        show this help message and exit
   --pat-key PATKEY  key in .gh_pat.toml of the PAT to use
   --token TOKEN     use this PAT to access resources
-  --repo REPO       Specify a single repo to work on in the specified org if desired
+  --repo REPO       Specify a single repo to work on in the specified org if
+                    desired
+  --all             Dump ALL (Well, not owners) permissions, not just non-team
+                    singletons
+  --admin           Only output admins of the repo
   --url URL         the graphql URL
 ```
 
