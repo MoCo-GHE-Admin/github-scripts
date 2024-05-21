@@ -18,7 +18,7 @@ py-getch = "^1.0.1"
 toml = "^0.10.2"
 pytz = "^2022.5"
 gitpython = "^3.1.41"
-requests = "^2.31.0"
+requests = "^2.32.0"
 
 [tool.poetry.group.dev.dependencies]
 pre-commit = "^3.0.3"
