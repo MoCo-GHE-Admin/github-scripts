@@ -8,8 +8,6 @@ Outside collaborators with ANY access (even just read) to a private repo take a 
 
 """
 
-import configparser
-
 from github3 import exceptions as gh_exceptions
 from github3 import login
 
@@ -24,22 +22,14 @@ def parse_arguments():
     parser = utils.GH_ArgParser(
         description="Provided a list of orgs, output how many GHE licenses are required."
     )
-    parser.add_argument("orgs", type=str, help="The org to work on", action="store", nargs="*")
+    parser.add_argument("orgs", type=str, help="The orgs to work on", action="store", nargs="+")
     parser.add_argument("--pending", help="Include Pending requests?", action="store_true")
     parser.add_argument(
         "--verbose",
         help="Output lists of members and ocs that are using license",
         action="store_true",
     )
-    parser.add_argument(
-        "--orgini",
-        help='use "orglist.ini" with the "orgs" ' "entry with a csv list of all orgs to check",
-        action="store_const",
-        const="orglist.ini",
-    )
     args = parser.parse_args()
-    if args.orgs == [] and args.orgini is None:
-        raise Exception("You must specify either an org or an orgini")
     return args
 
 
@@ -116,13 +106,7 @@ def main():
     overall_memberset = set()
     args = parse_arguments()
     # Read in the config if there is one
-    orglist = []
-    if args.orgini is not None:
-        config = configparser.ConfigParser()
-        config.read(args.orgini)
-        orglist = config["GITHUB"]["orgs"].split(",")
-    else:
-        orglist = args.orgs
+    orglist = args.orgs
 
     gh_sess = login(token=args.token)
     # Check the API rate remaining before starting.
@@ -130,18 +114,22 @@ def main():
 
     # Go through every org given
     for org in orglist:
-        # Get a set (naturally deduped) of members
-        org_set = org_members_set(gh_sess, org, args.pending)
-        # Get a set (naturally deduped) of private OCs
-        oc_set = org_oc_set(gh_sess, org, args.pending)
+        try:
+            # Get a set (naturally deduped) of members
+            org_set = org_members_set(gh_sess, org, args.pending)
+            # Get a set (naturally deduped) of private OCs
+            oc_set = org_oc_set(gh_sess, org, args.pending)
 
-        print(f"ORG: {org}: Members: {len(org_set)}, OC: {len(oc_set)}")
+            print(f"ORG: {org}: Members: {len(org_set)}, OC: {len(oc_set)}")
 
-        # union of overallset with the org_set and oc_set
-        overallset |= org_set | oc_set
-        overall_ocset |= oc_set
-        overall_memberset |= org_set
-        print(f"Current overall license count: {len(overallset)}")
+            # union of overallset with the org_set and oc_set
+            overallset |= org_set | oc_set
+            overall_ocset |= oc_set
+            overall_memberset |= org_set
+            print(f"Current overall license count: {len(overallset)}")
+        except gh_exceptions.NotFoundError:
+            print(f"Org {org} not found - stopping analysis")
+            exit()
     print(f"Final count: {len(overallset)}")
     if args.verbose:
         print("Type,GH Login")

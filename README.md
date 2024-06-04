@@ -35,8 +35,9 @@ optional arguments:
 ```
 
 ## `gh_dependency_search.py`
+NOTE - This relies on API searches, which GitHub is NOT advancing - you'll get better results using the WEBUI search
 ```
-usage: gh_dependency_search.py [-h] [--pat-key PATKEY] [--token TOKEN] --package PACKAGE [--orgini] [-v] [-f] [-t TIME]
+usage: gh_dependency_search.py [-h] [--pat-key PATKEY] [--token TOKEN] --package PACKAGE [-v] [-f] [-t TIME]
                                [--language {Python,Javascript}]
                                [orgs ...]
 
@@ -50,7 +51,6 @@ optional arguments:
   --pat-key PATKEY      key in .gh_pat.toml of the PAT to use
   --token TOKEN         use this PAT to access resources
   --package PACKAGE     The package to search for.
-  --orgini              use "orglist.ini" with the "orgs" entry with a csv list of all orgs to check
   -v                    Verbose - Print out that we're waiting for rate limit reasons
   -f                    Print out file level responses rather than repo level
   -t TIME               Time to sleep between searches, in seconds, should be 10s or more
@@ -59,8 +59,9 @@ optional arguments:
 ```
 
 ## `gh_file_search.py`
+NOTE - This relies on API searches, which GitHub is NOT advancing - you'll get better results using the WEBUI search
 ```
-usage: gh_file_search.py [-h] [--pat-key PATKEY] [--token TOKEN] --query QUERY [--note-archive] [--orgini] [-v] [-f] [-t TIME]
+usage: gh_file_search.py [-h] [--pat-key PATKEY] [--token TOKEN] --query QUERY [--note-archive] [-v] [-f] [-t TIME]
                          [orgs ...]
 
 Get file search results for an org, returning repo list. e.g. if you want 'org:<ORGNAME> filename:<FILENAME> <CONTENTS>', then you
@@ -77,7 +78,6 @@ optional arguments:
   --query QUERY     The query to run, without orgs
   --note-archive    if specified, will add archival status of the repo to the output, this will slow things down and use more API
                     calls
-  --orgini          use "orglist.ini" with the "orgs" entry with a csv list of all orgs to check
   -v                Verbose - Print out that we're waiting for rate limit reasons
   -f                Print out file level responses rather than repo level
   -t TIME           Time to sleep between searches, in seconds, should be 10s or more
@@ -85,12 +85,12 @@ optional arguments:
 
 ## `gh_org_licenses.py`
 ```
-usage: gh_org_licenses.py [-h] [--pat-key PATKEY] [--token TOKEN] [--pending] [--verbose] [--orgini] [orgs ...]
+usage: gh_org_licenses.py [-h] [--pat-key PATKEY] [--token TOKEN] [--pending] [--verbose] orgs [orgs ...]
 
 Provided a list of orgs, output how many GHE licenses are required.
 
 positional arguments:
-  orgs              The org to work on
+  orgs              The orgs to work on
 
 options:
   -h, --help        show this help message and exit
@@ -98,7 +98,6 @@ options:
   --token TOKEN     use this PAT to access resources
   --pending         Include Pending requests?
   --verbose         Output lists of members and ocs that are using license
-  --orgini          use "orglist.ini" with the "orgs" entry with a csv list of all orgs to check
   ```
 
 ## `gh_pat_owner.py`
@@ -118,7 +117,7 @@ optional arguments:
 
 ## `gh_user_moderation.py`
 ```
-usage: gh_user_moderation.py [-h] [--pat-key PATKEY] [--token TOKEN] [--block] [--orgini] username [orgs ...]
+usage: gh_user_moderation.py [-h] [--pat-key PATKEY] [--token TOKEN] [--block] username orgs [orgs ...]
 
 Look at orgs, and either block or unblock the specified username
 
@@ -126,12 +125,11 @@ positional arguments:
   username          The GH user name to block/unblock
   orgs              The org to work on
 
-optional arguments:
+options:
   -h, --help        show this help message and exit
   --pat-key PATKEY  key in .gh_pat.toml of the PAT to use
   --token TOKEN     use this PAT to access resources
   --block           should we block the user - default is unblock
-  --orgini          use "orglist.ini" with the "orgs" entry with a csv list of all orgs to check
 ```
 
 ## `org_add_user.py`
@@ -155,7 +153,6 @@ options:
 ## `org_audit_licensefile.py`
 ```
 usage: org_audit_licensefile.py [-h] [--pat-key PATKEY] [--token TOKEN] [--archived] [--type {public,private,all}] [--include-URL]
-                                [--orgini]
                                 [orgs ...]
 
 given the org, look through all repos of type, and archive status and report on github detected licenses.
@@ -171,7 +168,6 @@ optional arguments:
   --type {public,private,all}
                         Type of repo: private, public, all (Default).
   --include-URL         Include the URL to the repo as a help for people analyzing things
-  --orgini              use "orglist.ini" with the "orgs" entry with a csv list of all orgs to check
 ```
 
 ## `org_comms_team.py`
@@ -196,6 +192,7 @@ optional arguments:
 ```
 
 ## `org_dependency_search.py`
+NOTE - This relies on API searches, which GitHub is NOT advancing - you'll get better results using the WEBUI search
 ```
 usage: org_dependency_search.py [-h] [--pat-key PATKEY] [--token TOKEN] [--archived] [--url URL] org package
 
@@ -251,7 +248,7 @@ options:
 
 ## `org_owners.py`
 ```
-usage: org_owners.py [-h] [--pat-key PATKEY] [--token TOKEN] [--orgini] [orgs ...]
+usage: org_owners.py [-h] [--pat-key PATKEY] [--token TOKEN] [orgs ...]
 
 Look at orgs, and get the list of owners
 
@@ -262,7 +259,6 @@ optional arguments:
   -h, --help        show this help message and exit
   --pat-key PATKEY  key in .gh_pat.toml of the PAT to use
   --token TOKEN     use this PAT to access resources
-  --orgini          use "orglist.ini" with the "orgs" entry with a csv list of all orgs to check
 ```
 
 ## `org_remove_user.py`
@@ -578,13 +574,6 @@ options:
 ```
 
 # Supporting files
-
-## `orglist.ini`
-Used for scripts using lists of orgs, (currently only gh_file_search.py)
-```
-[GITHUB]
-orgs = org1,org2,org3
-```
 
 ## `.gh_pat.toml`
 Used to store PAT files - used by several of the scripts.
