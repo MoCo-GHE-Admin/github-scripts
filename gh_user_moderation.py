@@ -3,8 +3,6 @@
 Script to manually poke the blocks/unblocks for orgs.
 """
 
-import configparser
-
 import requests
 
 from github_scripts import utils
@@ -21,16 +19,8 @@ def parse_arguments():
     parser.add_argument(
         "--block", help="should we block the user - default is unblock", action="store_true"
     )
-    parser.add_argument("orgs", type=str, help="The org to work on", action="store", nargs="*")
-    parser.add_argument(
-        "--orgini",
-        help='use "orglist.ini" with the "orgs" ' "entry with a csv list of all orgs to check",
-        action="store_const",
-        const="orglist.ini",
-    )
+    parser.add_argument("orgs", type=str, help="The org to work on", action="store", nargs="+")
     args = parser.parse_args()
-    if args.orgs == [] and args.orgini is None:
-        raise Exception("You must specify either an org or an orgini")
     return args
 
 
@@ -71,13 +61,7 @@ def main():
     """
     args = parse_arguments()
     # Read in the config if there is one
-    orglist = []
-    if args.orgini is not None:
-        config = configparser.ConfigParser()
-        config.read(args.orgini)
-        orglist = config["GITHUB"]["orgs"].split(",")
-    else:
-        orglist = args.orgs
+    orglist = args.orgs
 
     for org in orglist:
         if args.block:

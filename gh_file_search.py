@@ -3,7 +3,6 @@
 Script to perform a search of supplied orgs, returning the repo list that return positives
 """
 
-import configparser
 import sys
 from time import sleep
 
@@ -35,13 +34,7 @@ def parse_arguments():
         action="store_true",
         dest="note_archive",
     )
-    parser.add_argument("orgs", type=str, help="The org to work on", action="store", nargs="*")
-    parser.add_argument(
-        "--orgini",
-        help='use "orglist.ini" with the "orgs" ' "entry with a csv list of all orgs to check",
-        action="store_const",
-        const="orglist.ini",
-    )
+    parser.add_argument("orgs", type=str, help="The org to work on", action="store", nargs="+")
     parser.add_argument(
         "-v",
         dest="verbose",
@@ -63,8 +56,6 @@ def parse_arguments():
         help="Time to sleep between searches, in seconds, should be 10s or more",
     )
     args = parser.parse_args()
-    if args.orgs == [] and args.orgini is None:
-        raise SystemExit("You must specify either an org or an orgini")
     return args
 
 
@@ -79,13 +70,7 @@ def main():
 
 def do_search(args):
     # Read in the config if there is one
-    orglist = []
-    if args.orgini is not None:
-        config = configparser.ConfigParser()
-        config.read(args.orgini)
-        orglist = config["GITHUB"]["orgs"].split(",")
-    else:
-        orglist = args.orgs
+    orglist = args.orgs
 
     gh_sess = login(token=args.token)
     if not gh_sess:

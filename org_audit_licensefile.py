@@ -3,7 +3,6 @@
 Script to perform a search of supplied orgs, and return the list of detected repo licenses.
 """
 
-import configparser
 import sys
 from datetime import datetime
 
@@ -21,7 +20,7 @@ def parse_arguments():
     parser = utils.GH_ArgParser(
         description="given the org, look through all repos of type, and archive status and report on github detected licenses."
     )
-    parser.add_argument("orgs", type=str, help="The org to work on", action="store", nargs="*")
+    parser.add_argument("orgs", type=str, help="The org to work on", action="store", nargs="+")
     parser.add_argument(
         "--archived",
         help="Include archived repos.  Default is unarchived only.",
@@ -40,15 +39,7 @@ def parse_arguments():
         action="store_true",
         help="Include the URL to the repo as a help for people analyzing things",
     )
-    parser.add_argument(
-        "--orgini",
-        help='use "orglist.ini" with the "orgs" ' "entry with a csv list of all orgs to check",
-        action="store_const",
-        const="orglist.ini",
-    )
     args = parser.parse_args()
-    if args.orgs == [] and args.orgini is None:
-        raise Exception("You must specify either an org or an orgini")
     return args
 
 
@@ -71,13 +62,7 @@ def main():
     args = parse_arguments()
     resultlist = []
     # Read in the config if there is one
-    orglist = []
-    if args.orgini is not None:
-        config = configparser.ConfigParser()
-        config.read(args.orgini)
-        orglist = config["GITHUB"]["orgs"].split(",")
-    else:
-        orglist = args.orgs
+    orglist = args.orgs
 
     gh_sess = login(token=args.token)
     linedict = {
