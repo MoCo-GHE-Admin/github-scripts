@@ -304,14 +304,14 @@ options:
 
 ## `org_repos.py`
 ```
-usage: org_repos.py [-h] [--pat-key PATKEY] [--token TOKEN] [--without-org] [--archived] [--type {public,private,all}] org
+usage: org_repos.py [-h] [--pat-key PATKEY] [--token TOKEN] [--without-org] [--archived] [--type {public,private,all}] [--verbose] org
 
 Gets a list of Repos for an Org.
 
 positional arguments:
   org                   The GH org to query
 
-optional arguments:
+options:
   -h, --help            show this help message and exit
   --pat-key PATKEY      key in .gh_pat.toml of the PAT to use
   --token TOKEN         use this PAT to access resources
@@ -319,6 +319,7 @@ optional arguments:
   --archived            Include archived repos. Default is unarchived only.
   --type {public,private,all}
                         Type of repo: private, public, all.
+  --verbose             Add a '*' to the output if the repo is archived
 ```
 
 ## `org_samlreport.py`
