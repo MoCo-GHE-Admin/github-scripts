@@ -38,6 +38,9 @@ def parse_args():
         default="all",
         choices=["public", "private", "all"],
     )
+    parser.add_argument(
+        "--verbose", help="Add a '*' to the output if the repo is archived", action="store_true"
+    )
     args = parser.parse_args()
     return args
 
@@ -65,10 +68,17 @@ def main():
 
     for repo in repolist:
         if (repo.archived and args.archived) or not repo.archived:
+            #            print(f"{repo.archived=}, {repo.full_name=}, {args.verbose=}")
             if args.with_org:
-                print(repo)
+                if args.verbose and repo.archived:
+                    print(f"{repo.full_name},*")
+                else:
+                    print(repo.full_name)
             else:
-                print(repo.name)
+                if args.verbose and repo.archived:
+                    print(f"{repo.name},*")
+                else:
+                    print(repo.name)
 
 
 if __name__ == "__main__":
