@@ -246,6 +246,18 @@ options:
                         Type of repo, all (default), public, private
 ```
 
+## `org_list.py`
+```
+usage: org_list.py [-h] [--pat-key PATKEY] [--token TOKEN]
+
+Gets a list of the organizations that the user belongs to. Useful as input to scripts that take a list of orgs. Note if you have personal orgs, this will be included.
+
+options:
+  -h, --help        show this help message and exit
+  --pat-key PATKEY  key in .gh_pat.toml of the PAT to use
+  --token TOKEN     use this PAT to access resources
+```
+
 ## `org_owners.py`
 ```
 usage: org_owners.py [-h] [--pat-key PATKEY] [--token TOKEN] [orgs ...]
