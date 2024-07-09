@@ -136,6 +136,8 @@ def run_query(org, repo, headers, url):
             raise Exception(
                 f"Query failed to run by returning code of" f" {request.status_code}. {query}"
             )
+        if "errors" in jsonified.keys():
+            raise Exception(f"{jsonified['errors'][0]['message']}")
         try:
             has_next_page = next_page(jsonified)
             cursor = get_cursor(jsonified)

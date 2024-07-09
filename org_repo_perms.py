@@ -162,11 +162,14 @@ def main():
                 resultdict[repo] = {}
                 query = make_query(args.org, repo, cursor)
                 result = requests.post(url=args.url, json={"query": query}, headers=headers)
+                result_json = result.json()
                 if result.status_code != 200:
                     raise Exception(
                         f"Query failed to run by returning code of"
                         f" {result.status_code}. {query}"
                     )
+                if "errors" in result_json.keys():
+                    raise Exception(f"{result_json['errors'][0]['message']}")
                 resultdict[repo].update(
                     parse_user_data(
                         result.json()["data"]["repository"]["collaborators"]["edges"], args.all
