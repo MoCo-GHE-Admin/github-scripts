@@ -108,6 +108,9 @@ def main():
                             "file": "",
                             "type": "NO LICENSE DETECTED",
                         }
+                    except gh_exceptions.ForbiddenError as err:
+                        print(f"Error: {err}")
+                        sys.exit()
                     else:
                         linedict = {
                             "org": f"{repo.owner}",
