@@ -169,7 +169,7 @@ def main():
                         f" {result.status_code}. {query}"
                     )
                 if "errors" in result_json.keys():
-                    raise Exception(f"{result_json['errors'][0]['message']}")
+                    raise Exception(f"Error: {result_json['errors'][0]['message']}")
                 resultdict[repo].update(
                     parse_user_data(
                         result.json()["data"]["repository"]["collaborators"]["edges"], args.all

@@ -109,7 +109,7 @@ def main():
                             "type": "NO LICENSE DETECTED",
                         }
                     except gh_exceptions.ForbiddenError as err:
-                        print(err)
+                        print(f"Error: {err}")
                         sys.exit()
                     else:
                         linedict = {
