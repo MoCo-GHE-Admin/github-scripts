@@ -229,7 +229,7 @@ def report_on_hooks(repo):
     """
     result = []
     for hook in repo.hooks():
-        result.append(f"{repo.owner.login},{repo.name},{hook.config['url']},{hook.active}")
+        result.append(f"HOOK,{repo.owner.login},{repo.name},{hook.config['url']},{hook.active}")
     return result
 
 
@@ -242,7 +242,7 @@ def report_on_keys(repo):
     result = []
     for key in repo.keys():
         result.append(
-            f"{repo.owner.login},{repo.name},{key.title},{key.created_at},{key.last_used}"
+            f"KEY,{repo.owner.login},{repo.name},{key.title},{key.created_at},{key.last_used}"
         )
     return result
 
@@ -253,8 +253,8 @@ def main():
     """
     args = parse_args()
     gh_sess = login(token=args.token)
-    key_report_list = ["org,repo,key"]
-    hook_report_list = ["org,repo,hookURL,status"]
+    key_report_list = ["type,org,repo,key"]
+    hook_report_list = ["type,org,repo,hookURL,status"]
 
     repolist = []
     if args.repos != []:
