@@ -18,9 +18,26 @@ poetry install
 
 ## Naming
 Starts with:
+* "enterprise_" - operates on or across the enterprise."
 * "gh_" - affects multiple orgs naturally.  (e.g. "How Much API rate is left")
 * "org_" - limited to single orgs, occasionally multiple (e.g. "list all repos in ORG")
 * "repo_" limited to just repos. (e.g. "Archive this repo")
+
+## `enterprise_org_list.py`
+```
+usage: enterprise_org_list.py [-h] [--pat-key PATKEY] [--token TOKEN] [--url URL] enterprise
+
+Get list of organizations in an enterprise
+
+positional arguments:
+  enterprise        The enterprise to work on
+
+options:
+  -h, --help        show this help message and exit
+  --pat-key PATKEY  key in .gh_pat.toml of the PAT to use
+  --token TOKEN     use this PAT to access resources
+  --url URL         the graphql URL
+```
 
 ## `gh_api_remain.py`
 ```
