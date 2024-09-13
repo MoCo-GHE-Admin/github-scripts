@@ -23,6 +23,24 @@ Starts with:
 * "org_" - limited to single orgs, occasionally multiple (e.g. "list all repos in ORG")
 * "repo_" limited to just repos. (e.g. "Archive this repo")
 
+## `enterprise+action_check.pu`
+```
+usage: enterprise_action_check.py [-h] [--pat-key PATKEY] [--token TOKEN] [-v] [-q] [--url URL] enterprise
+
+Get action usage of an enterprise, also estimates % of prepaid used by EOM
+
+positional arguments:
+  enterprise        The enterprise to work on
+
+options:
+  -h, --help        show this help message and exit
+  --pat-key PATKEY  key in .gh_pat.toml of the PAT to use
+  --token TOKEN     use this PAT to access resources
+  -v, --verbose     Print ALL orgs, not just ones with action activity
+  -q, --quiet       only print out the totals, cancels verbose
+  --url URL         the graphql URL
+```
+
 ## `enterprise_org_list.py`
 ```
 usage: enterprise_org_list.py [-h] [--pat-key PATKEY] [--token TOKEN] [--url URL] enterprise
