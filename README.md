@@ -283,7 +283,7 @@ options:
 
 ## `org_list.py`
 ```
-usage: org_list.py [-h] [--pat-key PATKEY] [--token TOKEN]
+usage: org_list.py [-h] [--pat-key PATKEY] [--token TOKEN] [--owner]
 
 Gets a list of the organizations that the user belongs to. Useful as input to scripts that take a list of orgs. Note if you have personal orgs, this will be included.
 
@@ -291,6 +291,7 @@ options:
   -h, --help        show this help message and exit
   --pat-key PATKEY  key in .gh_pat.toml of the PAT to use
   --token TOKEN     use this PAT to access resources
+  --owner           Get only the orgs that you have owner access to
 ```
 
 ## `org_owners.py`
@@ -310,20 +311,25 @@ optional arguments:
 
 ## `org_remove_user.py`
 ```
-usage: org_remove_user.py [-h] [--pat-key PATKEY] [--token TOKEN] [--orgfile] [--do-it] username [orgs ...]
+usage: org_remove_user.py [-h] [--pat-key PATKEY] [--token TOKEN] [--ghid GHID] [--file FILE] [--email EMAIL] [--fullname FULLNAME [FULLNAME ...]] [--orgs ORGS [ORGS ...]] [--doit]
+                          [--verbose]
 
-Given a username - go through all orgs in the orglist.ini file and see what they need to be removed from
+Go through all orgs your have owner status in and try to find any reference to the supplied user. Either via provided GHID or with a file that has 'email: XXX@yyy.zzz' and 'Full name: XXX
+YYY' for guessing purposes
 
-positional arguments:
-  username          User to remove
-  orgs              The org to work on
-
-optional arguments:
-  -h, --help        show this help message and exit
-  --pat-key PATKEY  key in .gh_pat.toml of the PAT to use
-  --token TOKEN     use this PAT to access resources
-  --orgfile         use an ini file with the "orgs" entry with a csv list of all orgs to check, defaults to "orglist.ini"
-  --do-it           Actually do the removal - Otherwise just report on what you found
+options:
+  -h, --help            show this help message and exit
+  --pat-key PATKEY      key in .gh_pat.toml of the PAT to use
+  --token TOKEN         use this PAT to access resources
+  --ghid GHID           GitHub ID of user to remove - other entries used for heuristics
+  --file FILE           Data file with email and full name of the user for guessing purposes
+  --email EMAIL         email prefix (part before the @)
+  --fullname FULLNAME [FULLNAME ...]
+                        User's full name, no quotes necessary
+  --orgs ORGS [ORGS ...]
+                        Limit the examination to these orgs
+  --doit                Perform the removals rather than talk about them - will give you links to do it if you prefer
+  --verbose             Increase the verbosity of output
 ```
 
 ## `org_repo_perms`
