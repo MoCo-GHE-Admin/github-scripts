@@ -36,7 +36,6 @@ def get_orgs(gh_sess, is_owner, bar=None):
     """
     result_list = []
     if bar is not None:
-        title = bar.title
         bar.title = "Looking for orgs"
 
     my_login = gh_sess.me().login
@@ -51,8 +50,6 @@ def get_orgs(gh_sess, is_owner, bar=None):
                 result_list.append(org)
         if bar is not None:
             bar()
-    if bar is not None:
-        bar.title = title
     return result_list
 
 

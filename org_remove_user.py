@@ -196,10 +196,9 @@ class OutsideCollabIterator(GitHubIterator):
 
 
 @lru_cache(CACHESIZE)
-def get_collabs(gh_sess, org):
+def get_collabs(org):
     """
     Give me a list of all collabs in an org
-    :param gh_sess: the github session
     :param org: An initialized org object
     result: list of all collabs
     """
@@ -210,10 +209,9 @@ def get_collabs(gh_sess, org):
 
 
 @lru_cache(CACHESIZE)
-def get_members(gh_sess, org):
+def get_members(org):
     """
     Get me a list of all members in an org.
-    :param gh_sess: the initialized github session
     :param org: The initialized org object
     result: list of all members login names
     """
@@ -223,31 +221,29 @@ def get_members(gh_sess, org):
     return result
 
 
-def is_collab(gh_sess, org, user):
+def is_collab(org, user):
     """
     Detect if the user is a collab in the org, and return True if so
-    :param gh_sess: the github session
     :param org: Initialized org object
     :param user: The GHID of the user
     :return boolean: True if we found someone.  False if not
     """
     found = False
 
-    if user in get_collabs(gh_sess, org):
+    if user in get_collabs(org):
         found = True
     return found
 
 
-def is_member(gh_sess, org, user):
+def is_member(org, user):
     """
     Is the user a member of the org
-    :param gh_sess: the github session
     :param org: Initialized org object
     :param user: The GHID of the user
     :return boolean: True if we found someone.  False if not
     """
     found = False
-    memberlist = get_members(gh_sess, org)
+    memberlist = get_members(org)
     if user in memberlist:
         found = True
     return found
@@ -268,13 +264,11 @@ def idp_handle(orglist):
         )
 
 
-def find_removable_user(gh_sess, orglist, login, args, bar=None):
+def find_removable_user(orglist, login, bar=None):
     """
     Do the work to find the user in the orgs/repos
-    param: gh_sess - initialized github session
     param: orglist - list of organization instances to check
     param: login - GHID to look for
-    param: args - the parsed args per parse_args function
     param: bar - a progress bar
     result - dict - {member:[list of orgs they're members in], collab:[list of orgs they're collabs]}
     """
@@ -285,9 +279,9 @@ def find_removable_user(gh_sess, orglist, login, args, bar=None):
         try:
             if bar is not None:
                 bar.text = f" - Looking in org {org.login}"
-            if is_member(gh_sess, org, login):
+            if is_member(org, login):
                 resultdict["member"].append(org.login)
-            elif is_collab(gh_sess, org, login):
+            elif is_collab(org, login):
                 resultdict["collab"].append(org.login)
             bar()
         except gh_exceptions.NotFoundError:
@@ -432,7 +426,7 @@ def main():
             # Time to look for users in the list and pull them if desired.
             if loginlist.index(loginname) >= 1:
                 utils.check_rate_remain(gh_sess=gh_sess, loopsize=400, bar=bar)
-            found_things = find_removable_user(gh_sess, orglist_to_check, loginname, args, bar)
+            found_things = find_removable_user(orglist_to_check, loginname, bar)
             found_removals[loginname] = found_things
 
     # Alright - we've found things - now let's report, and maybe remove
