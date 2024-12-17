@@ -137,7 +137,8 @@ def run_query(org, repo, headers, url):
                 f"Query failed to run by returning code of" f" {request.status_code}. {query}"
             )
         if "errors" in jsonified.keys():
-            raise Exception(f"Error: {jsonified['errors'][0]['message']}")
+            print(f"Repo: {org}/{repo} has too many dependencies to analyze")
+            break
         try:
             has_next_page = next_page(jsonified)
             cursor = get_cursor(jsonified)
@@ -186,6 +187,7 @@ def main():
     ) as bar:
         for repo in repolist:
             bar.text = f"  - checking {repo.name}..."
+            # print(f"DEBUG - {repo.name=}")
             utils.check_rate_remain(gh_sess)
             if args.unarchived and repo.archived:
                 continue
