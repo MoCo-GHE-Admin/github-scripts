@@ -51,29 +51,6 @@ optional arguments:
   --token TOKEN     use this PAT to access resources
 ```
 
-## `gh_dependency_search.py`
-NOTE - This relies on API searches, which GitHub is NOT advancing - you'll get better results using the WEBUI search
-```
-usage: gh_dependency_search.py [-h] [--pat-key PATKEY] [--token TOKEN] --package PACKAGE [-v] [-f] [-t TIME]
-                               [--language {Python,Javascript}]
-                               [orgs ...]
-
-Get file search resuls for a dependency
-
-positional arguments:
-  orgs                  The org to work on
-
-optional arguments:
-  -h, --help            show this help message and exit
-  --pat-key PATKEY      key in .gh_pat.toml of the PAT to use
-  --token TOKEN         use this PAT to access resources
-  --package PACKAGE     The package to search for.
-  -v                    Verbose - Print out that we're waiting for rate limit reasons
-  -f                    Print out file level responses rather than repo level
-  -t TIME               Time to sleep between searches, in seconds, should be 10s or more
-  --language {Python,Javascript}
-                        Language to search for dependency, default is Python
-```
 
 ## `gh_org_licenses.py`
 ```
@@ -620,6 +597,31 @@ options:
   -v, --verbose     Print ALL orgs, not just ones with action activity
   -q, --quiet       only print out the totals, cancels verbose
   --url URL         the graphql URL
+```
+
+## `gh_dependency_search.py`
+This has been superceded by the org_dependency_search
+NOTE - This relies on API searches, which GitHub is NOT advancing - you'll get better results using the WEBUI search
+```
+usage: gh_dependency_search.py [-h] [--pat-key PATKEY] [--token TOKEN] --package PACKAGE [-v] [-f] [-t TIME]
+                               [--language {Python,Javascript}]
+                               [orgs ...]
+
+Get file search resuls for a dependency
+
+positional arguments:
+  orgs                  The org to work on
+
+optional arguments:
+  -h, --help            show this help message and exit
+  --pat-key PATKEY      key in .gh_pat.toml of the PAT to use
+  --token TOKEN         use this PAT to access resources
+  --package PACKAGE     The package to search for.
+  -v                    Verbose - Print out that we're waiting for rate limit reasons
+  -f                    Print out file level responses rather than repo level
+  -t TIME               Time to sleep between searches, in seconds, should be 10s or more
+  --language {Python,Javascript}
+                        Language to search for dependency, default is Python
 ```
 
 ## `gh_file_search.py`
