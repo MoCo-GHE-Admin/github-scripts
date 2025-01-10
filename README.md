@@ -23,24 +23,6 @@ Starts with:
 * "org_" - limited to single orgs, occasionally multiple (e.g. "list all repos in ORG")
 * "repo_" limited to just repos. (e.g. "Archive this repo")
 
-## `enterprise+action_check.pu`
-```
-usage: enterprise_action_check.py [-h] [--pat-key PATKEY] [--token TOKEN] [-v] [-q] [--url URL] enterprise
-
-Get action usage of an enterprise, also estimates % of prepaid used by EOM
-
-positional arguments:
-  enterprise        The enterprise to work on
-
-options:
-  -h, --help        show this help message and exit
-  --pat-key PATKEY  key in .gh_pat.toml of the PAT to use
-  --token TOKEN     use this PAT to access resources
-  -v, --verbose     Print ALL orgs, not just ones with action activity
-  -q, --quiet       only print out the totals, cancels verbose
-  --url URL         the graphql URL
-```
-
 ## `enterprise_org_list.py`
 ```
 usage: enterprise_org_list.py [-h] [--pat-key PATKEY] [--token TOKEN] [--url URL] enterprise
@@ -91,31 +73,6 @@ optional arguments:
   -t TIME               Time to sleep between searches, in seconds, should be 10s or more
   --language {Python,Javascript}
                         Language to search for dependency, default is Python
-```
-
-## `gh_file_search.py`
-NOTE - This relies on API searches, which GitHub is NOT advancing - you'll get better results using the WEBUI search
-```
-usage: gh_file_search.py [-h] [--pat-key PATKEY] [--token TOKEN] --query QUERY [--note-archive] [-v] [-f] [-t TIME]
-                         [orgs ...]
-
-Get file search results for an org, returning repo list. e.g. if you want 'org:<ORGNAME> filename:<FILENAME> <CONTENTS>', then you
-just need 'filename:<FILENAME> <CONTENTS>' and then list the orgs to apply it to. Note: There's a pause of ~10 seconds between org
-searches due to GitHub rate limits - add a -v if you want notice printed that it's waiting
-
-positional arguments:
-  orgs              The org to work on
-
-optional arguments:
-  -h, --help        show this help message and exit
-  --pat-key PATKEY  key in .gh_pat.toml of the PAT to use
-  --token TOKEN     use this PAT to access resources
-  --query QUERY     The query to run, without orgs
-  --note-archive    if specified, will add archival status of the repo to the output, this will slow things down and use more API
-                    calls
-  -v                Verbose - Print out that we're waiting for rate limit reasons
-  -f                Print out file level responses rather than repo level
-  -t TIME           Time to sleep between searches, in seconds, should be 10s or more
 ```
 
 ## `gh_org_licenses.py`
@@ -642,6 +599,54 @@ options:
                         List of orgs to check, else will look in orgs you belong to
   --lineperorg          Instead of one repo per line, report one org per line
 ```
+
+# Deprecated
+Scripts that are, for one reason or another no longer commonly or accurately functional, largely kept in the hopes that GitHub fixes underlying problems, and as example code.
+
+## `enterprise+action_check.py`
+With the advent of enhanced billing - the old API targets used here, while still "working" return 0.  We're working with GitHub support to figure out if the new API targets will allow us to get this information.
+```
+usage: enterprise_action_check.py [-h] [--pat-key PATKEY] [--token TOKEN] [-v] [-q] [--url URL] enterprise
+
+Get action usage of an enterprise, also estimates % of prepaid used by EOM
+
+positional arguments:
+  enterprise        The enterprise to work on
+
+options:
+  -h, --help        show this help message and exit
+  --pat-key PATKEY  key in .gh_pat.toml of the PAT to use
+  --token TOKEN     use this PAT to access resources
+  -v, --verbose     Print ALL orgs, not just ones with action activity
+  -q, --quiet       only print out the totals, cancels verbose
+  --url URL         the graphql URL
+```
+
+## `gh_file_search.py`
+NOTE - This relies on API searches, which GitHub support informs me do not return reliable information.  Recommendation from them, use the WEBUI, OR pay for GHAS and use vulnerability scanning to find concerning code
+```
+usage: gh_file_search.py [-h] [--pat-key PATKEY] [--token TOKEN] --query QUERY [--note-archive] [-v] [-f] [-t TIME]
+                         [orgs ...]
+
+Get file search results for an org, returning repo list. e.g. if you want 'org:<ORGNAME> filename:<FILENAME> <CONTENTS>', then you
+just need 'filename:<FILENAME> <CONTENTS>' and then list the orgs to apply it to. Note: There's a pause of ~10 seconds between org
+searches due to GitHub rate limits - add a -v if you want notice printed that it's waiting
+
+positional arguments:
+  orgs              The org to work on
+
+optional arguments:
+  -h, --help        show this help message and exit
+  --pat-key PATKEY  key in .gh_pat.toml of the PAT to use
+  --token TOKEN     use this PAT to access resources
+  --query QUERY     The query to run, without orgs
+  --note-archive    if specified, will add archival status of the repo to the output, this will slow things down and use more API
+                    calls
+  -v                Verbose - Print out that we're waiting for rate limit reasons
+  -f                Print out file level responses rather than repo level
+  -t TIME           Time to sleep between searches, in seconds, should be 10s or more
+```
+
 
 # Supporting files
 
