@@ -8,7 +8,7 @@ This assumes you are on macOS Sequoia 15.2 (as of Jan 2025).
 
 Python 3.13 is recommended. You can install this with [Homebrew](https://brew.sh/) or [pyenv](https://github.com/pyenv/pyenv).
 
-Requirements are managed with Poetry (https://python-poetry.org/).
+Requirements are managed with Poetry (https://python-poetry.org/). If you installed Python with homebrew, install poetry with it as well. If you installed Python via pyenv, make sure your [shell environment is setup](https://github.com/pyenv/pyenv?tab=readme-ov-file#b-set-up-your-shell-environment-for-pyenv) and install poetry using pip (or similar).
 
 Once poetry is installed, install the [Shell plugin](https://github.com/python-poetry/poetry-plugin-shell):
 ```
