@@ -4,9 +4,18 @@ A set of scripts for working with/analysis of github orgs/repos
 
 ## Requirements
 
+This assumes you are on macOS Sonoma 15.2 (as of Jan 2025).
+
+Python 3.13 is recommended. You can install this with [Homebrew](https://brew.sh/) or [pyenv](https://github.com/pyenv/pyenv).
+
 Requirements are managed with Poetry (https://python-poetry.org/).
 
-Once poetry is installed, you can set up the repo.
+Once poetry is installed, install the [Shell plugin](https://github.com/python-poetry/poetry-plugin-shell):
+```
+poetry self add poetry-plugin-shell
+```
+
+Then using poetry, start a shell session and install the dependencies:
 
 ```bash
 # sources the virtualenv
