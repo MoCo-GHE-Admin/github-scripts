@@ -4,7 +4,7 @@ A set of scripts for working with/analysis of github orgs/repos
 
 ## Requirements
 
-This assumes you are on macOS Sonoma 15.2 (as of Jan 2025).
+This assumes you are on macOS Sequoia 15.2 (as of Jan 2025).
 
 Python 3.13 is recommended. You can install this with [Homebrew](https://brew.sh/) or [pyenv](https://github.com/pyenv/pyenv).
 
