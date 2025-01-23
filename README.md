@@ -4,9 +4,18 @@ A set of scripts for working with/analysis of github orgs/repos
 
 ## Requirements
 
-Requirements are managed with Poetry (https://python-poetry.org/).
+This assumes you are on macOS Sequoia 15.2 (as of Jan 2025).
 
-Once poetry is installed, you can set up the repo.
+Python 3.13 is recommended. You can install this with [Homebrew](https://brew.sh/) or [pyenv](https://github.com/pyenv/pyenv).
+
+Requirements are managed with Poetry (https://python-poetry.org/). If you installed Python with homebrew, install poetry with it as well. If you installed Python via pyenv, make sure your [shell environment is setup](https://github.com/pyenv/pyenv?tab=readme-ov-file#b-set-up-your-shell-environment-for-pyenv) and install poetry using pip (or similar).
+
+Once poetry is installed, install the [Shell plugin](https://github.com/python-poetry/poetry-plugin-shell):
+```
+poetry self add poetry-plugin-shell
+```
+
+Then using poetry, start a shell session and install the dependencies:
 
 ```bash
 # sources the virtualenv
