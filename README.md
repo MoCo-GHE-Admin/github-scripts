@@ -319,7 +319,7 @@ options:
 ```
 usage: org_repo_perms_classic.py [-h] [--pat-key PATKEY] [--token TOKEN] [--repo REPO] org
 
-Report all admin permissions given to non-archived repos in an org, using restapi to aavoid undocumented rate limits
+Report all admin permissions given to non-archived repos in an org, using restapi to avoid undocumented rate limits - edit OWNERS in source to exclude common users
 
 positional arguments:
   org               The org to work with
@@ -329,6 +329,7 @@ options:
   --pat-key PATKEY  key in .gh_pat.toml of the PAT to use
   --token TOKEN     use this PAT to access resources
   --repo REPO       Specify a single repo to work on in the specified org if desired
+
 ```
 
 ## `org_repos.py`

@@ -3,8 +3,6 @@
 Script to look at repos in an org, and dump the admin
 """
 
-# TODO: Output only perms of ADMIN
-
 import sys
 
 import alive_progress
@@ -15,6 +13,7 @@ from github_scripts import utils
 
 # noqa: E231
 
+# List of common users to ignore - usually this is the owners of the org
 OWNERS = ["cknowles-admin", "moz-hwine", "ctbmozilla-admin", "aerickson-admin"]
 
 
@@ -23,7 +22,7 @@ def parse_arguments():
     Look at the first arg and handoff to the arg parser for that specific
     """
     parser = utils.GH_ArgParser(
-        description="Report all admin permissions given to non-archived repos in an org, using restapi to aavoid undocumented rate limits"
+        description="Report all admin permissions given to non-archived repos in an org, using restapi to avoid undocumented rate limits - edit OWNERS in source to exclude common users"
     )
     parser.add_argument("org", type=str, help="The org to work with", action="store")
     parser.add_argument(
@@ -42,13 +41,14 @@ def main():
     Query the list of repos for the permissions not given by teams.
     """
     args = parse_arguments()
+    gh_sess = github3.login(token=args.token)
+    org = gh_sess.organization(args.org)
     if args.repo is None:
-        gh_sess = github3.login(token=args.token)
-        org = gh_sess.organization(args.org)
         # repolist = {x for x in org.repositories()}
         repolist = org.repositories()
     else:
-        repolist = [args.repo]
+        repo = gh_sess.repository(owner=args.org, repository=args.repo)
+        repolist = [repo]
 
     output = {}
 
@@ -79,7 +79,7 @@ def main():
 
             bar()
     for repo in output.keys():
-        print(f"{repo},{':'.join(output[repo])}")
+        print(f"{repo},ADMIN:{':'.join(output[repo])}")
 
 
 if __name__ == "__main__":
