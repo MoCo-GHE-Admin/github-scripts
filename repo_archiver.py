@@ -30,7 +30,7 @@ def parse_args():
         description="Archive the specified repo, labelling and then closing out issues and PRs, "
         "per GitHub best practices.  Closed issues/PRs, and description/topic changes "
         "can be completely reversed using the repo_unarchiver script.  "
-        "DEFAULTS to dry-run and will not modify things until --do-it flag is applied.  "
+        "DEFAULTS to dry-run and will not modify things until --doit flag is applied.  "
         "Also, will report on any existing hooks or keys in the repos so that cleanup in related systems can occur"
     )
     parser.add_argument("repos", help="owner/repo to archive", nargs="*", action="store")
@@ -73,7 +73,7 @@ def parse_args():
         default=False,
     )
     parser.add_argument(
-        "--do-it",
+        "--doit",
         help="Actually perform the archiving steps",
         action="store_true",
         dest="do_it",

@@ -487,11 +487,11 @@ options:
 ## `repo_archiver.py`
 ```
 usage: repo_archiver.py [-h] [--pat-key PATKEY] [--token TOKEN] [--inactive] [--custom CUSTOM] [--file FILE] [--disable-report]
-                        [--ignore-issue-label] [--pause] [-q] [--do-it]
+                        [--ignore-issue-label] [--pause] [-q] [--doit]
                         [repos ...]
 
 Archive the specified repo, labelling and then closing out issues and PRs, per GitHub best practices. Closed issues/PRs, and description/topic
-changes can be completely reversed using the repo_unarchiver script. DEFAULTS to dry-run and will not modify things until --do-it flag is applied.
+changes can be completely reversed using the repo_unarchiver script. DEFAULTS to dry-run and will not modify things until --doit flag is applied.
 Also, will report on any existing hooks or keys in the repos so that cleanup in related systems can occur
 
 positional arguments:
@@ -508,7 +508,7 @@ options:
   --ignore-issue-label  Ignore the existence of the ARCHIVED issue label
   --pause               Pause upon detecting anomalies that might need fixing, but aren't blockers
   -q                    DO NOT print, or request confirmations
-  --do-it               Actually perform the archiving steps
+  --doit                Actually perform the archiving steps
 ```
 
 ## `repo_close_issues.py`
