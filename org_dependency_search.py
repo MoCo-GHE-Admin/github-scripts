@@ -20,8 +20,9 @@ def parse_arguments():
     parser = utils.GH_ArgParser(description="Get the dependency for repos in an org")
     parser.add_argument("org", type=str, help="The 'org' to work on", action="store")
     parser.add_argument(
-        "package",
+        "--packages",
         type=str,
+        nargs="+",
         help="Package name to look for - must be the precise package name.",
         action="store",
     )
@@ -197,7 +198,7 @@ def main():
             for cursor in dependency_dict:
                 for reponode in dependency_dict[cursor]["edges"]:
                     for dep in reponode["node"]["dependencies"]["nodes"]:
-                        if dep["packageName"] == args.package:
+                        if dep["packageName"] in args.packages:
                             package_list.append(
                                 {
                                     "org": org_obj.login,
