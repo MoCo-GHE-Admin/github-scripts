@@ -286,6 +286,23 @@ optional arguments:
   --token TOKEN     use this PAT to access resources
 ```
 
+## `org_remove_action_rule.py`
+```
+usage: org_remove_action_rule.py [-h] [--pat-key PATKEY] [--token TOKEN] --rule RULE [--api API] org [org ...]
+
+Go through the list of orgs and remove the listed action rule from the org.
+
+positional arguments:
+  org               List of orgs to remove the action from
+
+options:
+  -h, --help        show this help message and exit
+  --pat-key PATKEY  key in .gh_pat.toml of the PAT to use
+  --token TOKEN     use this PAT to access resources
+  --rule RULE       REQUIRED: The rule to remove - ala 'ossf/scorecard@*' - should probably be quote delimited
+  --api API         The host of the API URL
+```
+
 ## `org_remove_user.py`
 ```
 usage: org_remove_user.py [-h] [--pat-key PATKEY] [--token TOKEN] [--ghid GHID] [--file FILE] [--email EMAIL] [--fullname FULLNAME [FULLNAME ...]] [--orgs ORGS [ORGS ...]] [--doit]
