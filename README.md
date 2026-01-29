@@ -33,22 +33,6 @@ Starts with:
 * "repo_" limited to just repos. (e.g. "Archive this repo")
 
 
-## `enterprise_copilot_stats.py`
-```
-usage: enterprise_copilot_stats.py [-h] [--pat-key PATKEY] [--token TOKEN] [--url URL] enterprise
-
-Get top level copilot stats, including active user counts, and suggestions/acceptances usage
-
-positional arguments:
-  enterprise        The enterprise to work on
-
-options:
-  -h, --help        show this help message and exit
-  --pat-key PATKEY  key in .gh_pat.toml of the PAT to use
-  --token TOKEN     use this PAT to access resources
-  --url URL         the API hostname - defaults to api.github.com
-```
-
 ## `enterprise_org_list.py`
 ```
 usage: enterprise_org_list.py [-h] [--pat-key PATKEY] [--token TOKEN] [--url URL] enterprise
