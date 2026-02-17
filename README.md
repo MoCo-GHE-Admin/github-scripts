@@ -111,6 +111,23 @@ options:
   --block           should we block the user - default is unblock
 ```
 
+## `org_add_action_rule.py`
+```
+usage: org_add_action_rule.py [-h] [--pat-key PATKEY] [--token TOKEN] --rule RULE [--api API] org [org ...]
+
+Go through the list of orgs and add the listed action rule to the org. Preserve existing actions.
+
+positional arguments:
+  org               List of orgs to add the action to
+
+options:
+  -h, --help        show this help message and exit
+  --pat-key PATKEY  key in .gh_pat.toml of the PAT to use
+  --token TOKEN     use this PAT to access resources
+  --rule RULE       REQUIRED: The rule to add - ala 'ossf/scorecard@*' - should probably be quote delimited
+  --api API         The host of the API URL
+```
+
 ## `org_add_user.py`
 ```
 usage: org_add_user.py [-h] [--pat-key PATKEY] [--token TOKEN] [--org ORG] [--user USERNAME] [--teams TEAMS [TEAMS ...]] [--owner]
@@ -251,6 +268,23 @@ optional arguments:
   -h, --help        show this help message and exit
   --pat-key PATKEY  key in .gh_pat.toml of the PAT to use
   --token TOKEN     use this PAT to access resources
+```
+
+## `org_remove_action_rule.py`
+```
+usage: org_remove_action_rule.py [-h] [--pat-key PATKEY] [--token TOKEN] --rule RULE [--api API] org [org ...]
+
+Go through the list of orgs and remove the listed action rule from the org.
+
+positional arguments:
+  org               List of orgs to remove the action from
+
+options:
+  -h, --help        show this help message and exit
+  --pat-key PATKEY  key in .gh_pat.toml of the PAT to use
+  --token TOKEN     use this PAT to access resources
+  --rule RULE       REQUIRED: The rule to remove - ala 'ossf/scorecard@*' - should probably be quote delimited
+  --api API         The host of the API URL
 ```
 
 ## `org_remove_user.py`
