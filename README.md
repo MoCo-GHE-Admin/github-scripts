@@ -171,22 +171,22 @@ optional arguments:
 ```
 
 ## `org_dependency_search.py`
-NOTE - This relies on API searches, which GitHub is NOT advancing - you'll get better results using the WEBUI search
 ```
-usage: org_dependency_search.py [-h] [--pat-key PATKEY] [--token TOKEN] [--archived] [--url URL] org package
+usage: org_dependency_search.py [-h] [--pat-key PATKEY] [--token TOKEN] [--packages PACKAGES [PACKAGES ...]] [--archived] [--url URL] org
 
 Get the dependency for repos in an org
 
 positional arguments:
-  org               The 'org' to work on
-  package           Package name to look for - must be the precise package name.
+  org                   The 'org' to work on
 
 options:
-  -h, --help        show this help message and exit
-  --pat-key PATKEY  key in .gh_pat.toml of the PAT to use
-  --token TOKEN     use this PAT to access resources
-  --archived        Include archived repos
-  --url URL         the graphql URL
+  -h, --help            show this help message and exit
+  --pat-key PATKEY      key in .gh_pat.toml of the PAT to use
+  --token TOKEN         use this PAT to access resources
+  --packages PACKAGES [PACKAGES ...]
+                        Package name to look for - must be the precise package name.
+  --archived            Include archived repos
+  --url URL             the graphql URL
 ```
 
 ## `org_find_hooks.py`
