@@ -70,13 +70,12 @@ def main():
         if current_actions is not None:
             # Get add the new action to the list, and remove it from the org
             if args.rule not in current_actions:
-                print(f"Rule {args.rule} is already removed from {org}, skipping")
+                print(f"Rule {args.rule} does not exist in {org}, skipping")
             else:
                 current_actions.remove(args.rule)
                 url = f"https://{args.api}/orgs/{org}/actions/permissions/selected-actions"
                 data = {"patterns_allowed": current_actions}
                 response = requests.put(url=url, headers=headers, data=json.dumps(data))
-                print(f"Remove record - {response.status_code=}")
                 if response.status_code == 204:
                     print(f"Successfully removed {args.rule} from org {org}")
                 else:

@@ -76,7 +76,6 @@ def main():
                 url = f"https://{args.api}/orgs/{org}/actions/permissions/selected-actions"
                 data = {"patterns_allowed": current_actions}
                 response = requests.put(url=url, headers=headers, data=json.dumps(data))
-                print(f"Add record - {response.status_code=}")
                 if response.status_code == 204:
                     print(f"Successfully added {args.rule} to org {org}")
                 else:
