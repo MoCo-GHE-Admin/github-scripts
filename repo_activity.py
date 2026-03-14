@@ -85,18 +85,16 @@ def get_wiki_date(reponame, token):
     """
     # Setup the URL/paths
     remoteURL = f"https://{token}:x-oauth-basic@github.com/{reponame}.wiki.git"  # noqa: E231
-    localpath = tempfile.TemporaryDirectory()
-    try:
-        # Checkout the repo
-        clone = Repo.clone_from(remoteURL, localpath, depth="1")
-        lastcommit = clone.commit("HEAD")
-        date = datetime.fromtimestamp(lastcommit.committed_date, tz=pytz.UTC)
-        clone.close()
-    except git_exceptions.GitCommandError:
-        # print(f"Tried finding a wiki on a non-wiki repo, likely uninitialized.  Repo: {reponame}", file=sys.stderr)
-        date = datetime(year=1900, month=1, day=1, tzinfo=pytz.UTC)
-    finally:
-        localpath.cleanup()
+    with tempfile.TemporaryDirectory() as localpath:
+        try:
+            # Checkout the repo
+            clone = Repo.clone_from(remoteURL, localpath, depth="1")
+            lastcommit = clone.commit("HEAD")
+            date = datetime.fromtimestamp(lastcommit.committed_date, tz=pytz.UTC)
+            clone.close()
+        except git_exceptions.GitCommandError:
+            # print(f"Tried finding a wiki on a non-wiki repo, likely uninitialized.  Repo: {reponame}", file=sys.stderr)
+            date = datetime(year=1900, month=1, day=1, tzinfo=pytz.UTC)
     return date
 
 
