@@ -169,9 +169,34 @@ def find_login_guesses(gh_sess, guesslist):
     """
     matchingusers = set()
     for guess in guesslist:
+
         # go through the guess list and see if there are any matches in any org we care about
-        utils.check_rate_remain(gh_sess, loopsize=5, search=True)
-        usersearch = gh_sess.search_users(guess)
+        # The search of the user does not cost a search token, as all we construct here
+        # is a not-executed-yet iterator ...
+        usersearch_iter = gh_sess.search_users(guess)
+
+        # ... but, turning that iterator into a list / iterating over it, DOES cost a token, one
+        # for each paged query to GH.  These queries are buried in the __iter__ in the library.
+        #
+        # So now it gets fun.  __iter__ is expensive.  __next__ is free for call 2-100 but not
+        # for call 1.  So we either reimagine large parts of the library in our own code, or
+        # do a lot of try-except-retry calls, or raise the token reservation minimum.
+        #
+        # The tokens needed here is "how many pages of 100 users could I ever need?"  The answer
+        # MUST be at least  ceil("members in the largest org"/100.0)  But you want to keep it
+        # as small as possible because the closer it is to the GH limit (30), the more minutes
+        # you'll needlessly waste waiting on a too-soon token refresh for tiny orgs that could
+        # complete in 1 page.
+        #
+        # The right thing for tokens would be "learn the max size and assign it here" (like,
+        # license count?) but for expediency we're assigning 2026-04's correct answer (6),
+        # plus 1 because we are near to moving past 6.  See ya in 2028!
+        min_token_number = 7
+
+        utils.check_rate_remain(gh_sess, loopsize=min_token_number, search=True)
+        # This call is token-expensive.
+        # Also, pythonic pedants: yes, list() of an iter is memory wasteful
+        usersearch = list(usersearch_iter)
         miniset = set()
         for searchresult in usersearch:
             miniset.add(searchresult.user.login)
