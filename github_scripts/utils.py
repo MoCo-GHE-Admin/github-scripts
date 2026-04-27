@@ -131,10 +131,10 @@ def check_rate_remain(gh_sess, loopsize=100, update=True, bar=None, search=False
                 print("API timeout reset, continuing", file=sys.stderr)
             else:
                 bar.text = oldtitle
-            if search:
-                limit_remain = gh_sess.rate_limit()["resources"]["search"]["remaining"]
-            else:
-                limit_remain = gh_sess.rate_limit()["resources"]["core"]["remaining"]
+        if search:
+            limit_remain = gh_sess.rate_limit()["resources"]["search"]["remaining"]
+        else:
+            limit_remain = gh_sess.rate_limit()["resources"]["core"]["remaining"]
 
 
 def check_graphql_rate_remain(
